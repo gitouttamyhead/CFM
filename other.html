@@ -57,40 +57,6 @@
             margin-top: 0;
             color: #2c3e50;
         }
-        .insight-card .date {
-            color: #6c757d;
-            font-size: 0.9em;
-            margin-bottom: 10px;
-        }
-        .insight-card .actions {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-        .insight-card .actions button {
-            background: none;
-            border: none;
-            color: #6c757d;
-            cursor: pointer;
-            padding: 5px;
-            margin-left: 5px;
-        }
-        .insight-card .actions button:hover {
-            color: #2c3e50;
-        }
-        .insight-image {
-            max-width: 100%;
-            height: auto;
-            margin: 10px 0;
-            border-radius: 4px;
-        }
-        .insight-link {
-            color: #3498db;
-            text-decoration: none;
-        }
-        .insight-link:hover {
-            text-decoration: underline;
-        }
         .tags {
             display: flex;
             flex-wrap: wrap;
@@ -150,7 +116,6 @@
             resize: vertical;
         }
     </style>
-    <!-- Add Quill CDN -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 </head>
 <body>
@@ -160,7 +125,6 @@
         <button class="add-button" onclick="openAddModal()">Add Insight</button>
         <div id="insightsContainer"></div>
     </div>
-    <!-- Add/Edit Modal -->
     <div id="addModal" class="modal">
         <div class="modal-content">
             <span class="close-button" onclick="closeModal()">&times;</span>
@@ -191,57 +155,109 @@
         </div>
     </div>
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script>
-        // Only manage other insights in this page
-        let insights = JSON.parse(localStorage.getItem('insights')) || {scripture: [], gospel: [], other: []};
-        let editingIndex = null;
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXyOXGktacbjg-X2tuVsmJ7nYLCwJZ5Nw",
+            authDomain: "comefollowme-d097a.firebaseapp.com",
+            projectId: "comefollowme-d097a",
+            storageBucket: "comefollowme-d097a.firebasestorage.app",
+            messagingSenderId: "725941283112",
+            appId: "1:725941283112:web:7071276f065bb3b7dd081d",
+            measurementId: "G-Z9HKN7M5K5"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let editingId = null;
         let quill;
-        function saveInsights() {
-            // Ensure all insights have a related array
-            insights.other.forEach(insight => {
-                if (!insight.related) insight.related = [];
-            });
-            localStorage.setItem('insights', JSON.stringify(insights));
-            renderInsights();
+
+        async function loadInsights() {
+            try {
+                const snapshot = await db.collection('otherInsights').orderBy('createdAt', 'desc').get();
+                const insights = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                renderInsights(insights);
+            } catch (error) {
+                console.error('Error loading insights:', error);
+                alert('Error loading insights. Please try again.');
+            }
         }
-        function renderInsights() {
+
+        function renderInsights(insights) {
             const container = document.getElementById('insightsContainer');
             container.innerHTML = '';
-            insights.other.forEach((insight, index) => {
+            insights.forEach(insight => {
                 const card = document.createElement('div');
                 card.className = 'insight-card';
                 let relatedNote = '';
                 if (insight.related && insight.related.length > 0) {
-                    relatedNote = `<div style=\"margin-top:8px;font-size:0.95em;color:#888;\">Related Insight${insight.related.length > 1 ? 's' : ''} linked</div>`;
+                    relatedNote = `<div style="margin-top:8px;font-size:0.95em;color:#888;">Related Insight${insight.related.length > 1 ? 's' : ''} linked</div>`;
                 }
                 card.innerHTML = `
                     <h3>${insight.title}</h3>
-                    <button class=\"add-button\" onclick=\"window.location.href='insight-other.html?id=${index}'\">See Details</button>
+                    <button class="add-button" onclick="window.location.href='insight-other.html?id=${insight.id}'">See Details</button>
                     ${relatedNote}
                 `;
                 container.appendChild(card);
             });
         }
-        function openAddModal(editIndex = null) {
-            editingIndex = editIndex;
-            document.getElementById('modalTitle').textContent = editIndex === null ? 'Add New Insight' : 'Edit Insight';
-            if (editIndex !== null) {
-                const insight = insights.other[editIndex];
-                document.getElementById('title').value = insight.title;
-                quill.root.innerHTML = insight.content || '';
-                document.getElementById('imageUrl').value = insight.imageUrl || '';
-                document.getElementById('linkUrl').value = insight.linkUrl || '';
-                document.getElementById('tags').value = insight.tags.join(', ');
+
+        function openAddModal(editId = null) {
+            editingId = editId;
+            document.getElementById('modalTitle').textContent = editId === null ? 'Add New Insight' : 'Edit Insight';
+            if (editId !== null) {
+                db.collection('otherInsights').doc(editId).get().then(doc => {
+                    if (doc.exists) {
+                        const insight = doc.data();
+                        document.getElementById('title').value = insight.title;
+                        quill.root.innerHTML = insight.content || '';
+                        document.getElementById('imageUrl').value = insight.imageUrl || '';
+                        document.getElementById('linkUrl').value = insight.linkUrl || '';
+                        document.getElementById('tags').value = (insight.tags || []).join(', ');
+                    }
+                });
             } else {
                 document.getElementById('insightForm').reset();
                 quill.root.innerHTML = '';
             }
             document.getElementById('addModal').style.display = 'block';
         }
+
         function closeModal() {
             document.getElementById('addModal').style.display = 'none';
             document.getElementById('insightForm').reset();
         }
+
+        document.getElementById('insightForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const insight = {
+                    title: document.getElementById('title').value,
+                    content: quill.root.innerHTML,
+                    imageUrl: document.getElementById('imageUrl').value,
+                    linkUrl: document.getElementById('linkUrl').value,
+                    tags: document.getElementById('tags').value.split(',').map(t => t.trim()).filter(Boolean),
+                    related: [],
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                if (editingId) {
+                    await db.collection('otherInsights').doc(editingId).update(insight);
+                } else {
+                    await db.collection('otherInsights').add(insight);
+                }
+                closeModal();
+                loadInsights();
+            } catch (error) {
+                console.error('Error saving insight:', error);
+                alert('Error saving insight. Please try again.');
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             quill = new Quill('#quillEditor', {
                 theme: 'snow',
@@ -249,47 +265,14 @@
                     toolbar: [
                         [{ header: [1, 2, false] }],
                         ['bold', 'italic', 'underline'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        ['link'],
-                        ['clean']
+                        [{ 'align': [] }],
+                        ['link', 'image'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }]
                     ]
                 }
             });
-            // Check for editOtherIndex flag
-            const editIdx = localStorage.getItem('editOtherIndex');
-            if (editIdx !== null) {
-                openAddModal(Number(editIdx));
-                localStorage.removeItem('editOtherIndex');
-            }
+            loadInsights();
         });
-        document.getElementById('insightForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const insight = {
-                title: document.getElementById('title').value,
-                content: quill.root.innerHTML,
-                imageUrl: document.getElementById('imageUrl').value,
-                linkUrl: document.getElementById('linkUrl').value,
-                tags: document.getElementById('tags').value.split(',').map(tag => tag.trim()).filter(tag => tag),
-                date: new Date().toISOString()
-            };
-            if (editingIndex === null) {
-                insights.other.push(insight);
-            } else {
-                insights.other[editingIndex] = insight;
-            }
-            saveInsights();
-            closeModal();
-        });
-        function editInsight(index) {
-            openAddModal(index);
-        }
-        function deleteInsight(index) {
-            if (confirm('Are you sure you want to delete this insight?')) {
-                insights.other.splice(index, 1);
-                saveInsights();
-            }
-        }
-        renderInsights();
     </script>
 </body>
-</html> 
+</html>

@@ -4,316 +4,241 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scripture Insight Details</title>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-            color: #333;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: #3498db;
-            text-decoration: none;
-            font-size: 1.1em;
-        }
-        .back-link:hover {
-            text-decoration: underline;
-        }
-        .insight-card {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            padding: 25px;
-            margin-bottom: 15px;
-        }
-        .insight-card h2 {
-            margin-top: 0;
-            color: #2c3e50;
-        }
-        .insight-card .date {
-            color: #6c757d;
-            font-size: 0.9em;
-            margin-bottom: 10px;
-        }
-        .insight-image {
-            max-width: 100%;
-            height: auto;
-            margin: 10px 0;
-            border-radius: 4px;
-        }
-        .insight-link {
-            color: #3498db;
-            text-decoration: none;
-        }
-        .insight-link:hover {
-            text-decoration: underline;
-        }
-        .tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-top: 10px;
-        }
-        .tag {
-            background: #e9ecef;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.9em;
-            color: #495057;
-        }
-        .add-button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-        }
-        .add-button:hover {
-            background-color: #2980b9;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 600px;
-        }
-        .close-button {
-            color: #aaaaaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .close-button:hover,
-        .close-button:focus {
-            color: #000;
-            text-decoration: none;
-            cursor: pointer;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
+        .container { max-width: 700px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 30px; }
+        .back-link { color: #3498db; text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        h1 { color: #2c3e50; }
+        .tags { margin: 10px 0; color: #888; }
+        .actions { margin-top: 20px; }
+        .actions button { margin-right: 10px; }
+        .related-section { margin-top: 30px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: #fff; margin: 10% auto; padding: 20px; width: 90%; max-width: 500px; border-radius: 8px; position: relative; }
+        .close-button { position: absolute; right: 20px; top: 10px; font-size: 24px; cursor: pointer; color: #666; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #2c3e50; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <a class="back-link" href="scripture.html">&larr; Back to All Scripture Insights</a>
-        <div id="insightDetails"></div>
+        <a class="back-link" href="scripture.html">&larr; Back to Scripture Insights</a>
+        <h1 id="insight-title"></h1>
+        <div id="insight-content"></div>
+        <div class="tags"><strong>Tags:</strong> <span id="insight-tags"></span></div>
+        <div class="actions">
+            <button id="edit-btn">Edit</button>
+            <button id="delete-btn">Delete</button>
+            <button id="print-btn">Print</button>
+        </div>
+        <div class="related-section">
+            <h3>Related Insights</h3>
+            <ul id="related-list"></ul>
+            <select id="add-related-select"></select>
+            <button id="add-related-btn">Add Related</button>
+        </div>
     </div>
-    <div class="insight-card">
-        <h2 id="insightTitle"></h2>
-        <div class="date" id="insightDate"></div>
-        <div id="insightContent"></div>
-        <img id="insightImage" class="insight-image" style="display:none;" />
-        <div id="insightLink"></div>
-        <div class="tags" id="insightTags"></div>
-        <div id="relatedSection"></div>
-        <button class="add-button" id="addRelatedBtn">Add Related Insight</button>
-        <button class="add-button" id="editBtn">Edit</button>
-        <button class="add-button" id="deleteBtn" style="background:#e74c3c;">Delete</button>
-        <button class="add-button" id="printBtn">Print</button>
-    </div>
-    <div id="printArea" style="display:none;"></div>
-    <!-- Related Modal -->
-    <div id="relatedModal" class="modal">
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="modal">
         <div class="modal-content">
-            <span class="close-button" onclick="closeRelatedModal()">&times;</span>
-            <h2>Add Related Insight</h2>
-            <form id="relatedInsightForm">
-                <div class="form-group">
-                    <label for="relatedTitle">Title</label>
-                    <input type="text" id="relatedTitle" required>
-                </div>
-                <div class="form-group">
-                    <label for="relatedContent">Content</label>
-                    <div id="relatedQuillEditor" style="height: 100px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="relatedImageUrl">Image URL (optional)</label>
-                    <input type="url" id="relatedImageUrl">
-                </div>
-                <div class="form-group">
-                    <label for="relatedLinkUrl">Related Link (optional)</label>
-                    <input type="url" id="relatedLinkUrl">
-                </div>
-                <div class="form-group">
-                    <label for="relatedTags">Tags (comma-separated)</label>
-                    <input type="text" id="relatedTags" placeholder="e.g., faith, prayer, family">
-                </div>
-                <button type="submit" class="add-button">Save</button>
-            </form>
+            <span class="close-button" id="edit-cancel">&times;</span>
+            <h2>Edit Insight</h2>
+            <div class="form-group">
+                <label for="edit-title">Title</label>
+                <input type="text" id="edit-title">
+            </div>
+            <div class="form-group">
+                <label for="edit-content">Content</label>
+                <div id="edit-content" style="height: 150px;"></div>
+            </div>
+            <div class="form-group">
+                <label for="edit-tags">Tags (comma-separated)</label>
+                <input type="text" id="edit-tags">
+            </div>
+            <button id="edit-save">Save</button>
         </div>
     </div>
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXyOXGktacbjg-X2tuVsmJ7nYLCwJZ5Nw",
+            authDomain: "comefollowme-d097a.firebaseapp.com",
+            projectId: "comefollowme-d097a",
+            storageBucket: "comefollowme-d097a.firebasestorage.app",
+            messagingSenderId: "725941283112",
+            appId: "1:725941283112:web:7071276f065bb3b7dd081d",
+            measurementId: "G-Z9HKN7M5K5"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         function getQueryParam(name) {
             const url = new URL(window.location.href);
             return url.searchParams.get(name);
         }
-        const id = getQueryParam('id');
-        const insights = JSON.parse(localStorage.getItem('insights')) || {scripture: []};
-        const insight = insights.scripture[id];
-        const container = document.getElementById('insightDetails');
-        if (!insight) {
-            container.innerHTML = '<p>Insight not found.</p>';
-        } else {
-            document.getElementById('insightTitle').textContent = insight.title;
-            document.getElementById('insightDate').textContent = new Date(insight.date).toLocaleDateString();
-            document.getElementById('insightContent').innerHTML = insight.content;
-            if (insight.imageUrl) {
-                const img = document.getElementById('insightImage');
-                img.src = insight.imageUrl;
-                img.style.display = '';
+        const insightId = getQueryParam('id');
+        let currentInsight = null;
+        let allInsights = [];
+        let quill;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            quill = new Quill('#edit-content', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ header: [1, 2, false] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ 'align': [] }],
+                        ['link', 'image'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }]
+                    ]
+                }
+            });
+            await loadAllInsights();
+            await loadInsight();
+            setupEditForm();
+            setupDelete();
+            setupRelated();
+        });
+
+        async function loadAllInsights() {
+            const snapshot = await db.collection('scriptureInsights').get();
+            allInsights = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        }
+
+        async function loadInsight() {
+            if (!insightId) return;
+            const doc = await db.collection('scriptureInsights').doc(insightId).get();
+            if (!doc.exists) {
+                document.getElementById('insight-title').textContent = 'Insight not found';
+                document.getElementById('insight-content').innerHTML = '';
+                document.getElementById('insight-tags').textContent = '';
+                return;
             }
-            if (insight.linkUrl) {
-                document.getElementById('insightLink').innerHTML = `<a href="${insight.linkUrl}" class="insight-link" target="_blank">Related Link</a>`;
-            }
-            document.getElementById('insightTags').innerHTML = insight.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
-            document.getElementById('editBtn').onclick = function() {
-                localStorage.setItem('editScriptureIndex', id);
-                window.location.href = 'scripture.html#edit';
+            currentInsight = { id: doc.id, ...doc.data() };
+            renderInsight();
+        }
+
+        function renderInsight() {
+            document.getElementById('insight-title').textContent = currentInsight.title;
+            document.getElementById('insight-content').innerHTML = currentInsight.content;
+            document.getElementById('insight-tags').textContent = (currentInsight.tags || []).join(', ');
+            renderRelated();
+            document.getElementById('edit-title').value = currentInsight.title;
+            quill.root.innerHTML = currentInsight.content;
+            document.getElementById('edit-tags').value = (currentInsight.tags || []).join(', ');
+        }
+
+        function setupEditForm() {
+            document.getElementById('edit-btn').onclick = () => {
+                document.getElementById('edit-modal').style.display = 'block';
             };
-            document.getElementById('deleteBtn').onclick = function() {
-                if (confirm('Are you sure you want to delete this insight?')) {
-                    insights.scripture.splice(id, 1);
-                    localStorage.setItem('insights', JSON.stringify(insights));
+            document.getElementById('edit-cancel').onclick = () => {
+                document.getElementById('edit-modal').style.display = 'none';
+            };
+            document.getElementById('edit-save').onclick = async () => {
+                const updated = {
+                    title: document.getElementById('edit-title').value,
+                    content: quill.root.innerHTML,
+                    tags: document.getElementById('edit-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+                    related: currentInsight.related || []
+                };
+                await db.collection('scriptureInsights').doc(insightId).update(updated);
+                currentInsight = { ...currentInsight, ...updated };
+                renderInsight();
+                document.getElementById('edit-modal').style.display = 'none';
+            };
+        }
+
+        function setupDelete() {
+            document.getElementById('delete-btn').onclick = async () => {
+                if (confirm('Delete this insight?')) {
+                    await db.collection('scriptureInsights').doc(insightId).delete();
                     window.location.href = 'scripture.html';
                 }
             };
-            renderRelated();
         }
+
         function renderRelated() {
-            const relatedDiv = document.getElementById('relatedSection');
-            if (!insight.related || insight.related.length === 0) {
-                relatedDiv.innerHTML = '';
+            const relatedList = document.getElementById('related-list');
+            relatedList.innerHTML = '';
+            if (!currentInsight.related || !currentInsight.related.length) {
+                relatedList.innerHTML = '<li>No related insights.</li>';
                 return;
             }
-            let html = '<div style="margin-top:16px;"><b>Related Insights:</b><ul>';
-            insight.related.forEach(idx => {
-                if (insights.scripture[idx]) {
-                    html += `<li><a href="insight-scripture.html?id=${idx}">${insights.scripture[idx].title}</a></li>`;
+            currentInsight.related.forEach(relId => {
+                const rel = allInsights.find(i => i.id === relId);
+                if (rel) {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<a href="insight-scripture.html?id=${rel.id}">${rel.title}</a>
+                        <button onclick="unlinkRelated('${rel.id}')">Unlink</button>`;
+                    relatedList.appendChild(li);
                 }
             });
-            html += '</ul></div>';
-            relatedDiv.innerHTML = html;
         }
-        let quill;
-        let relatedQuill;
-        document.addEventListener('DOMContentLoaded', function() {
-            quill = new Quill('#quillEditor', {
-                theme: 'snow',
-                modules: {
-                    toolbar: [
-                        [{ header: [1, 2, false] }],
-                        ['bold', 'italic', 'underline'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'align': [] }],
-                        ['link'],
-                        ['clean']
-                    ]
-                }
-            });
-            relatedQuill = new Quill('#relatedQuillEditor', {
-                theme: 'snow',
-                modules: {
-                    toolbar: [
-                        [{ header: [1, 2, false] }],
-                        ['bold', 'italic', 'underline'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'align': [] }],
-                        ['link'],
-                        ['clean']
-                    ]
-                }
-            });
-        });
-        function openRelatedModal() {
-            document.getElementById('relatedInsightForm').reset();
-            relatedQuill.root.innerHTML = '';
-            document.getElementById('relatedModal').style.display = 'block';
-        }
-        function closeRelatedModal() {
-            document.getElementById('relatedModal').style.display = 'none';
-        }
-        document.getElementById('relatedInsightForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const newInsight = {
-                title: document.getElementById('relatedTitle').value,
-                content: relatedQuill.root.innerHTML,
-                imageUrl: document.getElementById('relatedImageUrl').value,
-                linkUrl: document.getElementById('relatedLinkUrl').value,
-                tags: document.getElementById('relatedTags').value.split(',').map(tag => tag.trim()).filter(tag => tag),
-                date: new Date().toISOString(),
-                related: []
-            };
-            insights.scripture.push(newInsight);
-            if (!insight.related) insight.related = [];
-            insight.related.push(insights.scripture.length - 1);
-            insights.scripture[id] = insight;
-            localStorage.setItem('insights', JSON.stringify(insights));
+
+        window.unlinkRelated = async function(relId) {
+            currentInsight.related = (currentInsight.related || []).filter(id => id !== relId);
+            await db.collection('scriptureInsights').doc(insightId).update({ related: currentInsight.related });
             renderRelated();
-            closeRelatedModal();
-        });
-        document.getElementById('addRelatedBtn').onclick = openRelatedModal;
-        document.getElementById('printBtn').onclick = function() {
-            // Ask if user wants to include notes page
-            const includeNotes = confirm('Include a notes page?');
-            // Build print content
-            let printHtml = `<div style='font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;max-width:700px;margin:0 auto;'>`;
-            printHtml += `<h2>${insight.title}</h2>`;
-            printHtml += `<div style='color:#6c757d;font-size:0.9em;margin-bottom:10px;'>${new Date(insight.date).toLocaleDateString()}</div>`;
-            printHtml += `<div>${insight.content}</div>`;
-            if (insight.imageUrl) printHtml += `<img src='${insight.imageUrl}' style='max-width:100%;margin:10px 0;border-radius:4px;'>`;
-            if (insight.linkUrl) printHtml += `<div><a href='${insight.linkUrl}' target='_blank'>Related Link</a></div>`;
-            if (insight.tags && insight.tags.length > 0) printHtml += `<div style='margin-top:10px;'>${insight.tags.map(tag => `<span style='background:#e9ecef;padding:3px 8px;border-radius:12px;font-size:0.9em;color:#495057;margin-right:4px;'>${tag}</span>`).join('')}</div>`;
-            if (insight.related && insight.related.length > 0) {
-                printHtml += `<div style='margin-top:16px;'><b>Related Insights:</b><ul>`;
-                insight.related.forEach(idx => {
-                    if (insights.scripture[idx]) {
-                        printHtml += `<li>${insights.scripture[idx].title}</li>`;
-                    }
+        };
+
+        function setupRelated() {
+            const select = document.getElementById('add-related-select');
+            select.innerHTML = '';
+            allInsights
+                .filter(i => i.id !== insightId)
+                .forEach(i => {
+                    const option = document.createElement('option');
+                    option.value = i.id;
+                    option.textContent = i.title;
+                    select.appendChild(option);
                 });
-                printHtml += '</ul></div>';
+            document.getElementById('add-related-btn').onclick = async () => {
+                const relId = select.value;
+                if (!relId || (currentInsight.related || []).includes(relId)) return;
+                currentInsight.related = [...(currentInsight.related || []), relId];
+                await db.collection('scriptureInsights').doc(insightId).update({ related: currentInsight.related });
+                renderRelated();
+            };
+        }
+
+        document.getElementById('print-btn').onclick = () => {
+            const notesPage = confirm('Include a notes page?');
+            let printContent = `
+                <h1>${currentInsight.title}</h1>
+                <div>${currentInsight.content}</div>
+                <div><strong>Tags:</strong> ${(currentInsight.tags || []).join(', ')}</div>
+                <h2>Related Insights</h2>
+                <ul>
+                    ${(currentInsight.related || []).map(relId => {
+                        const rel = allInsights.find(i => i.id === relId);
+                        return rel ? `<li>${rel.title}</li>` : '';
+                    }).join('')}
+                </ul>
+            `;
+            if (notesPage) {
+                printContent += `
+                    <div style="page-break-before: always;">
+                        <h2>Notes</h2>
+                        <div style="height:900px; border:1px solid #ccc; margin-top:20px;">
+                            <div style="height:100%; border-top:1px dashed #aaa; margin-bottom:20px; line-height:2.5em;">
+                                ${'<div style="border-bottom:1px dashed #aaa; height:2.5em;"></div>'.repeat(20)}
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
-            printHtml += `</div>`;
-            if (includeNotes) {
-                printHtml += `<div style='page-break-before:always;max-width:700px;margin:0 auto;'><h2>Notes</h2><div style='border:1px solid #ccc;padding:20px 10px 20px 10px;'>`;
-                for (let i = 0; i < 20; i++) {
-                    printHtml += `<div style='height:32px;border-bottom:1px solid #eee;'>&nbsp;</div>`;
-                }
-                printHtml += `</div></div>`;
-            }
-            const printArea = document.getElementById('printArea');
-            printArea.innerHTML = printHtml;
-            printArea.style.display = 'block';
-            window.print();
-            printArea.style.display = 'none';
+            const win = window.open('', '', 'width=800,height=900');
+            win.document.write(`<html><head><title>Print Insight</title></head><body>${printContent}</body></html>`);
+            win.print();
+            win.close();
         };
     </script>
 </body>
-</html> 
+</html>
