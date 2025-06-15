@@ -136,16 +136,40 @@
         <button class="add-button" id="addRelatedBtn">Add Related Insight</button>
         <button class="add-button" id="editBtn">Edit</button>
         <button class="add-button" id="deleteBtn" style="background:#e74c3c;">Delete</button>
+        <button class="add-button" id="printBtn">Print</button>
     </div>
+    <div id="printArea" style="display:none;"></div>
     <!-- Related Modal -->
     <div id="relatedModal" class="modal">
         <div class="modal-content">
             <span class="close-button" onclick="closeRelatedModal()">&times;</span>
             <h2>Add Related Insight</h2>
-            <select id="relatedSelect"></select>
-            <button class="add-button" onclick="saveRelated()">Save</button>
+            <form id="relatedInsightForm">
+                <div class="form-group">
+                    <label for="relatedTitle">Title</label>
+                    <input type="text" id="relatedTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="relatedContent">Content</label>
+                    <div id="relatedQuillEditor" style="height: 100px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="relatedImageUrl">Image URL (optional)</label>
+                    <input type="url" id="relatedImageUrl">
+                </div>
+                <div class="form-group">
+                    <label for="relatedLinkUrl">Related Link (optional)</label>
+                    <input type="url" id="relatedLinkUrl">
+                </div>
+                <div class="form-group">
+                    <label for="relatedTags">Tags (comma-separated)</label>
+                    <input type="text" id="relatedTags" placeholder="e.g., faith, prayer, family">
+                </div>
+                <button type="submit" class="add-button">Save</button>
+            </form>
         </div>
     </div>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script>
         function getQueryParam(name) {
             const url = new URL(window.location.href);
@@ -198,35 +222,98 @@
             html += '</ul></div>';
             relatedDiv.innerHTML = html;
         }
-        function openRelatedModal() {
-            const select = document.getElementById('relatedSelect');
-            select.innerHTML = '';
-            insights.scripture.forEach((item, idx) => {
-                if (idx != id && !(insight.related && insight.related.includes(idx))) {
-                    const opt = document.createElement('option');
-                    opt.value = idx;
-                    opt.textContent = item.title;
-                    select.appendChild(opt);
+        let quill;
+        let relatedQuill;
+        document.addEventListener('DOMContentLoaded', function() {
+            quill = new Quill('#quillEditor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ header: [1, 2, false] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'align': [] }],
+                        ['link'],
+                        ['clean']
+                    ]
                 }
             });
+            relatedQuill = new Quill('#relatedQuillEditor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ header: [1, 2, false] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'align': [] }],
+                        ['link'],
+                        ['clean']
+                    ]
+                }
+            });
+        });
+        function openRelatedModal() {
+            document.getElementById('relatedInsightForm').reset();
+            relatedQuill.root.innerHTML = '';
             document.getElementById('relatedModal').style.display = 'block';
         }
         function closeRelatedModal() {
             document.getElementById('relatedModal').style.display = 'none';
         }
-        function saveRelated() {
-            const select = document.getElementById('relatedSelect');
-            const relIdx = Number(select.value);
+        document.getElementById('relatedInsightForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newInsight = {
+                title: document.getElementById('relatedTitle').value,
+                content: relatedQuill.root.innerHTML,
+                imageUrl: document.getElementById('relatedImageUrl').value,
+                linkUrl: document.getElementById('relatedLinkUrl').value,
+                tags: document.getElementById('relatedTags').value.split(',').map(tag => tag.trim()).filter(tag => tag),
+                date: new Date().toISOString(),
+                related: []
+            };
+            insights.scripture.push(newInsight);
             if (!insight.related) insight.related = [];
-            if (!insight.related.includes(relIdx)) {
-                insight.related.push(relIdx);
-                insights.scripture[id] = insight;
-                localStorage.setItem('insights', JSON.stringify(insights));
-                renderRelated();
-            }
+            insight.related.push(insights.scripture.length - 1);
+            insights.scripture[id] = insight;
+            localStorage.setItem('insights', JSON.stringify(insights));
+            renderRelated();
             closeRelatedModal();
-        }
+        });
         document.getElementById('addRelatedBtn').onclick = openRelatedModal;
+        document.getElementById('printBtn').onclick = function() {
+            // Ask if user wants to include notes page
+            const includeNotes = confirm('Include a notes page?');
+            // Build print content
+            let printHtml = `<div style='font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;max-width:700px;margin:0 auto;'>`;
+            printHtml += `<h2>${insight.title}</h2>`;
+            printHtml += `<div style='color:#6c757d;font-size:0.9em;margin-bottom:10px;'>${new Date(insight.date).toLocaleDateString()}</div>`;
+            printHtml += `<div>${insight.content}</div>`;
+            if (insight.imageUrl) printHtml += `<img src='${insight.imageUrl}' style='max-width:100%;margin:10px 0;border-radius:4px;'>`;
+            if (insight.linkUrl) printHtml += `<div><a href='${insight.linkUrl}' target='_blank'>Related Link</a></div>`;
+            if (insight.tags && insight.tags.length > 0) printHtml += `<div style='margin-top:10px;'>${insight.tags.map(tag => `<span style='background:#e9ecef;padding:3px 8px;border-radius:12px;font-size:0.9em;color:#495057;margin-right:4px;'>${tag}</span>`).join('')}</div>`;
+            if (insight.related && insight.related.length > 0) {
+                printHtml += `<div style='margin-top:16px;'><b>Related Insights:</b><ul>`;
+                insight.related.forEach(idx => {
+                    if (insights.scripture[idx]) {
+                        printHtml += `<li>${insights.scripture[idx].title}</li>`;
+                    }
+                });
+                printHtml += '</ul></div>';
+            }
+            printHtml += `</div>`;
+            if (includeNotes) {
+                printHtml += `<div style='page-break-before:always;max-width:700px;margin:0 auto;'><h2>Notes</h2><div style='border:1px solid #ccc;padding:20px 10px 20px 10px;'>`;
+                for (let i = 0; i < 20; i++) {
+                    printHtml += `<div style='height:32px;border-bottom:1px solid #eee;'>&nbsp;</div>`;
+                }
+                printHtml += `</div></div>`;
+            }
+            const printArea = document.getElementById('printArea');
+            printArea.innerHTML = printHtml;
+            printArea.style.display = 'block';
+            window.print();
+            printArea.style.display = 'none';
+        };
     </script>
 </body>
 </html> 
