@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gospel Topics Insight Details</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #3498db;
+            text-decoration: none;
+            font-size: 1.1em;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .insight-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 25px;
+            margin-bottom: 15px;
+        }
+        .insight-card h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .insight-card .date {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        .insight-image {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .insight-link {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .insight-link:hover {
+            text-decoration: underline;
+        }
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .tag {
+            background: #e9ecef;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back-link" href="gospel.html">&larr; Back to All Gospel Topics Insights</a>
+        <div id="insightDetails"></div>
+    </div>
+    <div class="insight-card">
+        <h2 id="insightTitle"></h2>
+        <div class="date" id="insightDate"></div>
+        <div id="insightContent"></div>
+        <img id="insightImage" class="insight-image" style="display:none;" />
+        <div id="insightLink"></div>
+        <div class="tags" id="insightTags"></div>
+        <div id="relatedSection"></div>
+        <button class="add-button" id="addRelatedBtn">Add Related Insight</button>
+        <button class="add-button" id="editBtn">Edit</button>
+        <button class="add-button" id="deleteBtn" style="background:#e74c3c;">Delete</button>
+    </div>
+    <!-- Related Modal -->
+    <div id="relatedModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeRelatedModal()">&times;</span>
+            <h2>Add Related Insight</h2>
+            <select id="relatedSelect"></select>
+            <button class="add-button" onclick="saveRelated()">Save</button>
+        </div>
+    </div>
+    <script>
+        function getQueryParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+        const id = getQueryParam('id');
+        const insights = JSON.parse(localStorage.getItem('insights')) || {gospel: []};
+        const insight = insights.gospel[id];
+        const container = document.getElementById('insightDetails');
+        if (!insight) {
+            container.innerHTML = '<p>Insight not found.</p>';
+        } else {
+            document.getElementById('insightTitle').textContent = insight.title;
+            document.getElementById('insightDate').textContent = new Date(insight.date).toLocaleDateString();
+            document.getElementById('insightContent').innerHTML = insight.content;
+            if (insight.imageUrl) {
+                const img = document.getElementById('insightImage');
+                img.src = insight.imageUrl;
+                img.style.display = '';
+            }
+            if (insight.linkUrl) {
+                document.getElementById('insightLink').innerHTML = `<a href="${insight.linkUrl}" class="insight-link" target="_blank">Related Link</a>`;
+            }
+            document.getElementById('insightTags').innerHTML = insight.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+            document.getElementById('editBtn').onclick = function() {
+                localStorage.setItem('editGospelIndex', id);
+                window.location.href = 'gospel.html#edit';
+            };
+            document.getElementById('deleteBtn').onclick = function() {
+                if (confirm('Are you sure you want to delete this insight?')) {
+                    insights.gospel.splice(id, 1);
+                    localStorage.setItem('insights', JSON.stringify(insights));
+                    window.location.href = 'gospel.html';
+                }
+            };
+            renderRelated();
+        }
+        function renderRelated() {
+            const relatedDiv = document.getElementById('relatedSection');
+            if (!insight.related || insight.related.length === 0) {
+                relatedDiv.innerHTML = '';
+                return;
+            }
+            let html = '<div style="margin-top:16px;"><b>Related Insights:</b><ul>';
+            insight.related.forEach(idx => {
+                if (insights.gospel[idx]) {
+                    html += `<li><a href=\"insight-gospel.html?id=${idx}\">${insights.gospel[idx].title}</a></li>`;
+                }
+            });
+            html += '</ul></div>';
+            relatedDiv.innerHTML = html;
+        }
+        function openRelatedModal() {
+            const select = document.getElementById('relatedSelect');
+            select.innerHTML = '';
+            insights.gospel.forEach((item, idx) => {
+                if (idx != id && !(insight.related && insight.related.includes(idx))) {
+                    const opt = document.createElement('option');
+                    opt.value = idx;
+                    opt.textContent = item.title;
+                    select.appendChild(opt);
+                }
+            });
+            document.getElementById('relatedModal').style.display = 'block';
+        }
+        function closeRelatedModal() {
+            document.getElementById('relatedModal').style.display = 'none';
+        }
+        function saveRelated() {
+            const select = document.getElementById('relatedSelect');
+            const relIdx = Number(select.value);
+            if (!insight.related) insight.related = [];
+            if (!insight.related.includes(relIdx)) {
+                insight.related.push(relIdx);
+                insights.gospel[id] = insight;
+                localStorage.setItem('insights', JSON.stringify(insights));
+                renderRelated();
+            }
+            closeRelatedModal();
+        }
+        document.getElementById('addRelatedBtn').onclick = openRelatedModal;
+    </script>
+</body>
+</html> 

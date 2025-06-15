@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scripture Insights</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #3498db;
+            text-decoration: none;
+            font-size: 1.1em;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .add-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .add-button:hover {
+            background-color: #2980b9;
+        }
+        .insight-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .insight-card h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .insight-card .date {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        .insight-card .actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .insight-card .actions button {
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 5px;
+            margin-left: 5px;
+        }
+        .insight-card .actions button:hover {
+            color: #2c3e50;
+        }
+        .insight-image {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .insight-link {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .insight-link:hover {
+            text-decoration: underline;
+        }
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .tag {
+            background: #e9ecef;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            color: #495057;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+            position: relative;
+        }
+        .close-button {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+    </style>
+    <!-- Add Quill CDN -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <a class="back-link" href="index.html">&larr; Back to Home</a>
+        <h1>Scripture Insights</h1>
+        <button class="add-button" onclick="openAddModal()">Add Insight</button>
+        <div id="insightsContainer"></div>
+    </div>
+    <!-- Add/Edit Modal -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle">Add New Insight</h2>
+            <form id="insightForm">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="content">Content</label>
+                    <div id="quillEditor" style="height: 150px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="imageUrl">Image URL (optional)</label>
+                    <input type="url" id="imageUrl">
+                </div>
+                <div class="form-group">
+                    <label for="linkUrl">Related Link (optional)</label>
+                    <input type="url" id="linkUrl">
+                </div>
+                <div class="form-group">
+                    <label for="tags">Tags (comma-separated)</label>
+                    <input type="text" id="tags" placeholder="e.g., faith, prayer, family">
+                </div>
+                <button type="submit" class="add-button">Save Insight</button>
+            </form>
+        </div>
+    </div>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script>
+        // Only manage scripture insights in this page
+        let insights = JSON.parse(localStorage.getItem('insights')) || {scripture: [], gospel: [], other: []};
+        let editingIndex = null;
+        let quill;
+        function saveInsights() {
+            // Ensure all insights have a related array
+            insights.scripture.forEach(insight => {
+                if (!insight.related) insight.related = [];
+            });
+            localStorage.setItem('insights', JSON.stringify(insights));
+            renderInsights();
+        }
+        function renderInsights() {
+            const container = document.getElementById('insightsContainer');
+            container.innerHTML = '';
+            insights.scripture.forEach((insight, index) => {
+                const card = document.createElement('div');
+                card.className = 'insight-card';
+                let relatedNote = '';
+                if (insight.related && insight.related.length > 0) {
+                    relatedNote = `<div style="margin-top:8px;font-size:0.95em;color:#888;">Related Insight${insight.related.length > 1 ? 's' : ''} linked</div>`;
+                }
+                card.innerHTML = `
+                    <h3>${insight.title}</h3>
+                    <button class="add-button" onclick="window.location.href='insight-scripture.html?id=${index}'">See Details</button>
+                    ${relatedNote}
+                `;
+                container.appendChild(card);
+            });
+        }
+        function openAddModal(editIndex = null) {
+            editingIndex = editIndex;
+            document.getElementById('modalTitle').textContent = editIndex === null ? 'Add New Insight' : 'Edit Insight';
+            if (editIndex !== null) {
+                const insight = insights.scripture[editIndex];
+                document.getElementById('title').value = insight.title;
+                quill.root.innerHTML = insight.content || '';
+                document.getElementById('imageUrl').value = insight.imageUrl || '';
+                document.getElementById('linkUrl').value = insight.linkUrl || '';
+                document.getElementById('tags').value = insight.tags.join(', ');
+            } else {
+                document.getElementById('insightForm').reset();
+                quill.root.innerHTML = '';
+            }
+            document.getElementById('addModal').style.display = 'block';
+        }
+        function closeModal() {
+            document.getElementById('addModal').style.display = 'none';
+            document.getElementById('insightForm').reset();
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            quill = new Quill('#quillEditor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ header: [1, 2, false] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['link'],
+                        ['clean']
+                    ]
+                }
+            });
+            // Check for editScriptureIndex flag
+            const editIdx = localStorage.getItem('editScriptureIndex');
+            if (editIdx !== null) {
+                openAddModal(Number(editIdx));
+                localStorage.removeItem('editScriptureIndex');
+            }
+        });
+        document.getElementById('insightForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const insight = {
+                title: document.getElementById('title').value,
+                content: quill.root.innerHTML,
+                imageUrl: document.getElementById('imageUrl').value,
+                linkUrl: document.getElementById('linkUrl').value,
+                tags: document.getElementById('tags').value.split(',').map(tag => tag.trim()).filter(tag => tag),
+                date: new Date().toISOString()
+            };
+            if (editingIndex === null) {
+                insights.scripture.push(insight);
+            } else {
+                insights.scripture[editingIndex] = insight;
+            }
+            saveInsights();
+            closeModal();
+        });
+        function editInsight(index) {
+            openAddModal(index);
+        }
+        function deleteInsight(index) {
+            if (confirm('Are you sure you want to delete this insight?')) {
+                insights.scripture.splice(index, 1);
+                saveInsights();
+            }
+        }
+        renderInsights();
+    </script>
+</body>
+</html> 
