@@ -11,7 +11,6 @@
             background: #f5f5f5; 
             margin: 0; 
             padding: 0;
-            display: flex;
             min-height: 100vh;
         }
         .nav-container {
@@ -89,6 +88,20 @@
         .btn:disabled { background: #ccc; cursor: not-allowed; }
         .modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background: rgba(0,0,0,0.3); }
         .modal-content { background: #fff; margin: 10% auto; padding: 20px; border-radius: 8px; max-width: 500px; }
+        /* Login Centering */
+        #login-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        #loginForm {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 250px;
+        }
         @media (max-width: 768px) {
             .nav-container {
                 transform: translateX(-100%);
@@ -120,37 +133,48 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Hamburger Menu -->
-    <button class="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
-    </button>
-
-    <!-- Navigation -->
-    <nav class="nav-container">
-        <div class="nav-header">
-            <h2>Come Follow Me</h2>
-        </div>
-        <ul class="nav-menu">
-            <li class="nav-item"><a href="index.html">Home</a></li>
-            <li class="nav-item"><a href="scripture.html">Scripture Insights</a></li>
-            <li class="nav-item active"><a href="gospel.html">Gospel Topics</a></li>
-            <li class="nav-item"><a href="other.html">Other Insights</a></li>
-            <li class="nav-item"><a href="admin.html" style="display:none;">Admin Dashboard</a></li>
-            <li class="nav-item"><a href="#" id="navLogout">Logout</a></li>
-        </ul>
-    </nav>
+    <!-- Navigation and Hamburger (hidden by default) -->
+    <div id="navWrapper" style="display:none;">
+        <button class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <nav class="nav-container">
+            <div class="nav-header">
+                <h2>Come Follow Me</h2>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="index.html">Home</a></li>
+                <li class="nav-item"><a href="scripture.html">Scripture Insights</a></li>
+                <li class="nav-item active"><a href="gospel.html">Gospel Topics</a></li>
+                <li class="nav-item"><a href="other.html">Other Insights</a></li>
+                <li class="nav-item" id="adminNavItem" style="display:none;"><a href="admin.html">Admin Dashboard</a></li>
+                <li class="nav-item"><a href="#" id="navLogout">Logout</a></li>
+            </ul>
+        </nav>
+    </div>
 
     <!-- Main Content -->
-    <div class="main-content">
-        <div class="container">
+    <div class="main-content" id="mainContent">
+        <div class="container" id="insight-container" style="display:none;">
             <a href="gospel.html" class="back-link">&larr; Back to Gospel Topics</a>
             <div id="insight-details"></div>
             <div class="insight-actions" id="insight-actions" style="display:none;">
                 <button class="btn" id="editBtn">Edit</button>
                 <button class="btn" id="deleteBtn">Delete</button>
             </div>
+        </div>
+        <!-- Login Form -->
+        <div id="login-section" style="display:none;">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button type="submit" class="btn">Login</button>
+            </form>
+            <button id="resetPasswordBtn" class="btn" style="margin-top:10px;">Forgot Password?</button>
+            <div id="loginError" style="color:red; margin-top:10px;"></div>
         </div>
     </div>
 
@@ -184,22 +208,29 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // --- Hamburger Menu Toggle ---
+    // Hamburger Menu Toggle
     const hamburger = document.querySelector('.hamburger');
     const navContainer = document.querySelector('.nav-container');
-    hamburger.addEventListener('click', () => {
+    hamburger && hamburger.addEventListener('click', () => {
         hamburger.classList.toggle('active');
         navContainer.classList.toggle('active');
     });
 
-    // --- Auth State & Role Management ---
+    // Auth State & Role Management
     let currentUser = null;
     let currentUserRole = null;
     let insightId = new URLSearchParams(window.location.search).get('id');
     let currentInsight = null;
 
+    function showLogin(show) {
+        document.getElementById('login-section').style.display = show ? 'flex' : 'none';
+        document.getElementById('navWrapper').style.display = show ? 'none' : 'block';
+        document.getElementById('mainContent').style.marginLeft = show ? '0' : '';
+        document.getElementById('insight-container').style.display = show ? 'none' : 'block';
+    }
+
     function updateRoleUI() {
-        document.querySelector('.nav-item a[href="admin.html"]').parentElement.style.display = isAdmin() ? 'block' : 'none';
+        document.getElementById('adminNavItem').style.display = isAdmin() ? 'block' : 'none';
     }
     function isAdmin() {
         return currentUser && currentUserRole === 'admin';
@@ -213,23 +244,52 @@
         if (user) {
             const userDoc = await db.collection('users').doc(user.uid).get();
             currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
+            showLogin(false);
             updateRoleUI();
             loadInsight();
         } else {
             currentUserRole = null;
+            showLogin(true);
             updateRoleUI();
             document.getElementById('insight-details').innerHTML = '<p style="color:red;">You must be logged in to view this insight.</p>';
             document.getElementById('insight-actions').style.display = 'none';
         }
     });
 
-    // --- Logout ---
+    // Login/Logout
+    document.getElementById('loginForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        try {
+            await auth.signInWithEmailAndPassword(email, password);
+            document.getElementById('loginError').textContent = '';
+        } catch (err) {
+            document.getElementById('loginError').textContent = err.message;
+        }
+    });
+
     document.getElementById('navLogout').addEventListener('click', (e) => {
         e.preventDefault();
         auth.signOut();
     });
 
-    // --- Load Insight ---
+    // Password Reset
+    document.getElementById('resetPasswordBtn').addEventListener('click', async () => {
+        const email = document.getElementById('loginEmail').value;
+        if (!email) {
+            document.getElementById('loginError').textContent = 'Enter your email to reset password.';
+            return;
+        }
+        try {
+            await auth.sendPasswordResetEmail(email);
+            document.getElementById('loginError').textContent = 'Password reset email sent!';
+        } catch (err) {
+            document.getElementById('loginError').textContent = err.message;
+        }
+    });
+
+    // Load Insight
     async function loadInsight() {
         if (!insightId) {
             document.getElementById('insight-details').innerHTML = '<p>Insight not found.</p>';
@@ -251,7 +311,7 @@
         document.getElementById('insight-actions').style.display = canEdit() ? 'block' : 'none';
     }
 
-    // --- Edit Modal ---
+    // Edit Modal
     let editQuill;
     document.addEventListener('DOMContentLoaded', () => {
         editQuill = new Quill('#editQuill', {
@@ -299,7 +359,7 @@
         }
     };
 
-    // --- Hide modal on outside click ---
+    // Hide modal on outside click
     window.onclick = function(event) {
         if (event.target == document.getElementById('editModal')) document.getElementById('editModal').style.display = 'none';
     };

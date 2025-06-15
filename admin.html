@@ -5,17 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <style>
-        /* Base Styles */
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background: #f5f5f5; 
             margin: 0; 
             padding: 0;
-            display: flex;
             min-height: 100vh;
         }
-
-        /* Navigation Styles */
         .nav-container {
             width: 250px;
             background: #2c3e50;
@@ -24,39 +20,31 @@
             height: 100vh;
             transition: transform 0.3s ease;
         }
-
         .nav-header {
             padding: 20px;
             text-align: center;
             border-bottom: 1px solid #34495e;
         }
-
         .nav-menu {
             list-style: none;
             padding: 0;
             margin: 0;
         }
-
         .nav-item {
             padding: 15px 20px;
             border-bottom: 1px solid #34495e;
         }
-
         .nav-item a {
             color: white;
             text-decoration: none;
             display: block;
         }
-
         .nav-item:hover {
             background: #34495e;
         }
-
         .nav-item.active {
             background: #3498db;
         }
-
-        /* Hamburger Menu */
         .hamburger {
             display: none;
             position: fixed;
@@ -68,7 +56,6 @@
             padding: 10px;
             cursor: pointer;
         }
-
         .hamburger span {
             display: block;
             width: 25px;
@@ -77,123 +64,62 @@
             margin: 5px 0;
             transition: 0.3s;
         }
-
-        /* Main Content Styles */
         .main-content {
             flex: 1;
             margin-left: 250px;
             padding: 20px;
             transition: margin-left 0.3s ease;
         }
-
         .container {
-            max-width: 1000px;
-            margin: 0 auto;
+            max-width: 900px;
+            margin: 40px auto;
             background: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 8px #0001;
             padding: 30px;
         }
-
-        /* Table Styles */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #f0f0f0; }
+        .btn { background: #3498db; color: #fff; border: none; border-radius: 4px; padding: 6px 12px; cursor: pointer; margin-right: 8px; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .role-admin { color: #27ae60; font-weight: bold; }
+        .role-editor { color: #e67e22; font-weight: bold; }
+        .role-user { color: #888; }
+        /* Login Centering */
+        #login-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
+        #loginForm {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 250px;
         }
-
-        th {
-            background-color: #f8f9fa;
-        }
-
-        tr:hover {
-            background-color: #f5f5f5;
-        }
-
-        /* Button Styles */
-        .btn {
-            background: #3498db;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            padding: 8px 16px;
-            cursor: pointer;
-            margin-right: 8px;
-        }
-
-        .btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        .btn.danger {
-            background: #e74c3c;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 10;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background: rgba(0,0,0,0.3);
-        }
-
-        .modal-content {
-            background: #fff;
-            margin: 10% auto;
-            padding: 20px;
-            border-radius: 8px;
-            max-width: 500px;
-        }
-
-        /* Form Styles */
-        .role-select {
-            padding: 4px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-        }
-
-        /* Message Styles */
-        .error { color: #e74c3c; margin-top: 10px; }
-        .success { color: #2ecc71; margin-top: 10px; }
-
-        /* Responsive Design */
         @media (max-width: 768px) {
             .nav-container {
                 transform: translateX(-100%);
             }
-
             .nav-container.active {
                 transform: translateX(0);
             }
-
             .main-content {
                 margin-left: 0;
             }
-
             .hamburger {
                 display: block;
             }
-
             .hamburger.active span:nth-child(1) {
                 transform: rotate(45deg) translate(5px, 5px);
             }
-
             .hamburger.active span:nth-child(2) {
                 opacity: 0;
             }
-
             .hamburger.active span:nth-child(3) {
                 transform: rotate(-45deg) translate(7px, -6px);
             }
@@ -205,76 +131,59 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 </head>
 <body>
-    <!-- Hamburger Menu -->
-    <button class="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
-    </button>
-
-    <!-- Navigation -->
-    <nav class="nav-container">
-        <div class="nav-header">
-            <h2>Come Follow Me</h2>
-        </div>
-        <ul class="nav-menu">
-            <li class="nav-item"><a href="scripture.html">Scripture Insights</a></li>
-            <li class="nav-item"><a href="gospel.html">Gospel Topics</a></li>
-            <li class="nav-item"><a href="other.html">Other Insights</a></li>
-            <li class="nav-item active"><a href="admin.html">Admin Dashboard</a></li>
-            <li class="nav-item"><a href="#" id="navLogout">Logout</a></li>
-        </ul>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="container">
-            <h1>Admin Dashboard</h1>
-
-            <!-- Login Form -->
-            <div id="login-section">
-                <h2>Login</h2>
-                <form id="loginForm">
-                    <input type="email" id="loginEmail" placeholder="Email" required>
-                    <input type="password" id="loginPassword" placeholder="Password" required>
-                    <button type="submit" class="btn">Login</button>
-                </form>
-                <div id="loginError" class="error"></div>
+    <!-- Navigation and Hamburger (hidden by default) -->
+    <div id="navWrapper" style="display:none;">
+        <button class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <nav class="nav-container">
+            <div class="nav-header">
+                <h2>Come Follow Me</h2>
             </div>
-
-            <!-- Admin Content -->
-            <div id="admin-content" style="display:none;">
-                <button id="addUserBtn" class="btn">Add New User</button>
-                <div id="message" class="success" style="display:none;"></div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersList"></tbody>
-                </table>
-            </div>
-        </div>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="index.html">Home</a></li>
+                <li class="nav-item"><a href="scripture.html">Scripture Insights</a></li>
+                <li class="nav-item"><a href="gospel.html">Gospel Topics</a></li>
+                <li class="nav-item"><a href="other.html">Other Insights</a></li>
+                <li class="nav-item active" id="adminNavItem" style="display:none;"><a href="admin.html">Admin Dashboard</a></li>
+                <li class="nav-item"><a href="#" id="navLogout">Logout</a></li>
+            </ul>
+        </nav>
     </div>
 
-    <!-- Add User Modal -->
-    <div id="addUserModal" class="modal">
-        <div class="modal-content">
-            <h2>Add New User</h2>
-            <form id="addUserForm">
-                <input type="email" id="newUserEmail" placeholder="Email" required style="width:100%;margin-bottom:10px;">
-                <select id="newUserRole" class="role-select" style="width:100%;margin-bottom:10px;">
-                    <option value="user">User</option>
-                    <option value="editor">Editor</option>
-                    <option value="admin">Admin</option>
-                </select>
-                <button type="submit" class="btn">Add User</button>
-                <button type="button" class="btn" id="cancelAddUserBtn" style="background:#aaa;">Cancel</button>
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="container" id="admin-section" style="display:none;">
+            <h1>Admin Dashboard</h1>
+            <h2>User Management</h2>
+            <table id="usersTable">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Users will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+        <div id="notAdminMsg" style="color:red; text-align:center; display:none;">
+            You must be an admin to view this page.
+        </div>
+        <!-- Login Form -->
+        <div id="login-section" style="display:none;">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button type="submit" class="btn">Login</button>
             </form>
-            <div id="addUserError" class="error"></div>
+            <button id="resetPasswordBtn" class="btn" style="margin-top:10px;">Forgot Password?</button>
+            <div id="loginError" style="color:red; margin-top:10px;"></div>
         </div>
     </div>
 
@@ -293,40 +202,29 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // --- Hamburger Menu Toggle ---
+    // Hamburger Menu Toggle
     const hamburger = document.querySelector('.hamburger');
     const navContainer = document.querySelector('.nav-container');
-    
-    hamburger.addEventListener('click', () => {
+    hamburger && hamburger.addEventListener('click', () => {
         hamburger.classList.toggle('active');
         navContainer.classList.toggle('active');
     });
 
-    // --- Auth State & Role Management ---
+    // Auth State & Role Management
     let currentUser = null;
     let currentUserRole = null;
 
     function showLogin(show) {
-        document.getElementById('login-section').style.display = show ? 'block' : 'none';
-        document.getElementById('admin-content').style.display = show ? 'none' : 'block';
-    }
-
-    function isAdmin() {
-        return currentUser && currentUserRole === 'admin';
+        document.getElementById('login-section').style.display = show ? 'flex' : 'none';
+        document.getElementById('navWrapper').style.display = show ? 'none' : 'block';
+        document.getElementById('mainContent').style.marginLeft = show ? '0' : '';
     }
 
     function updateRoleUI() {
-        // Hide admin link if not admin
-        const adminLink = document.querySelector('.nav-item a[href="admin.html"]').parentElement;
-        adminLink.style.display = isAdmin() ? 'block' : 'none';
+        document.getElementById('adminNavItem').style.display = isAdmin() ? 'block' : 'none';
     }
-
-    function showMessage(message, isError = false) {
-        const messageDiv = document.getElementById('message');
-        messageDiv.textContent = message;
-        messageDiv.className = isError ? 'error' : 'success';
-        messageDiv.style.display = 'block';
-        setTimeout(() => messageDiv.style.display = 'none', 3000);
+    function isAdmin() {
+        return currentUser && currentUserRole === 'admin';
     }
 
     auth.onAuthStateChanged(async user => {
@@ -334,23 +232,26 @@
         if (user) {
             const userDoc = await db.collection('users').doc(user.uid).get();
             currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
-            
+            showLogin(false);
+            updateRoleUI();
             if (isAdmin()) {
-                showLogin(false);
-                updateRoleUI();
+                document.getElementById('admin-section').style.display = 'block';
+                document.getElementById('notAdminMsg').style.display = 'none';
                 loadUsers();
             } else {
-                showMessage('Access denied. Admin privileges required.', true);
-                auth.signOut();
+                document.getElementById('admin-section').style.display = 'none';
+                document.getElementById('notAdminMsg').style.display = 'block';
             }
         } else {
             currentUserRole = null;
             showLogin(true);
             updateRoleUI();
+            document.getElementById('admin-section').style.display = 'none';
+            document.getElementById('notAdminMsg').style.display = 'none';
         }
     });
 
-    // --- Login/Logout ---
+    // Login/Logout
     document.getElementById('loginForm').addEventListener('submit', async e => {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
@@ -368,90 +269,47 @@
         auth.signOut();
     });
 
-    // --- Load Users ---
+    // Password Reset
+    document.getElementById('resetPasswordBtn').addEventListener('click', async () => {
+        const email = document.getElementById('loginEmail').value;
+        if (!email) {
+            document.getElementById('loginError').textContent = 'Enter your email to reset password.';
+            return;
+        }
+        try {
+            await auth.sendPasswordResetEmail(email);
+            document.getElementById('loginError').textContent = 'Password reset email sent!';
+        } catch (err) {
+            document.getElementById('loginError').textContent = err.message;
+        }
+    });
+
+    // Load Users
     async function loadUsers() {
         const snapshot = await db.collection('users').get();
-        const tbody = document.getElementById('usersList');
+        const tbody = document.querySelector('#usersTable tbody');
         tbody.innerHTML = '';
-        
         snapshot.forEach(doc => {
             const data = doc.data();
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${data.email}</td>
+                <td>${data.email || ''}</td>
+                <td class="role-${data.role}">${data.role || 'user'}</td>
                 <td>
-                    <select class="role-select" onchange="updateUserRole('${doc.id}', this.value)">
-                        <option value="user" ${data.role === 'user' ? 'selected' : ''}>User</option>
-                        <option value="editor" ${data.role === 'editor' ? 'selected' : ''}>Editor</option>
-                        <option value="admin" ${data.role === 'admin' ? 'selected' : ''}>Admin</option>
-                    </select>
-                </td>
-                <td>
-                    <button class="btn danger" onclick="deleteUser('${doc.id}')">Delete</button>
+                    <button class="btn" onclick="changeRole('${doc.id}', 'admin')">Make Admin</button>
+                    <button class="btn" onclick="changeRole('${doc.id}', 'editor')">Make Editor</button>
+                    <button class="btn" onclick="changeRole('${doc.id}', 'user')">Make User</button>
                 </td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    // --- Add User Modal ---
-    const addUserModal = document.getElementById('addUserModal');
-    document.getElementById('addUserBtn').onclick = () => addUserModal.style.display = 'block';
-    document.getElementById('cancelAddUserBtn').onclick = () => addUserModal.style.display = 'none';
-
-    document.getElementById('addUserForm').onsubmit = async e => {
-        e.preventDefault();
-        const email = document.getElementById('newUserEmail').value;
-        const role = document.getElementById('newUserRole').value;
-        
-        try {
-            // Create user in Firebase Auth
-            const userCredential = await auth.createUserWithEmailAndPassword(email, 'Password1234');
-            const user = userCredential.user;
-            
-            // Add user to Firestore
-            await db.collection('users').doc(user.uid).set({
-                email: email,
-                role: role
-            });
-            
-            // Send password reset email
-            await auth.sendPasswordResetEmail(email);
-            
-            showMessage('User added successfully. Password reset email sent.');
-            addUserModal.style.display = 'none';
-            loadUsers();
-        } catch (err) {
-            document.getElementById('addUserError').textContent = err.message;
-        }
-    };
-
-    // --- Update User Role ---
-    window.updateUserRole = async function(userId, newRole) {
-        try {
-            await db.collection('users').doc(userId).update({ role: newRole });
-            showMessage('User role updated successfully');
-        } catch (err) {
-            showMessage(err.message, true);
-        }
-    };
-
-    // --- Delete User ---
-    window.deleteUser = async function(userId) {
-        if (!confirm('Are you sure you want to delete this user?')) return;
-        
-        try {
-            await db.collection('users').doc(userId).delete();
-            showMessage('User deleted successfully');
-            loadUsers();
-        } catch (err) {
-            showMessage(err.message, true);
-        }
-    };
-
-    // --- Hide modal on outside click ---
-    window.onclick = function(event) {
-        if (event.target == addUserModal) addUserModal.style.display = 'none';
+    // Change Role
+    window.changeRole = async function(uid, role) {
+        if (!isAdmin()) return;
+        await db.collection('users').doc(uid).update({ role });
+        loadUsers();
     };
     </script>
 </body>
