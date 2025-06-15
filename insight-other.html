@@ -8,237 +8,282 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
         .container { max-width: 700px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 30px; }
-        .back-link { color: #3498db; text-decoration: none; margin-bottom: 20px; display: inline-block; }
-        .back-link:hover { text-decoration: underline; }
-        h1 { color: #2c3e50; }
-        .tags { margin: 10px 0; color: #888; }
-        .actions { margin-top: 20px; }
-        .actions button { margin-right: 10px; }
-        .related-section { margin-top: 30px; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: #fff; margin: 10% auto; padding: 20px; width: 90%; max-width: 500px; border-radius: 8px; position: relative; }
-        .close-button { position: absolute; right: 20px; top: 10px; font-size: 24px; cursor: pointer; color: #666; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; color: #2c3e50; }
-        .form-group input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .back-link { color: #3498db; text-decoration: none; display: inline-block; margin-bottom: 20px; }
+        .insight-title { font-size: 1.5em; font-weight: bold; margin-bottom: 20px; color: #2c3e50; }
+        .insight-content { margin-bottom: 20px; line-height: 1.6; }
+        .insight-tags { color: #666; margin-bottom: 20px; }
+        .insight-actions { margin-top: 20px; }
+        .btn { background: #3498db; color: #fff; border: none; border-radius: 4px; padding: 8px 16px; cursor: pointer; margin-right: 8px; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background: rgba(0,0,0,0.3); }
+        .modal-content { background: #fff; margin: 10% auto; padding: 20px; border-radius: 8px; max-width: 500px; }
+        .related-insights { margin-top: 30px; }
+        .related-insight { background: #f8f9fa; border-radius: 4px; padding: 15px; margin-bottom: 10px; }
+        .related-insight-title { font-weight: bold; margin-bottom: 5px; }
+        .related-insight-tags { color: #666; font-size: 0.9em; }
+        #logoutBtn { float: right; margin-top: 10px; }
+        #userRole { float: right; margin-top: 10px; margin-right: 10px; color: #888; }
     </style>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 </head>
 <body>
     <div class="container">
-        <a class="back-link" href="other.html">&larr; Back to Other Insights</a>
-        <h1 id="insight-title"></h1>
-        <div id="insight-content"></div>
-        <div class="tags"><strong>Tags:</strong> <span id="insight-tags"></span></div>
-        <div class="actions">
-            <button id="edit-btn">Edit</button>
-            <button id="delete-btn">Delete</button>
-            <button id="print-btn">Print</button>
+        <a href="other.html" class="back-link">&larr; Back to Other Insights</a>
+        <span id="userRole"></span>
+        <button id="logoutBtn" style="display:none;">Logout</button>
+
+        <!-- Login Form -->
+        <div id="login-section">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button type="submit" class="btn">Login</button>
+            </form>
+            <button id="resetPasswordBtn" class="btn" style="margin-top:10px;">Forgot Password?</button>
+            <div id="loginError" style="color:red; margin-top:10px;"></div>
         </div>
-        <div class="related-section">
-            <h3>Related Insights</h3>
-            <ul id="related-list"></ul>
-            <select id="add-related-select"></select>
-            <button id="add-related-btn">Add Related</button>
+
+        <!-- Insight Content -->
+        <div id="insight-content" style="display:none;">
+            <h1 id="insightTitle" class="insight-title"></h1>
+            <div id="insightTags" class="insight-tags"></div>
+            <div id="insightContent" class="insight-content"></div>
+            <div class="insight-actions">
+                <button id="editBtn" class="btn" style="display:none;">Edit</button>
+                <button id="deleteBtn" class="btn" style="display:none;">Delete</button>
+                <button id="printBtn" class="btn">Print</button>
+            </div>
         </div>
+
+        <!-- Related Insights -->
+        <div id="relatedInsights" class="related-insights"></div>
     </div>
+
     <!-- Edit Modal -->
-    <div id="edit-modal" class="modal">
+    <div id="editModal" class="modal">
         <div class="modal-content">
-            <span class="close-button" id="edit-cancel">&times;</span>
             <h2>Edit Insight</h2>
-            <div class="form-group">
-                <label for="edit-title">Title</label>
-                <input type="text" id="edit-title">
-            </div>
-            <div class="form-group">
-                <label for="edit-content">Content</label>
-                <div id="edit-content" style="height: 150px;"></div>
-            </div>
-            <div class="form-group">
-                <label for="edit-tags">Tags (comma-separated)</label>
-                <input type="text" id="edit-tags">
-            </div>
-            <button id="edit-save">Save</button>
+            <form id="editForm">
+                <input type="text" id="editTitle" placeholder="Title" required style="width:100%;margin-bottom:10px;">
+                <div id="quillEditor" style="height:200px;margin-bottom:10px;"></div>
+                <input type="text" id="editTags" placeholder="Tags (comma separated)" style="width:100%;margin-bottom:10px;">
+                <button type="submit" class="btn">Save Changes</button>
+                <button type="button" class="btn" id="cancelEditBtn" style="background:#aaa;">Cancel</button>
+            </form>
         </div>
     </div>
+
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBXyOXGktacbjg-X2tuVsmJ7nYLCwJZ5Nw",
-            authDomain: "comefollowme-d097a.firebaseapp.com",
-            projectId: "comefollowme-d097a",
-            storageBucket: "comefollowme-d097a.firebasestorage.app",
-            messagingSenderId: "725941283112",
-            appId: "1:725941283112:web:7071276f065bb3b7dd081d",
-            measurementId: "G-Z9HKN7M5K5"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+    // --- Firebase Config ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyBXyOXGktacbjg-X2tuVsmJ7nYLCwJZ5Nw",
+        authDomain: "comefollowme-d097a.firebaseapp.com",
+        projectId: "comefollowme-d097a",
+        storageBucket: "comefollowme-d097a.firebasestorage.app",
+        messagingSenderId: "725941283112",
+        appId: "1:725941283112:web:7071276f065bb3b7dd081d",
+        measurementId: "G-Z9HKN7M5K5"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
 
-        function getQueryParam(name) {
-            const url = new URL(window.location.href);
-            return url.searchParams.get(name);
-        }
-        const insightId = getQueryParam('id');
-        let currentInsight = null;
-        let allInsights = [];
-        let quill;
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            quill = new Quill('#edit-content', {
-                theme: 'snow',
-                modules: {
-                    toolbar: [
-                        [{ header: [1, 2, false] }],
-                        ['bold', 'italic', 'underline'],
-                        [{ 'align': [] }],
-                        ['link', 'image'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }]
-                    ]
-                }
-            });
-            await loadAllInsights();
-            await loadInsight();
-            setupEditForm();
-            setupDelete();
-            setupRelated();
+    // --- Quill Editor ---
+    let quill;
+    document.addEventListener('DOMContentLoaded', () => {
+        quill = new Quill('#quillEditor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ header: [1, 2, false] }],
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link'],
+                    [{ 'align': [] }],
+                    ['clean']
+                ]
+            }
         });
+    });
 
-        async function loadAllInsights() {
-            const snapshot = await db.collection('otherInsights').get();
-            allInsights = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // --- Auth State & Role Management ---
+    let currentUser = null;
+    let currentUserRole = null;
+    let currentInsightId = null;
+
+    function showLogin(show) {
+        document.getElementById('login-section').style.display = show ? 'block' : 'none';
+        document.getElementById('insight-content').style.display = show ? 'none' : 'block';
+        document.getElementById('logoutBtn').style.display = show ? 'none' : 'inline-block';
+        updateEditButtons();
+    }
+
+    function canEdit() {
+        return currentUser && (currentUserRole === 'admin' || currentUserRole === 'editor');
+    }
+
+    function updateRoleUI() {
+        document.getElementById('userRole').textContent = currentUserRole ? `Role: ${currentUserRole}` : '';
+        updateEditButtons();
+    }
+
+    function updateEditButtons() {
+        const canEditInsight = canEdit();
+        document.getElementById('editBtn').style.display = canEditInsight ? 'inline-block' : 'none';
+        document.getElementById('deleteBtn').style.display = canEditInsight ? 'inline-block' : 'none';
+    }
+
+    auth.onAuthStateChanged(async user => {
+        currentUser = user;
+        if (user) {
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
+            showLogin(false);
+            updateRoleUI();
+            loadInsight();
+        } else {
+            currentUserRole = null;
+            showLogin(true);
+            updateRoleUI();
+        }
+    });
+
+    // --- Login/Logout ---
+    document.getElementById('loginForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        try {
+            await auth.signInWithEmailAndPassword(email, password);
+            document.getElementById('loginError').textContent = '';
+        } catch (err) {
+            document.getElementById('loginError').textContent = err.message;
+        }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        auth.signOut();
+    });
+
+    // --- Password Reset ---
+    document.getElementById('resetPasswordBtn').addEventListener('click', async () => {
+        const email = document.getElementById('loginEmail').value;
+        if (!email) {
+            document.getElementById('loginError').textContent = 'Enter your email to reset password.';
+            return;
+        }
+        try {
+            await auth.sendPasswordResetEmail(email);
+            document.getElementById('loginError').textContent = 'Password reset email sent!';
+        } catch (err) {
+            document.getElementById('loginError').textContent = err.message;
+        }
+    });
+
+    // --- Load Insight ---
+    async function loadInsight() {
+        const urlParams = new URLSearchParams(window.location.search);
+        currentInsightId = urlParams.get('id');
+        if (!currentInsightId) {
+            alert('No insight ID provided');
+            return;
         }
 
-        async function loadInsight() {
-            if (!insightId) return;
-            const doc = await db.collection('otherInsights').doc(insightId).get();
-            if (!doc.exists) {
-                document.getElementById('insight-title').textContent = 'Insight not found';
-                document.getElementById('insight-content').innerHTML = '';
-                document.getElementById('insight-tags').textContent = '';
-                return;
-            }
-            currentInsight = { id: doc.id, ...doc.data() };
-            renderInsight();
+        const doc = await db.collection('otherInsights').doc(currentInsightId).get();
+        if (!doc.exists) {
+            alert('Insight not found');
+            return;
         }
 
-        function renderInsight() {
-            document.getElementById('insight-title').textContent = currentInsight.title;
-            document.getElementById('insight-content').innerHTML = currentInsight.content;
-            document.getElementById('insight-tags').textContent = (currentInsight.tags || []).join(', ');
-            renderRelated();
-            document.getElementById('edit-title').value = currentInsight.title;
-            quill.root.innerHTML = currentInsight.content;
-            document.getElementById('edit-tags').value = (currentInsight.tags || []).join(', ');
-        }
+        const data = doc.data();
+        document.getElementById('insightTitle').textContent = data.title;
+        document.getElementById('insightTags').textContent = `Tags: ${data.tags || ''}`;
+        document.getElementById('insightContent').innerHTML = data.content;
 
-        function setupEditForm() {
-            document.getElementById('edit-btn').onclick = () => {
-                document.getElementById('edit-modal').style.display = 'block';
-            };
-            document.getElementById('edit-cancel').onclick = () => {
-                document.getElementById('edit-modal').style.display = 'none';
-            };
-            document.getElementById('edit-save').onclick = async () => {
-                const updated = {
-                    title: document.getElementById('edit-title').value,
-                    content: quill.root.innerHTML,
-                    tags: document.getElementById('edit-tags').value.split(',').map(t => t.trim()).filter(Boolean),
-                    related: currentInsight.related || []
-                };
-                await db.collection('otherInsights').doc(insightId).update(updated);
-                currentInsight = { ...currentInsight, ...updated };
-                renderInsight();
-                document.getElementById('edit-modal').style.display = 'none';
-            };
-        }
+        // Load related insights
+        loadRelatedInsights(data.tags);
+    }
 
-        function setupDelete() {
-            document.getElementById('delete-btn').onclick = async () => {
-                if (confirm('Delete this insight?')) {
-                    await db.collection('otherInsights').doc(insightId).delete();
-                    window.location.href = 'other.html';
-                }
-            };
-        }
+    // --- Related Insights ---
+    async function loadRelatedInsights(tags) {
+        if (!tags) return;
+        const tagArray = tags.split(',').map(tag => tag.trim());
+        const snapshot = await db.collection('otherInsights')
+            .where('tags', 'array-contains-any', tagArray)
+            .limit(5)
+            .get();
 
-        function renderRelated() {
-            const relatedList = document.getElementById('related-list');
-            relatedList.innerHTML = '';
-            if (!currentInsight.related || !currentInsight.related.length) {
-                relatedList.innerHTML = '<li>No related insights.</li>';
-                return;
-            }
-            currentInsight.related.forEach(relId => {
-                const rel = allInsights.find(i => i.id === relId);
-                if (rel) {
-                    const li = document.createElement('li');
-                    li.innerHTML = `<a href="insight-other.html?id=${rel.id}">${rel.title}</a>
-                        <button onclick="unlinkRelated('${rel.id}')">Unlink</button>`;
-                    relatedList.appendChild(li);
-                }
-            });
-        }
-
-        window.unlinkRelated = async function(relId) {
-            currentInsight.related = (currentInsight.related || []).filter(id => id !== relId);
-            await db.collection('otherInsights').doc(insightId).update({ related: currentInsight.related });
-            renderRelated();
-        };
-
-        function setupRelated() {
-            const select = document.getElementById('add-related-select');
-            select.innerHTML = '';
-            allInsights
-                .filter(i => i.id !== insightId)
-                .forEach(i => {
-                    const option = document.createElement('option');
-                    option.value = i.id;
-                    option.textContent = i.title;
-                    select.appendChild(option);
-                });
-            document.getElementById('add-related-btn').onclick = async () => {
-                const relId = select.value;
-                if (!relId || (currentInsight.related || []).includes(relId)) return;
-                currentInsight.related = [...(currentInsight.related || []), relId];
-                await db.collection('otherInsights').doc(insightId).update({ related: currentInsight.related });
-                renderRelated();
-            };
-        }
-
-        document.getElementById('print-btn').onclick = () => {
-            const notesPage = confirm('Include a notes page?');
-            let printContent = `
-                <h1>${currentInsight.title}</h1>
-                <div>${currentInsight.content}</div>
-                <div><strong>Tags:</strong> ${(currentInsight.tags || []).join(', ')}</div>
-                <h2>Related Insights</h2>
-                <ul>
-                    ${(currentInsight.related || []).map(relId => {
-                        const rel = allInsights.find(i => i.id === relId);
-                        return rel ? `<li>${rel.title}</li>` : '';
-                    }).join('')}
-                </ul>
+        const container = document.getElementById('relatedInsights');
+        container.innerHTML = '<h3>Related Insights</h3>';
+        
+        snapshot.forEach(doc => {
+            if (doc.id === currentInsightId) return; // Skip current insight
+            const data = doc.data();
+            const div = document.createElement('div');
+            div.className = 'related-insight';
+            div.innerHTML = `
+                <div class="related-insight-title">${data.title}</div>
+                <div class="related-insight-tags">Tags: ${data.tags || ''}</div>
+                <a href="insight-other.html?id=${doc.id}" class="btn">View</a>
             `;
-            if (notesPage) {
-                printContent += `
-                    <div style="page-break-before: always;">
-                        <h2>Notes</h2>
-                        <div style="height:900px; border:1px solid #ccc; margin-top:20px;">
-                            <div style="height:100%; border-top:1px dashed #aaa; margin-bottom:20px; line-height:2.5em;">
-                                ${'<div style="border-bottom:1px dashed #aaa; height:2.5em;"></div>'.repeat(20)}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            const win = window.open('', '', 'width=800,height=900');
-            win.document.write(`<html><head><title>Print Insight</title></head><body>${printContent}</body></html>`);
-            win.print();
-            win.close();
-        };
+            container.appendChild(div);
+        });
+    }
+
+    // --- Edit Modal ---
+    const editModal = document.getElementById('editModal');
+    const editForm = document.getElementById('editForm');
+
+    document.getElementById('editBtn').onclick = async () => {
+        if (!canEdit()) return;
+        const doc = await db.collection('otherInsights').doc(currentInsightId).get();
+        const data = doc.data();
+        document.getElementById('editTitle').value = data.title;
+        quill.root.innerHTML = data.content;
+        document.getElementById('editTags').value = data.tags || '';
+        editModal.style.display = 'block';
+    };
+
+    document.getElementById('cancelEditBtn').onclick = () => {
+        editModal.style.display = 'none';
+    };
+
+    editForm.onsubmit = async e => {
+        e.preventDefault();
+        if (!canEdit()) return;
+        const title = document.getElementById('editTitle').value;
+        const content = quill.root.innerHTML;
+        const tags = document.getElementById('editTags').value;
+        await db.collection('otherInsights').doc(currentInsightId).update({
+            title, content, tags
+        });
+        editModal.style.display = 'none';
+        loadInsight();
+    };
+
+    // --- Delete Insight ---
+    document.getElementById('deleteBtn').onclick = async () => {
+        if (!canEdit()) return;
+        if (confirm('Delete this insight?')) {
+            await db.collection('otherInsights').doc(currentInsightId).delete();
+            window.location.href = 'other.html';
+        }
+    };
+
+    // --- Print Insight ---
+    document.getElementById('printBtn').onclick = () => {
+        window.print();
+    };
+
+    // --- Hide modal on outside click ---
+    window.onclick = function(event) {
+        if (event.target == editModal) editModal.style.display = 'none';
+    };
     </script>
 </body>
 </html>
