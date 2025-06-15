@@ -5,146 +5,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Other Insights</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            margin: 0;
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #f5f5f5; 
+            margin: 0; 
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+        .nav-container {
+            width: 250px;
+            background: #2c3e50;
+            color: white;
+            position: fixed;
+            height: 100vh;
+            transition: transform 0.3s ease;
+        }
+        .nav-header {
             padding: 20px;
-            background-color: #f5f5f5;
-            color: #333;
+            text-align: center;
+            border-bottom: 1px solid #34495e;
+        }
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .nav-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #34495e;
+        }
+        .nav-item a {
+            color: white;
+            text-decoration: none;
+            display: block;
+        }
+        .nav-item:hover {
+            background: #34495e;
+        }
+        .nav-item.active {
+            background: #3498db;
+        }
+        .hamburger {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: #2c3e50;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+        .hamburger span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background: white;
+            margin: 5px 0;
+            transition: 0.3s;
+        }
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
         }
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 30px;
-        }
-        .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: #3498db;
-            text-decoration: none;
-            font-size: 1.1em;
-        }
-        .back-link:hover {
-            text-decoration: underline;
-        }
-        .add-button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-bottom: 20px;
-        }
-        .add-button:hover {
-            background-color: #2980b9;
-        }
-        .insight-card {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            padding: 15px;
-            margin-bottom: 15px;
-            position: relative;
-        }
-        .insight-card h3 {
-            margin-top: 0;
-            color: #2c3e50;
-        }
-        .tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-top: 10px;
-        }
-        .tag {
-            background: #e9ecef;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.9em;
-            color: #495057;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        .modal-content {
-            background-color: white;
-            margin: 10% auto;
-            padding: 20px;
-            width: 80%;
-            max-width: 600px;
+            background: #fff;
             border-radius: 8px;
-            position: relative;
+            box-shadow: 0 2px 8px #0001;
+            padding: 30px;
         }
-        .close-button {
-            position: absolute;
-            right: 20px;
-            top: 10px;
-            font-size: 24px;
-            cursor: pointer;
-            color: #666;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #2c3e50;
-        }
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .form-group textarea {
-            height: 100px;
-            resize: vertical;
-        }
-        .insight-title {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .insight-actions {
-            margin-top: 10px;
-        }
-        .btn {
-            background: #3498db;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            padding: 8px 16px;
-            cursor: pointer;
-            margin-right: 8px;
-        }
-        .btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        #logoutBtn {
-            float: right;
-            margin-top: 10px;
-        }
-        #userRole {
-            float: right;
-            margin-top: 10px;
-            margin-right: 10px;
-            color: #888;
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
+        .insight-card { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; margin-bottom: 20px; padding: 20px; }
+        .insight-title { font-size: 1.2em; font-weight: bold; margin-bottom: 10px; }
+        .insight-actions { margin-top: 10px; }
+        .btn { background: #3498db; color: #fff; border: none; border-radius: 4px; padding: 8px 16px; cursor: pointer; margin-right: 8px; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background: rgba(0,0,0,0.3); }
+        .modal-content { background: #fff; margin: 10% auto; padding: 20px; border-radius: 8px; max-width: 500px; }
+        @media (max-width: 768px) {
+            .nav-container {
+                transform: translateX(-100%);
+            }
+            .nav-container.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .hamburger {
+                display: block;
+            }
+            .hamburger.active span:nth-child(1) {
+                transform: rotate(45deg) translate(5px, 5px);
+            }
+            .hamburger.active span:nth-child(2) {
+                opacity: 0;
+            }
+            .hamburger.active span:nth-child(3) {
+                transform: rotate(-45deg) translate(7px, -6px);
+            }
         }
     </style>
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
@@ -154,29 +118,51 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 </head>
 <body>
-    <div class="container">
-        <a href="index.html" class="back-link">&larr; Home</a>
-        <span id="userRole"></span>
-        <button id="logoutBtn" style="display:none;">Logout</button>
-        <h1>Other Insights</h1>
+    <!-- Hamburger Menu -->
+    <button class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
 
-        <!-- Login Form -->
-        <div id="login-section">
-            <h2>Login</h2>
-            <form id="loginForm">
-                <input type="email" id="loginEmail" placeholder="Email" required>
-                <input type="password" id="loginPassword" placeholder="Password" required>
-                <button type="submit" class="btn">Login</button>
-            </form>
-            <button id="resetPasswordBtn" class="btn" style="margin-top:10px;">Forgot Password?</button>
-            <div id="loginError" style="color:red; margin-top:10px;"></div>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="nav-header">
+            <h2>Come Follow Me</h2>
         </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="index.html">Home</a></li>
+            <li class="nav-item"><a href="scripture.html">Scripture Insights</a></li>
+            <li class="nav-item"><a href="gospel.html">Gospel Topics</a></li>
+            <li class="nav-item active"><a href="other.html">Other Insights</a></li>
+            <li class="nav-item"><a href="admin.html" style="display:none;">Admin Dashboard</a></li>
+            <li class="nav-item"><a href="#" id="navLogout">Logout</a></li>
+        </ul>
+    </nav>
 
-        <!-- Insights List -->
-        <div id="insights-list"></div>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <h1>Other Insights</h1>
 
-        <!-- Add Insight Button (only for authorized users) -->
-        <button id="addInsightBtn" class="btn" style="margin-top:20px; display:none;">Add Insight</button>
+            <!-- Login Form -->
+            <div id="login-section">
+                <h2>Login</h2>
+                <form id="loginForm">
+                    <input type="email" id="loginEmail" placeholder="Email" required>
+                    <input type="password" id="loginPassword" placeholder="Password" required>
+                    <button type="submit" class="btn">Login</button>
+                </form>
+                <button id="resetPasswordBtn" class="btn" style="margin-top:10px;">Forgot Password?</button>
+                <div id="loginError" style="color:red; margin-top:10px;"></div>
+            </div>
+
+            <!-- Insights List -->
+            <div id="insights-list"></div>
+
+            <!-- Add Insight Button (only for authorized users) -->
+            <button id="addInsightBtn" class="btn" style="margin-top:20px; display:none;">Add Insight</button>
+        </div>
     </div>
 
     <!-- Add/Edit Modal -->
@@ -209,6 +195,14 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+
+    // --- Hamburger Menu Toggle ---
+    const hamburger = document.querySelector('.hamburger');
+    const navContainer = document.querySelector('.nav-container');
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        navContainer.classList.toggle('active');
+    });
 
     // --- Quill Editor ---
     let quill;
@@ -243,14 +237,16 @@
     }
 
     function updateRoleUI() {
-        document.getElementById('userRole').textContent = currentUserRole ? `Role: ${currentUserRole}` : '';
-        document.getElementById('addInsightBtn').style.display = canEdit() ? 'inline-block' : 'none';
+        document.querySelector('.nav-item a[href="admin.html"]').parentElement.style.display = isAdmin() ? 'block' : 'none';
+    }
+
+    function isAdmin() {
+        return currentUser && currentUserRole === 'admin';
     }
 
     auth.onAuthStateChanged(async user => {
         currentUser = user;
         if (user) {
-            // Get user role from Firestore
             const userDoc = await db.collection('users').doc(user.uid).get();
             currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
             showLogin(false);
@@ -277,7 +273,8 @@
         }
     });
 
-    document.getElementById('logoutBtn').addEventListener('click', () => {
+    document.getElementById('navLogout').addEventListener('click', (e) => {
+        e.preventDefault();
         auth.signOut();
     });
 
