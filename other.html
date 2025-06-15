@@ -4,80 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Other Insights</title>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="nav.css"><!-- (Optional: your shared nav styles) -->
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: #f5f5f5; 
-            margin: 0; 
-            padding: 0;
-            min-height: 100vh;
-        }
-        .nav-container {
-            width: 250px;
-            background: #2c3e50;
-            color: white;
-            position: fixed;
-            height: 100vh;
-            transition: transform 0.3s ease;
-        }
-        .nav-header {
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid #34495e;
-        }
-        .nav-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .nav-item {
-            padding: 15px 20px;
-            border-bottom: 1px solid #34495e;
-        }
-        .nav-item a {
-            color: white;
-            text-decoration: none;
-            display: block;
-        }
-        .nav-item:hover {
-            background: #34495e;
-        }
-        .nav-item.active {
-            background: #3498db;
-        }
-        .hamburger {
-            display: none;
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 100;
-            background: #2c3e50;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-        }
-        .hamburger span {
-            display: block;
-            width: 25px;
-            height: 3px;
-            background: white;
-            margin: 5px 0;
-            transition: 0.3s;
-        }
-        .main-content {
-            flex: 1;
-            margin-left: 250px;
-            padding: 20px;
-            transition: margin-left 0.3s ease;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px #0001;
-            padding: 30px;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; margin: 0; padding: 0; min-height: 100vh; }
+        .main-content { flex: 1; margin-left: 250px; padding: 20px; transition: margin-left 0.3s ease; }
+        .container { max-width: 800px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 30px; }
         h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
         .insight-card { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; margin-bottom: 20px; padding: 20px; }
         .insight-title { font-size: 1.2em; font-weight: bold; margin-bottom: 10px; }
@@ -86,72 +18,20 @@
         .btn:disabled { background: #ccc; cursor: not-allowed; }
         .modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background: rgba(0,0,0,0.3); }
         .modal-content { background: #fff; margin: 10% auto; padding: 20px; border-radius: 8px; max-width: 500px; }
-        /* Login Centering */
-        #login-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-        #loginForm {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            min-width: 250px;
-        }
+        #login-section { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+        #loginForm { display: flex; flex-direction: column; gap: 10px; min-width: 250px; }
         @media (max-width: 768px) {
-            .nav-container {
-                transform: translateX(-100%);
-            }
-            .nav-container.active {
-                transform: translateX(0);
-            }
-            .main-content {
-                margin-left: 0;
-            }
-            .hamburger {
-                display: block;
-            }
-            .hamburger.active span:nth-child(1) {
-                transform: rotate(45deg) translate(5px, 5px);
-            }
-            .hamburger.active span:nth-child(2) {
-                opacity: 0;
-            }
-            .hamburger.active span:nth-child(3) {
-                transform: rotate(-45deg) translate(7px, -6px);
-            }
+            .main-content { margin-left: 0; }
         }
     </style>
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 </head>
 <body>
-    <!-- Navigation and Hamburger (hidden by default) -->
-    <div id="navWrapper" style="display:none;">
-        <button class="hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-        <nav class="nav-container">
-            <div class="nav-header">
-                <h2>Come Follow Me</h2>
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item"><a href="index.html">Home</a></li>
-                <li class="nav-item"><a href="scripture.html">Scripture Insights</a></li>
-                <li class="nav-item"><a href="gospel.html">Gospel Topics</a></li>
-                <li class="nav-item active"><a href="other.html">Other Insights</a></li>
-                <li class="nav-item" id="adminNavItem" style="display:none;"><a href="admin.html">Admin Dashboard</a></li>
-                <li class="nav-item"><a href="#" id="navLogout">Logout</a></li>
-            </ul>
-        </nav>
-    </div>
+    <!-- Shared Navigation -->
+    <div id="navWrapper"></div>
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
@@ -194,8 +74,43 @@
     </div>
 
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+    <!-- Shared Navigation Loader and Logic -->
     <script>
-    // --- Firebase Config ---
+    function setupNav(currentUser, currentUserRole) {
+        const navWrapper = document.getElementById('navWrapper');
+        const hamburger = navWrapper.querySelector('.hamburger');
+        const navContainer = navWrapper.querySelector('.nav-container');
+        if (currentUser) {
+            if (hamburger) hamburger.style.display = '';
+            if (navContainer) navContainer.style.display = '';
+            if (hamburger && navContainer && !hamburger.hasAttribute('data-nav-initialized')) {
+                hamburger.addEventListener('click', () => {
+                    hamburger.classList.toggle('active');
+                    navContainer.classList.toggle('active');
+                });
+                hamburger.setAttribute('data-nav-initialized', 'true');
+            }
+            const adminNavItem = navWrapper.querySelector('#adminNavItem');
+            if (adminNavItem) adminNavItem.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
+        } else {
+            if (hamburger) hamburger.style.display = 'none';
+            if (navContainer) navContainer.style.display = 'none';
+        }
+    }
+
+    let navLoaded = false;
+    fetch('nav.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('navWrapper').innerHTML = html;
+        navLoaded = true;
+        if (window._navAuthState) setupNav(window._navAuthState.user, window._navAuthState.role);
+      });
+    </script>
+
+    <!-- Firebase Auth and Page Logic -->
+    <script>
     const firebaseConfig = {
         apiKey: "AIzaSyBXyOXGktacbjg-X2tuVsmJ7nYLCwJZ5Nw",
         authDomain: "comefollowme-d097a.firebaseapp.com",
@@ -209,15 +124,6 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // Hamburger Menu Toggle
-    const hamburger = document.querySelector('.hamburger');
-    const navContainer = document.querySelector('.nav-container');
-    hamburger && hamburger.addEventListener('click', () => {
-        hamburger.classList.toggle('active');
-        navContainer.classList.toggle('active');
-    });
-
-    // Quill Editor
     let quill;
     document.addEventListener('DOMContentLoaded', () => {
         quill = new Quill('#quillEditor', {
@@ -235,13 +141,11 @@
         });
     });
 
-    // Auth State & Role Management
     let currentUser = null;
     let currentUserRole = null;
 
     function showLogin(show) {
         document.getElementById('login-section').style.display = show ? 'flex' : 'none';
-        document.getElementById('navWrapper').style.display = show ? 'none' : 'block';
         document.getElementById('addInsightBtn').style.display = (show || !canEdit()) ? 'none' : 'inline-block';
         document.getElementById('mainContent').style.marginLeft = show ? '0' : '';
     }
@@ -250,30 +154,22 @@
         return currentUser && (currentUserRole === 'admin' || currentUserRole === 'editor');
     }
 
-    function updateRoleUI() {
-        document.getElementById('adminNavItem').style.display = isAdmin() ? 'block' : 'none';
-    }
-    function isAdmin() {
-        return currentUser && currentUserRole === 'admin';
-    }
-
     auth.onAuthStateChanged(async user => {
         currentUser = user;
         if (user) {
             const userDoc = await db.collection('users').doc(user.uid).get();
             currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
             showLogin(false);
-            updateRoleUI();
             loadInsights();
         } else {
             currentUserRole = null;
             showLogin(true);
-            updateRoleUI();
             document.getElementById('insights-list').innerHTML = '';
         }
+        window._navAuthState = { user: currentUser, role: currentUserRole };
+        if (navLoaded) setupNav(currentUser, currentUserRole);
     });
 
-    // Login/Logout
     document.getElementById('loginForm').addEventListener('submit', async e => {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
@@ -286,12 +182,22 @@
         }
     });
 
-    document.getElementById('navLogout').addEventListener('click', (e) => {
-        e.preventDefault();
-        auth.signOut();
-    });
+    function setupLogoutHandler() {
+        const navLogout = document.getElementById('navWrapper').querySelector('#navLogout');
+        if (navLogout) {
+            navLogout.addEventListener('click', (e) => {
+                e.preventDefault();
+                auth.signOut();
+            });
+        }
+    }
+    const logoutInterval = setInterval(() => {
+        if (document.getElementById('navWrapper').querySelector('#navLogout')) {
+            setupLogoutHandler();
+            clearInterval(logoutInterval);
+        }
+    }, 50);
 
-    // Password Reset
     document.getElementById('resetPasswordBtn').addEventListener('click', async () => {
         const email = document.getElementById('loginEmail').value;
         if (!email) {
@@ -306,7 +212,6 @@
         }
     });
 
-    // Insights CRUD
     async function loadInsights() {
         const snapshot = await db.collection('otherInsights').orderBy('created', 'desc').get();
         const list = document.getElementById('insights-list');
@@ -328,7 +233,6 @@
         });
     }
 
-    // Add/Edit Modal
     const modal = document.getElementById('insightModal');
     const form = document.getElementById('insightForm');
     document.getElementById('addInsightBtn').onclick = () => openModal();
@@ -377,7 +281,6 @@
         }
     };
 
-    // Hide modal on outside click
     window.onclick = function(event) {
         if (event.target == modal) modal.style.display = 'none';
     };

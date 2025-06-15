@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scripture Insight Details</title>
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="nav.css"><!-- (Optional: your shared nav styles) -->
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -133,27 +134,8 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Navigation and Hamburger (hidden by default) -->
-    <div id="navWrapper" style="display:none;">
-        <button class="hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-        <nav class="nav-container">
-            <div class="nav-header">
-                <h2>Come Follow Me</h2>
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item"><a href="index.html">Home</a></li>
-                <li class="nav-item active"><a href="scripture.html">Scripture Insights</a></li>
-                <li class="nav-item"><a href="gospel.html">Gospel Topics</a></li>
-                <li class="nav-item"><a href="other.html">Other Insights</a></li>
-                <li class="nav-item" id="adminNavItem" style="display:none;"><a href="admin.html">Admin Dashboard</a></li>
-                <li class="nav-item"><a href="#" id="navLogout">Logout</a></li>
-            </ul>
-        </nav>
-    </div>
+    <!-- Shared Navigation -->
+    <div id="navWrapper"></div>
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
@@ -193,8 +175,43 @@
     </div>
 
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+    <!-- Shared Navigation Loader and Logic -->
     <script>
-    // --- Firebase Config ---
+    function setupNav(currentUser, currentUserRole) {
+        const navWrapper = document.getElementById('navWrapper');
+        const hamburger = navWrapper.querySelector('.hamburger');
+        const navContainer = navWrapper.querySelector('.nav-container');
+        if (currentUser) {
+            if (hamburger) hamburger.style.display = '';
+            if (navContainer) navContainer.style.display = '';
+            if (hamburger && navContainer && !hamburger.hasAttribute('data-nav-initialized')) {
+                hamburger.addEventListener('click', () => {
+                    hamburger.classList.toggle('active');
+                    navContainer.classList.toggle('active');
+                });
+                hamburger.setAttribute('data-nav-initialized', 'true');
+            }
+            const adminNavItem = navWrapper.querySelector('#adminNavItem');
+            if (adminNavItem) adminNavItem.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
+        } else {
+            if (hamburger) hamburger.style.display = 'none';
+            if (navContainer) navContainer.style.display = 'none';
+        }
+    }
+
+    let navLoaded = false;
+    fetch('nav.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('navWrapper').innerHTML = html;
+        navLoaded = true;
+        if (window._navAuthState) setupNav(window._navAuthState.user, window._navAuthState.role);
+      });
+    </script>
+
+    <!-- Firebase Auth and Page Logic -->
+    <script>
     const firebaseConfig = {
         apiKey: "AIzaSyBXyOXGktacbjg-X2tuVsmJ7nYLCwJZ5Nw",
         authDomain: "comefollowme-d097a.firebaseapp.com",
@@ -208,15 +225,23 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // Hamburger Menu Toggle
-    const hamburger = document.querySelector('.hamburger');
-    const navContainer = document.querySelector('.nav-container');
-    hamburger && hamburger.addEventListener('click', () => {
-        hamburger.classList.toggle('active');
-        navContainer.classList.toggle('active');
+    let editQuill;
+    document.addEventListener('DOMContentLoaded', () => {
+        editQuill = new Quill('#editQuill', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ header: [1, 2, false] }],
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link'],
+                    [{ 'align': [] }],
+                    ['clean']
+                ]
+            }
+        });
     });
 
-    // Auth State & Role Management
     let currentUser = null;
     let currentUserRole = null;
     let insightId = new URLSearchParams(window.location.search).get('id');
@@ -230,7 +255,8 @@
     }
 
     function updateRoleUI() {
-        document.getElementById('adminNavItem').style.display = isAdmin() ? 'block' : 'none';
+        const adminNavItem = document.getElementById('adminNavItem');
+        if (adminNavItem) adminNavItem.style.display = isAdmin() ? 'block' : 'none';
     }
     function isAdmin() {
         return currentUser && currentUserRole === 'admin';
@@ -245,18 +271,17 @@
             const userDoc = await db.collection('users').doc(user.uid).get();
             currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
             showLogin(false);
-            updateRoleUI();
             loadInsight();
         } else {
             currentUserRole = null;
             showLogin(true);
-            updateRoleUI();
             document.getElementById('insight-details').innerHTML = '<p style="color:red;">You must be logged in to view this insight.</p>';
             document.getElementById('insight-actions').style.display = 'none';
         }
+        window._navAuthState = { user: currentUser, role: currentUserRole };
+        if (navLoaded) setupNav(currentUser, currentUserRole);
     });
 
-    // Login/Logout
     document.getElementById('loginForm').addEventListener('submit', async e => {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
@@ -269,12 +294,22 @@
         }
     });
 
-    document.getElementById('navLogout').addEventListener('click', (e) => {
-        e.preventDefault();
-        auth.signOut();
-    });
+    function setupLogoutHandler() {
+        const navLogout = document.getElementById('navWrapper').querySelector('#navLogout');
+        if (navLogout) {
+            navLogout.addEventListener('click', (e) => {
+                e.preventDefault();
+                auth.signOut();
+            });
+        }
+    }
+    const logoutInterval = setInterval(() => {
+        if (document.getElementById('navWrapper').querySelector('#navLogout')) {
+            setupLogoutHandler();
+            clearInterval(logoutInterval);
+        }
+    }, 50);
 
-    // Password Reset
     document.getElementById('resetPasswordBtn').addEventListener('click', async () => {
         const email = document.getElementById('loginEmail').value;
         if (!email) {
@@ -289,7 +324,6 @@
         }
     });
 
-    // Load Insight
     async function loadInsight() {
         if (!insightId) {
             document.getElementById('insight-details').innerHTML = '<p>Insight not found.</p>';
@@ -310,24 +344,6 @@
         `;
         document.getElementById('insight-actions').style.display = canEdit() ? 'block' : 'none';
     }
-
-    // Edit Modal
-    let editQuill;
-    document.addEventListener('DOMContentLoaded', () => {
-        editQuill = new Quill('#editQuill', {
-            theme: 'snow',
-            modules: {
-                toolbar: [
-                    [{ header: [1, 2, false] }],
-                    ['bold', 'italic', 'underline'],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    ['link'],
-                    [{ 'align': [] }],
-                    ['clean']
-                ]
-            }
-        });
-    });
 
     document.getElementById('editBtn').onclick = () => {
         if (!currentInsight) return;
@@ -359,7 +375,6 @@
         }
     };
 
-    // Hide modal on outside click
     window.onclick = function(event) {
         if (event.target == document.getElementById('editModal')) document.getElementById('editModal').style.display = 'none';
     };
