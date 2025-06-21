@@ -229,6 +229,8 @@
 
     let editQuill;
     let relatedQuill;
+    let replyQuill = {};
+
     document.addEventListener('DOMContentLoaded', () => {
         Quill.register({
             [`modules/${window.TableHandler.moduleName}`]: window.TableHandler
@@ -249,28 +251,31 @@
                     ['clean']
                 ],
                 [`${window.TableHandler.moduleName}`]: {
-                  fullWidth: true
+                    fullWidth: true
                 }
             }
         });
-        relatedQuill = new Quill('#relatedQuill', {
-            theme: 'snow',
-            modules: {
-                toolbar: [
-                    [{ header: [1, 2, false] }],
-                    ['bold', 'italic', 'underline'],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    [{ 'color': [] }, { 'background': [] }],
-                    ['link'],
-                    [{ 'align': [] }],
-                    [window.TableHandler.toolName],
-                    ['clean']
-                ],
-                [`${window.TableHandler.moduleName}`]: {
-                  fullWidth: true
+
+        if (document.getElementById('relatedQuill')) {
+            relatedQuill = new Quill('#relatedQuill', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ header: [1, 2, false] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        [{ 'color': [] }, { 'background': [] }],
+                        ['link'],
+                        [{ 'align': [] }],
+                        [window.TableHandler.toolName],
+                        ['clean']
+                    ],
+                    [`${window.TableHandler.moduleName}`]: {
+                        fullWidth: true
+                    }
                 }
-            }
-        });
+            });
+        }
     });
 
     let currentUser = null;
@@ -562,6 +567,32 @@
         printWindow.print();
     }
     document.getElementById('printBtn').onclick = printInsightWithNotes;
+
+    window.openReplyQuill = function(insightId) {
+        if (replyQuill[insightId]) {
+            const editor = document.getElementById(`reply-form-${insightId}`);
+            editor.style.display = editor.style.display === 'none' ? 'block' : 'none';
+            return;
+        }
+        replyQuill[insightId] = new Quill(`#replyQuill-${insightId}`, {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'color': [] }, { 'background': [] }],
+                    ['link'],
+                    [window.TableHandler.toolName],
+                    ['clean']
+                ],
+                [`${window.TableHandler.moduleName}`]: {
+                  fullWidth: true
+                }
+            },
+            placeholder: 'Write a reply...'
+        });
+        document.getElementById(`reply-form-${insightId}`).style.display = 'block';
+    }
     </script>
 </body>
 </html>

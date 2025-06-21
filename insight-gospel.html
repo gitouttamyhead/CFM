@@ -196,6 +196,7 @@
     const auth = firebase.auth();
 
     let editQuill;
+    let relatedQuill;
     document.addEventListener('DOMContentLoaded', () => {
         Quill.register({
             [`modules/${window.TableHandler.moduleName}`]: window.TableHandler
@@ -220,6 +221,25 @@
                 }
             }
         });
+
+        if (document.getElementById('relatedQuill')) {
+            relatedQuill = new Quill('#relatedQuill', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'color': [] }, { 'background': [] }],
+                        ['link', 'image', window.TableHandler.toolName],
+                        ['clean']
+                    ],
+                    [`${window.TableHandler.moduleName}`]: {
+                        fullWidth: true
+                    }
+                }
+            });
+            window.relatedQuill = relatedQuill;
+        }
     });
 
     let currentUser = null;
@@ -498,26 +518,6 @@
         printWindow.document.close();
         printWindow.focus();
         printWindow.print();
-    });
-
-    // Initialize Related Quill Editor
-    let relatedQuill;
-    document.addEventListener('DOMContentLoaded', function() {
-        if (typeof Quill !== 'undefined') {
-            relatedQuill = new Quill('#relatedQuill', {
-                theme: 'snow',
-                modules: {
-                    toolbar: [
-                        ['bold', 'italic', 'underline'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'color': [] }, { 'background': [] }],
-                        ['link', 'image'],
-                        ['clean']
-                    ]
-                }
-            });
-            window.relatedQuill = relatedQuill;
-        }
     });
     </script>
 
