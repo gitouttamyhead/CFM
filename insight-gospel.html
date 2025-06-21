@@ -201,7 +201,6 @@
         Quill.register({
             [`modules/${window.TableHandler.moduleName}`]: window.TableHandler
         }, true);
-        window.rewirteFormats();
 
         editQuill = new Quill('#editQuill', {
             theme: 'snow',
@@ -230,7 +229,8 @@
                         ['bold', 'italic', 'underline'],
                         [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                         [{ 'color': [] }, { 'background': [] }],
-                        ['link', 'image', window.TableHandler.toolName],
+                        ['link', 'image'],
+                        [window.TableHandler.toolName],
                         ['clean']
                     ],
                     [`${window.TableHandler.moduleName}`]: {
