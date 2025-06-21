@@ -429,7 +429,7 @@
                 category: category,
                 created: firebase.firestore.FieldValue.serverTimestamp(),
                 createdBy: currentUser.uid,
-                relatedTo: insightId // Link to current insight
+                relatedTo: insightId
             };
             
             await db.collection(category === 'gospel' ? 'gospelInsights' : 'otherInsights').add(insightData);

@@ -439,7 +439,9 @@
         const content = relatedQuill.root.innerHTML;
         const tags = document.getElementById('relatedTags').value;
         const relatedInsight = await db.collection('otherInsights').add({
-            title, content, tags,
+            title,
+            content,
+            tags,
             relatedTo: insightId,
             created: firebase.firestore.FieldValue.serverTimestamp()
         });

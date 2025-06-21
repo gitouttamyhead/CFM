@@ -478,7 +478,9 @@
         
         // Create the related insight
         const relatedInsight = await db.collection(collectionName).add({
-            title, content, tags,
+            title,
+            content,
+            tags,
             relatedTo: insightId,
             created: firebase.firestore.FieldValue.serverTimestamp()
         });
