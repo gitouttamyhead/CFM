@@ -259,8 +259,8 @@
         insightsList.innerHTML = 'Loading...';
         let query = insightsCollection.orderBy('created', 'desc');
 
-        // Only fetch insights that are NOT related to another insight
-        query = query.where('relatedTo', '==', null);
+        // Temporarily disabled for data correction
+        // query = query.where('relatedTo', '==', null);
 
         const snapshot = await query.get();
         insightsList.innerHTML = '';
