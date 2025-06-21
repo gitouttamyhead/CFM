@@ -171,8 +171,17 @@
         if (user) {
             const userDoc = await db.collection('users').doc(user.uid).get();
             currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
-            showLogin(false);
-            loadUsers();
+            
+            if (isAdmin()) {
+                document.getElementById('admin-section').style.display = 'block';
+                document.getElementById('notAdminMsg').style.display = 'none';
+                showLogin(false);
+                loadUsers();
+            } else {
+                document.getElementById('admin-section').style.display = 'none';
+                document.getElementById('notAdminMsg').style.display = 'block';
+                showLogin(false); // Still hide login form, but show message
+            }
         } else {
             // Redirect to main site instead of showing login form
             if (window.location.hostname !== 'comefollowme.netlify.app' || window.location.pathname !== '/') {
