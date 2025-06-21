@@ -126,13 +126,11 @@
 
     auth.onAuthStateChanged(async user => {
         const loginSection = document.getElementById('login-section');
-        const welcomeSection = document.getElementById('welcome-section');
-        const userEmailSpan = document.getElementById('user-email');
+        const mainWidget = document.getElementById('mainWidget');
 
         if (user) {
             loginSection.style.display = 'none';
-            welcomeSection.style.display = 'block';
-            userEmailSpan.textContent = user.email;
+            mainWidget.style.display = 'block';
 
             // Check if user document already exists
             const userDocRef = db.collection('users').doc(user.uid);
@@ -161,7 +159,7 @@
 
         } else {
             loginSection.style.display = 'block';
-            welcomeSection.style.display = 'none';
+            mainWidget.style.display = 'none';
         }
 
         // Pass auth state to nav loader
