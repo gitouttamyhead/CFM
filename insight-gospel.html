@@ -221,25 +221,23 @@
             }
         });
 
-        if (document.getElementById('relatedQuill')) {
-            relatedQuill = new Quill('#relatedQuill', {
-                theme: 'snow',
-                modules: {
-                    toolbar: [
-                        ['bold', 'italic', 'underline'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'color': [] }, { 'background': [] }],
-                        ['link', 'image'],
-                        [window.TableHandler.toolName],
-                        ['clean']
-                    ],
-                    [`${window.TableHandler.moduleName}`]: {
-                        fullWidth: true
-                    }
+        relatedQuill = new Quill('#relatedQuill', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'color': [] }, { 'background': [] }],
+                    ['link', 'image'],
+                    [window.TableHandler.toolName],
+                    ['clean']
+                ],
+                [`${window.TableHandler.moduleName}`]: {
+                    fullWidth: true
                 }
-            });
-            window.relatedQuill = relatedQuill;
-        }
+            }
+        });
+        window.relatedQuill = relatedQuill;
     });
 
     let currentUser = null;
