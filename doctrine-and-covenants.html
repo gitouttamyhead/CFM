@@ -268,21 +268,41 @@
             insightsList.innerHTML = '<p>No insights yet. Be the first to add one!</p>';
             return;
         }
-        snapshot.forEach(doc => {
+        for (const doc of snapshot.docs) {
             const insight = doc.data();
             const card = document.createElement('div');
             card.className = 'insight-card';
 
-            // Check for related insights and add an indicator
-            let relatedIndicator = '';
+            let relatedInsightsHTML = '';
             if (insight.relatedInsights && insight.relatedInsights.length > 0) {
-                relatedIndicator = `<span style="font-style: italic; color: #555; font-size: 0.9em; margin-top: 10px; display: block;">(Has ${insight.relatedInsights.length} related insights)</span>`;
+                const relatedDocs = await Promise.all(
+                    insight.relatedInsights.map(id => insightsCollection.doc(id).get())
+                );
+                
+                const validRelatedInsights = relatedDocs
+                    .filter(doc => doc.exists)
+                    .map(doc => ({ id: doc.id, ...doc.data() }));
+
+                if (validRelatedInsights.length > 0) {
+                    relatedInsightsHTML = `
+                        <div class="related-insights-list" style="margin-top: 10px;">
+                            <strong>Related Insights:</strong>
+                            <ul>
+                                ${validRelatedInsights.map(related => `
+                                    <li>
+                                        <a href="insight-scripture.html?id=${related.id}&collection=${insightsCollection.id}">${related.title}</a>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
             }
 
             card.innerHTML = `
                 <div class="insight-title">${insight.title}</div>
                 <div class="insight-tags">Tags: ${insight.tags || ''}</div>
-                ${relatedIndicator}
+                ${relatedInsightsHTML}
                 <div class="insight-actions">
                     <a href="insight-scripture.html?id=${doc.id}&collection=${insightsCollection.id}" class="btn">See Details</a>
                     ${canEdit() ? `<button class="btn" onclick="openModal('${doc.id}')">Edit</button>` : ''}
@@ -290,7 +310,7 @@
                 </div>
             `;
             insightsList.appendChild(card);
-        });
+        }
     }
 
     const form = document.getElementById('insightForm');

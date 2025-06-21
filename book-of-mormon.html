@@ -265,13 +265,45 @@
 
         const snapshot = await query.get();
         insightsList.innerHTML = '';
-        snapshot.forEach(doc => {
+        if (snapshot.empty) {
+            insightsList.innerHTML = '<p>No insights yet. Be the first to add one!</p>';
+            return;
+        }
+        for (const doc of snapshot.docs) {
             const data = doc.data();
             const card = document.createElement('div');
             card.className = 'insight-card';
+
+            let relatedInsightsHTML = '';
+            if (data.relatedInsights && data.relatedInsights.length > 0) {
+                const relatedDocs = await Promise.all(
+                    data.relatedInsights.map(id => db.collection('bookOfMormonInsights').doc(id).get())
+                );
+                
+                const validRelatedInsights = relatedDocs
+                    .filter(doc => doc.exists)
+                    .map(doc => ({ id: doc.id, ...doc.data() }));
+
+                if (validRelatedInsights.length > 0) {
+                    relatedInsightsHTML = `
+                        <div class="related-insights-list" style="margin-top: 10px;">
+                            <strong>Related Insights:</strong>
+                            <ul>
+                                ${validRelatedInsights.map(related => `
+                                    <li>
+                                        <a href="insight-scripture.html?id=${related.id}&collection=bookOfMormonInsights">${related.title}</a>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+            }
+
             card.innerHTML = `
                 <div class="insight-title">${data.title}</div>
                 <div>Tags: ${data.tags || ''}</div>
+                ${relatedInsightsHTML}
                 <div class="insight-actions">
                     <a href="insight-scripture.html?id=${doc.id}&collection=bookOfMormonInsights" class="btn">See Details</a>
                     ${canEdit() ? `<button class="btn" onclick="editInsight('${doc.id}')">Edit</button>
@@ -279,7 +311,7 @@
                 </div>
             `;
             insightsList.appendChild(card);
-        });
+        }
     }
 
     const form = document.getElementById('insightForm');

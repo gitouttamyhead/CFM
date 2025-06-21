@@ -272,13 +272,41 @@
             list.innerHTML = '<p>No insights yet. Be the first to add one!</p>';
             return;
         }
-        snapshot.forEach(doc => {
+        for (const doc of snapshot.docs) {
             const data = doc.data();
             const card = document.createElement('div');
             card.className = 'insight-card';
+
+            let relatedInsightsHTML = '';
+            if (data.relatedInsights && data.relatedInsights.length > 0) {
+                const relatedDocs = await Promise.all(
+                    data.relatedInsights.map(id => db.collection('gospelInsights').doc(id).get())
+                );
+                
+                const validRelatedInsights = relatedDocs
+                    .filter(doc => doc.exists)
+                    .map(doc => ({ id: doc.id, ...doc.data() }));
+
+                if (validRelatedInsights.length > 0) {
+                    relatedInsightsHTML = `
+                        <div class="related-insights-list" style="margin-top: 10px;">
+                            <strong>Related Insights:</strong>
+                            <ul>
+                                ${validRelatedInsights.map(related => `
+                                    <li>
+                                        <a href="insight-gospel.html?id=${related.id}">${related.title}</a>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+            }
+
             card.innerHTML = `
                 <div class="insight-title">${data.title}</div>
                 <div>Tags: ${data.tags || ''}</div>
+                ${relatedInsightsHTML}
                 <div class="insight-actions">
                     <a href="insight-gospel.html?id=${doc.id}" class="btn">See Details</a>
                     ${canEdit() ? `<button class="btn" onclick="editInsight('${doc.id}')">Edit</button>
@@ -286,7 +314,7 @@
                 </div>
             `;
             list.appendChild(card);
-        });
+        }
     }
 
     const modal = document.getElementById('insightModal');
