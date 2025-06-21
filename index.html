@@ -179,34 +179,34 @@
     auth.onAuthStateChanged(async user => {
         const loginSection = document.getElementById('login-section');
         const mainWidget = document.getElementById('mainWidget');
+        let currentUserRole = null;
 
         if (user) {
             loginSection.style.display = 'none';
             mainWidget.style.display = 'block';
 
-            // Check if user document already exists
             const userDocRef = db.collection('users').doc(user.uid);
             const userDoc = await userDocRef.get();
 
-            if (!userDoc.exists) {
-                // This is a new user, check for an invitation
+            if (userDoc.exists) {
+                currentUserRole = userDoc.data().role;
+            } else {
                 const invitationsRef = db.collection('invitations');
                 const inviteQuery = await invitationsRef.where('email', '==', user.email).limit(1).get();
 
-                let role = 'user'; // Default role
+                let role = 'user';
                 if (!inviteQuery.empty) {
                     const inviteData = inviteQuery.docs[0].data();
                     role = inviteData.role;
-                    // Delete the invitation so it can't be reused
                     await invitationsRef.doc(inviteQuery.docs[0].id).delete();
                 }
 
-                // Create the new user document
                 await userDocRef.set({
                     email: user.email,
                     role: role,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                currentUserRole = role;
             }
 
         } else {
@@ -214,13 +214,9 @@
             mainWidget.style.display = 'none';
         }
 
-        // Pass auth state to nav loader
-        window._navAuthState = { user: user, role: null }; 
+        window._navAuthState = { user: user, role: currentUserRole };
         if (window.navLoaded) {
-            const userDoc = user ? await db.collection('users').doc(user.uid).get() : null;
-            const userRole = userDoc && userDoc.exists ? userDoc.data().role : null;
-            window._navAuthState.role = userRole;
-            setupNav(user, userRole);
+            setupNav(user, currentUserRole);
         }
     });
 

@@ -9,12 +9,10 @@
         .container { max-width: 800px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 30px; text-align: center; }
         h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
         
-        /* This ensures the main content area makes room for the side navigation on larger screens */
         .main-content {
-            margin-left: 250px;
             transition: margin-left 0.3s ease;
         }
-        /* On smaller screens, the margin is removed so the content takes the full width */
+
         @media (max-width: 768px) {
             .main-content {
                 margin-left: 0;
@@ -146,9 +144,9 @@
             const userDoc = await db.collection('users').doc(user.uid).get();
             currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
             showLogin(false);
-            loadContent();
         } else {
-            // Redirect to main site instead of showing login form
+            // This part is for when the user is not logged in.
+            // On pages other than index.html, we redirect.
             if (window.location.hostname !== 'comefollowme.netlify.app' || window.location.pathname !== '/') {
                 window.location.href = 'https://comefollowme.netlify.app';
             }
