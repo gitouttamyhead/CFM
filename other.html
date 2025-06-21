@@ -18,8 +18,18 @@
         .btn:disabled { background: #ccc; cursor: not-allowed; }
         .modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background: rgba(0,0,0,0.3); }
         .modal-content { background: #fff; margin: 10% auto; padding: 20px; border-radius: 8px; max-width: 500px; }
-        #login-section { text-align: center; padding: 40px 0; }
-        #loginForm { display: inline-flex; flex-direction: column; gap: 10px; min-width: 250px; }
+        #login-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 0;
+        }
+        #loginForm {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 250px;
+        }
         @media (max-width: 768px) {
             .main-content { margin-left: 0; }
         }
