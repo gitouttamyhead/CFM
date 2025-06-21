@@ -479,6 +479,7 @@
                     .insight-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
                     .insight-tags { color: #666; margin-bottom: 20px; }
                     .insight-content { margin-bottom: 30px; }
+                    .page-break { page-break-after: always; }
                     .notes-section { 
                         border-top: 2px solid #333; 
                         padding-top: 20px; 
@@ -491,6 +492,7 @@
                         margin-bottom: 10px; 
                     }
                     @media print {
+                        .page-break { display: block; page-break-after: always; }
                         .notes-lines { border-bottom: 1px solid #000; }
                     }
                 </style>
@@ -499,6 +501,7 @@
                 <div class="insight-title">${currentInsight.title}</div>
                 <div class="insight-tags">Tags: ${currentInsight.tags || ''}</div>
                 <div class="insight-content">${currentInsight.content}</div>
+                <div class="page-break"></div>
                 <div class="notes-section">
                     <div class="notes-title">Personal Notes:</div>
                     <div class="notes-lines"></div>
@@ -506,7 +509,11 @@
                     <div class="notes-lines"></div>
                     <div class="notes-lines"></div>
                     <div class="notes-lines"></div>
-
+                    <div class="notes-lines"></div>
+                    <div class="notes-lines"></div>
+                    <div class="notes-lines"></div>
+                    <div class="notes-lines"></div>
+                    <div class="notes-lines"></div>
                 </div>
             </body>
             </html>
