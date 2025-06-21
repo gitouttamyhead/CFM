@@ -257,24 +257,35 @@
 
     async function loadInsights() {
         insightsList.innerHTML = 'Loading...';
-        let query = insightsCollection.orderBy('created', 'desc');
-
-        // Temporarily disabled for data correction
-        // query = query.where('relatedTo', '==', null);
+        
+        // This query now correctly fetches ONLY main insights
+        const query = insightsCollection.where('relatedTo', '==', null).orderBy('created', 'desc');
 
         const snapshot = await query.get();
         insightsList.innerHTML = '';
+        if (snapshot.empty) {
+            insightsList.innerHTML = '<p>No insights yet. Be the first to add one!</p>';
+            return;
+        }
         snapshot.forEach(doc => {
-            const data = doc.data();
+            const insight = doc.data();
             const card = document.createElement('div');
             card.className = 'insight-card';
+
+            // Check for related insights and add an indicator
+            let relatedIndicator = '';
+            if (insight.relatedInsights && insight.relatedInsights.length > 0) {
+                relatedIndicator = `<span style="font-style: italic; color: #555; font-size: 0.9em; margin-top: 10px; display: block;">(Has ${insight.relatedInsights.length} related insights)</span>`;
+            }
+
             card.innerHTML = `
-                <div class="insight-title">${data.title}</div>
-                <div>Tags: ${data.tags || ''}</div>
+                <div class="insight-title">${insight.title}</div>
+                <div class="insight-tags">Tags: ${insight.tags || ''}</div>
+                ${relatedIndicator}
                 <div class="insight-actions">
-                    <a href="insight-scripture.html?id=${doc.id}&collection=doctrineAndCovenantsInsights" class="btn">See Details</a>
-                    ${canEdit() ? `<button class="btn" onclick="editInsight('${doc.id}')">Edit</button>
-                    <button class="btn" onclick="deleteInsight('${doc.id}')">Delete</button>` : ''}
+                    <a href="insight-scripture.html?id=${doc.id}&collection=${insightsCollection.id}" class="btn">See Details</a>
+                    ${canEdit() ? `<button class="btn" onclick="openModal('${doc.id}')">Edit</button>` : ''}
+                    ${canEdit() ? `<button class="btn" onclick="deleteInsight('${doc.id}')">Delete</button>` : ''}
                 </div>
             `;
             insightsList.appendChild(card);
@@ -308,26 +319,52 @@
         }
     };
 
-    form.onsubmit = async e => {
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = document.getElementById('insightTitle').value;
+        const tags = document.getElementById('insightTags').value;
+        const content = quill.root.innerHTML;
+
+        // Add relatedTo: null to explicitly mark this as a main insight
+        await insightsCollection.add({
+            title,
+            tags,
+            content,
+            created: firebase.firestore.FieldValue.serverTimestamp(),
+            relatedTo: null 
+        });
+
+        modal.style.display = 'none';
+        form.reset();
+        quill.setText('');
+        loadInsights();
+    });
+
+    // Replacement for the relatedForm submit handler
+    document.getElementById('relatedForm').onsubmit = async e => {
         e.preventDefault();
         if (!canEdit()) return;
-        const id = document.getElementById('insightId').value;
-        const title = document.getElementById('insightTitle').value;
-        const content = quill.root.innerHTML;
-        const tags = document.getElementById('insightTags').value;
-        if (id) {
-            await insightsCollection.doc(id).update({ title, content, tags });
-        } else {
-            await insightsCollection.add({
-                title,
-                tags,
-                content,
-                created: firebase.firestore.FieldValue.serverTimestamp(),
-                relatedTo: null
-            });
-        }
-        modal.style.display = 'none';
-        loadInsights();
+        const title = document.getElementById('relatedTitle').value;
+        const content = relatedQuill.root.innerHTML;
+        const tags = document.getElementById('relatedTags').value;
+        const collectionName = insightsCollection.id; // Get the correct collection name
+        
+        // 1. Create the new sub-insight with a link to its parent
+        const newSubInsight = await db.collection(collectionName).add({
+            title, 
+            content, 
+            tags,
+            relatedTo: insightId, // This links it to the parent
+            created: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // 2. Update the parent insight to track its new child
+        await db.collection(collectionName).doc(insightId).update({
+            relatedInsights: firebase.firestore.FieldValue.arrayUnion(newSubInsight.id)
+        });
+        
+        document.getElementById('relatedModal').style.display = 'none';
+        loadInsight(); // Refresh the page to show the new sub-insight link
     };
     </script>
 </body>

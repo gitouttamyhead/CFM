@@ -476,22 +476,22 @@
         const content = relatedQuill.root.innerHTML;
         const tags = document.getElementById('relatedTags').value;
         
-        // Create the related insight
-        const relatedInsight = await db.collection(collectionName).add({
-            title,
-            content,
+        // 1. Create the new sub-insight with a link to its parent
+        const newSubInsight = await db.collection(collectionName).add({
+            title, 
+            content, 
             tags,
-            relatedTo: insightId,
+            relatedTo: insightId, // This links it to the parent
             created: firebase.firestore.FieldValue.serverTimestamp()
         });
         
-        // Update the current insight to link to the new one
+        // 2. Update the parent insight to track its new child
         await db.collection(collectionName).doc(insightId).update({
-            relatedInsights: firebase.firestore.FieldValue.arrayUnion(relatedInsight.id)
+            relatedInsights: firebase.firestore.FieldValue.arrayUnion(newSubInsight.id)
         });
         
         document.getElementById('relatedModal').style.display = 'none';
-        loadInsight();
+        loadInsight(); // Refresh the page to show the new sub-insight link
     };
 
     document.getElementById('linkRelatedBtn').onclick = () => {
