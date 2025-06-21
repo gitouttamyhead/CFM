@@ -8,12 +8,19 @@
     <style>
         .container { max-width: 800px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 30px; text-align: center; }
         h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
-        body.nav-open .main-content {
-            margin-left: 250px;
-        }
+        
+        /* This ensures the main content area makes room for the side navigation on larger screens */
         .main-content {
+            margin-left: 250px;
             transition: margin-left 0.3s ease;
         }
+        /* On smaller screens, the margin is removed so the content takes the full width */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
         #login-section {
             display: flex;
             flex-direction: column;
@@ -67,9 +74,9 @@
         const hamburger = navWrapper.querySelector('.hamburger');
         const navContainer = navWrapper.querySelector('.nav-container');
         if (currentUser) {
-            // Explicitly show the navigation for logged-in users
-            if (navContainer) navContainer.style.display = 'block';
-            if (hamburger) hamburger.style.display = 'block'; // The CSS will hide this on large screens
+            // By setting the inline style to '', we allow the external stylesheet to control visibility.
+            if (navContainer) navContainer.style.display = '';
+            if (hamburger) hamburger.style.display = '';
 
             if (hamburger && navContainer && !hamburger.hasAttribute('data-nav-initialized')) {
                 hamburger.addEventListener('click', () => {
