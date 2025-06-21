@@ -50,7 +50,7 @@
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
         <div class="container" id="insight-container" style="display:none;">
-            <a href="scripture.html" class="back-link">&larr; Back to Scripture Insights</a>
+            <a href="#" id="backLink" class="back-link">&larr; Back to Scripture Insights</a>
             <div id="insight-details"></div>
             <div class="insight-actions" id="insight-actions" style="display:none;">
                 <button class="btn" id="editBtn">Edit</button>
@@ -169,6 +169,7 @@
     let currentUser = null;
     let currentUserRole = null;
     let insightId = new URLSearchParams(window.location.search).get('id');
+    let collectionName = new URLSearchParams(window.location.search).get('collection') || 'scriptureInsights';
     let currentInsight = null;
 
     function showLogin(show) {
@@ -197,10 +198,10 @@
             showLogin(false);
             loadInsight();
         } else {
-            currentUserRole = null;
-            showLogin(true);
-            document.getElementById('insight-details').innerHTML = '<p style="color:red;">You must be logged in to view this insight.</p>';
-            document.getElementById('insight-actions').style.display = 'none';
+            // Redirect to main site instead of showing login form
+            if (window.location.hostname !== 'comefollowme.netlify.app' || window.location.pathname !== '/') {
+                window.location.href = 'https://comefollowme.netlify.app';
+            }
         }
         window._navAuthState = { user: currentUser, role: currentUserRole };
         if (navLoaded) setupNav(currentUser, currentUserRole);
@@ -254,7 +255,7 @@
             document.getElementById('insight-actions').style.display = 'none';
             return;
         }
-        const doc = await db.collection('scriptureInsights').doc(insightId).get();
+        const doc = await db.collection(collectionName).doc(insightId).get();
         if (!doc.exists) {
             document.getElementById('insight-details').innerHTML = '<p>Insight not found.</p>';
             document.getElementById('insight-actions').style.display = 'none';
@@ -286,7 +287,7 @@
         const title = document.getElementById('editTitle').value;
         const content = editQuill.root.innerHTML;
         const tags = document.getElementById('editTags').value;
-        await db.collection('scriptureInsights').doc(insightId).update({ title, content, tags });
+        await db.collection(collectionName).doc(insightId).update({ title, content, tags });
         document.getElementById('editModal').style.display = 'none';
         loadInsight();
     };
@@ -294,14 +295,39 @@
     document.getElementById('deleteBtn').onclick = async () => {
         if (!canEdit()) return;
         if (confirm('Delete this insight?')) {
-            await db.collection('scriptureInsights').doc(insightId).delete();
-            window.location.href = 'scripture.html';
+            await db.collection(collectionName).doc(insightId).delete();
+            // Go back to the appropriate page based on collection
+            const backPages = {
+                'bookOfMormonInsights': 'book-of-mormon.html',
+                'oldTestamentInsights': 'old-testament.html',
+                'newTestamentInsights': 'new-testament.html',
+                'doctrineAndCovenantsInsights': 'doctrine-and-covenants.html',
+                'pearlOfGreatPriceInsights': 'pearl-of-great-price.html',
+                'scriptureInsights': 'scripture.html'
+            };
+            window.location.href = backPages[collectionName] || 'scripture.html';
         }
     };
 
     window.onclick = function(event) {
         if (event.target == document.getElementById('editModal')) document.getElementById('editModal').style.display = 'none';
     };
+
+    function setBackLink() {
+        const backPages = {
+            'bookOfMormonInsights': 'book-of-mormon.html',
+            'oldTestamentInsights': 'old-testament.html',
+            'newTestamentInsights': 'new-testament.html',
+            'doctrineAndCovenantsInsights': 'doctrine-and-covenants.html',
+            'pearlOfGreatPriceInsights': 'pearl-of-great-price.html',
+            'scriptureInsights': 'scripture.html'
+        };
+        const backLink = document.getElementById('backLink');
+        const targetPage = backPages[collectionName] || 'scripture.html';
+        backLink.href = targetPage;
+    }
+
+    document.addEventListener('DOMContentLoaded', setBackLink);
     </script>
 </body>
 </html>

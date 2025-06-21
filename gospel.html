@@ -186,9 +186,10 @@
             showLogin(false);
             loadInsights();
         } else {
-            currentUserRole = null;
-            showLogin(true);
-            document.getElementById('insights-list').innerHTML = '';
+            // Redirect to main site instead of showing login form
+            if (window.location.hostname !== 'comefollowme.netlify.app' || window.location.pathname !== '/') {
+                window.location.href = 'https://comefollowme.netlify.app';
+            }
         }
         window._navAuthState = { user: currentUser, role: currentUserRole };
         if (navLoaded) setupNav(currentUser, currentUserRole);

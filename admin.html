@@ -172,19 +172,12 @@
             const userDoc = await db.collection('users').doc(user.uid).get();
             currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
             showLogin(false);
-            if (isAdmin()) {
-                document.getElementById('admin-section').style.display = 'block';
-                document.getElementById('notAdminMsg').style.display = 'none';
-                loadUsers();
-            } else {
-                document.getElementById('admin-section').style.display = 'none';
-                document.getElementById('notAdminMsg').style.display = 'block';
-            }
+            loadUsers();
         } else {
-            currentUserRole = null;
-            showLogin(true);
-            document.getElementById('admin-section').style.display = 'none';
-            document.getElementById('notAdminMsg').style.display = 'none';
+            // Redirect to main site instead of showing login form
+            if (window.location.hostname !== 'comefollowme.netlify.app' || window.location.pathname !== '/') {
+                window.location.href = 'https://comefollowme.netlify.app';
+            }
         }
         window._navAuthState = { user: currentUser, role: currentUserRole };
         if (navLoaded) setupNav(currentUser, currentUserRole);
