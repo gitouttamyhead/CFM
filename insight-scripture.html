@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scripture Insight Details</title>
+    <title>Scripture Insight</title>
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/quill1.3.7-table-module@1.4.2/dist/index.css" rel="stylesheet">
     <link rel="stylesheet" href="nav.css">
     <style>
         .container {
@@ -185,7 +184,6 @@
     </div>
 
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/quill1.3.7-table-module@1.4.2/dist/index.min.js"></script>
 
     <!-- Shared Navigation Loader and Logic -->
     <script>
@@ -252,13 +250,7 @@
 
     let editQuill;
     let relatedQuill;
-    let replyQuill = {};
-
     document.addEventListener('DOMContentLoaded', () => {
-        Quill.register({
-            [`modules/${window.TableHandler.moduleName}`]: window.TableHandler
-        }, true);
-
         editQuill = new Quill('#editQuill', {
             theme: 'snow',
             modules: {
@@ -269,12 +261,8 @@
                     [{ 'color': [] }, { 'background': [] }],
                     ['link'],
                     [{ 'align': [] }],
-                    [window.TableHandler.toolName],
                     ['clean']
-                ],
-                [`${window.TableHandler.moduleName}`]: {
-                    fullWidth: true
-                }
+                ]
             }
         });
 
@@ -288,12 +276,8 @@
                     [{ 'color': [] }, { 'background': [] }],
                     ['link'],
                     [{ 'align': [] }],
-                    [window.TableHandler.toolName],
                     ['clean']
-                ],
-                [`${window.TableHandler.moduleName}`]: {
-                    fullWidth: true
-                }
+                ]
             }
         });
     });
@@ -303,6 +287,7 @@
     let insightId = new URLSearchParams(window.location.search).get('id');
     let collectionName = new URLSearchParams(window.location.search).get('collection') || 'scriptureInsights';
     let currentInsight = null;
+    let replyQuill = {};
 
     function showLogin(show) {
         document.getElementById('login-section').style.display = show ? 'flex' : 'none';
@@ -648,12 +633,8 @@
                     [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                     [{ 'color': [] }, { 'background': [] }],
                     ['link'],
-                    [window.TableHandler.toolName],
                     ['clean']
-                ],
-                [`${window.TableHandler.moduleName}`]: {
-                  fullWidth: true
-                }
+                ]
             },
             placeholder: 'Write a reply...'
         });

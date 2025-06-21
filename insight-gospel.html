@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gospel Insight Details</title>
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/quill1.3.7-table-module@1.4.2/dist/index.css" rel="stylesheet">
     <link rel="stylesheet" href="nav.css">
     <style>
         .container {
@@ -130,7 +129,6 @@
     </div>
 
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/quill1.3.7-table-module@1.4.2/dist/index.min.js"></script>
 
     <!-- Shared Navigation Loader and Logic -->
     <script>
@@ -196,12 +194,7 @@
     const auth = firebase.auth();
 
     let editQuill;
-    let relatedQuill;
     document.addEventListener('DOMContentLoaded', () => {
-        Quill.register({
-            [`modules/${window.TableHandler.moduleName}`]: window.TableHandler
-        }, true);
-
         editQuill = new Quill('#editQuill', {
             theme: 'snow',
             modules: {
@@ -212,32 +205,10 @@
                     [{ 'color': [] }, { 'background': [] }],
                     ['link'],
                     [{ 'align': [] }],
-                    [window.TableHandler.toolName],
                     ['clean']
-                ],
-                [`${window.TableHandler.moduleName}`]: {
-                  fullWidth: true
-                }
+                ]
             }
         });
-
-        relatedQuill = new Quill('#relatedQuill', {
-            theme: 'snow',
-            modules: {
-                toolbar: [
-                    ['bold', 'italic', 'underline'],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    [{ 'color': [] }, { 'background': [] }],
-                    ['link', 'image'],
-                    [window.TableHandler.toolName],
-                    ['clean']
-                ],
-                [`${window.TableHandler.moduleName}`]: {
-                    fullWidth: true
-                }
-            }
-        });
-        window.relatedQuill = relatedQuill;
     });
 
     let currentUser = null;
@@ -516,6 +487,26 @@
         printWindow.document.close();
         printWindow.focus();
         printWindow.print();
+    });
+
+    // Initialize Related Quill Editor
+    let relatedQuill;
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof Quill !== 'undefined') {
+            relatedQuill = new Quill('#relatedQuill', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'color': [] }, { 'background': [] }],
+                        ['link', 'image'],
+                        ['clean']
+                    ]
+                }
+            });
+            window.relatedQuill = relatedQuill;
+        }
     });
     </script>
 
