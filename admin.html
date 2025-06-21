@@ -290,9 +290,6 @@
 
         try {
             const usersRef = db.collection('users');
-            const invitationsRef = db.collection('invitations');
-
-            // Check if user already exists
             const userQuery = await usersRef.where('email', '==', email).get();
             if (!userQuery.empty) {
                 inviteStatus.textContent = 'A user with this email already exists.';
@@ -300,27 +297,36 @@
                 return;
             }
 
-            // Check if invitation already exists and update it, otherwise create a new one
+            // Action code settings for the email link.
+            // NOTE: Your domain must be authorized in the Firebase console for this to work.
+            const actionCodeSettings = {
+                url: `${window.location.origin}/index.html`,
+                handleCodeInApp: true
+            };
+
+            await auth.sendSignInLinkToEmail(email, actionCodeSettings);
+
+            const invitationsRef = db.collection('invitations');
             const inviteQuery = await invitationsRef.where('email', '==', email).get();
             if (!inviteQuery.empty) {
-                const docId = inviteQuery.docs[0].id;
-                await invitationsRef.doc(docId).update({ role });
-                inviteStatus.textContent = `Invitation for ${email} updated to role: ${role}.`;
-                inviteStatus.style.color = 'orange';
+                await invitationsRef.doc(inviteQuery.docs[0].id).update({ role });
             } else {
                 await invitationsRef.add({
                     email: email,
                     role: role,
                     invitedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                inviteStatus.textContent = `Invitation created for ${email} with role: ${role}.`;
-                inviteStatus.style.color = 'green';
             }
+            
+            window.localStorage.setItem('emailForSignIn', email);
+
+            inviteStatus.textContent = `Invitation email sent to ${email}.`;
+            inviteStatus.style.color = 'green';
             document.getElementById('inviteForm').reset();
 
         } catch (err) {
-            console.error("Error creating invitation: ", err);
-            inviteStatus.textContent = 'Error creating invitation: ' + err.message;
+            console.error("Error sending invitation: ", err);
+            inviteStatus.textContent = 'Error sending invitation: ' + err.message;
             inviteStatus.style.color = 'red';
         }
     });

@@ -144,6 +144,29 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
+    // Check if the page is being loaded after a user clicked a sign-in link
+    if (auth.isSignInWithEmailLink(window.location.href)) {
+        let email = window.localStorage.getItem('emailForSignIn');
+        if (!email) {
+            // If the email is not in local storage, prompt the user for it
+            email = window.prompt('Please provide your email for confirmation');
+        }
+        
+        auth.signInWithEmailLink(email, window.location.href)
+            .then((result) => {
+                // The user is signed in. The onAuthStateChanged observer will be called.
+                window.localStorage.removeItem('emailForSignIn');
+                // Clean the URL to remove the sign-in link parameters
+                if (window.history && window.history.replaceState) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            })
+            .catch((error) => {
+                console.error("Error signing in with email link:", error);
+                document.getElementById('loginError').textContent = `Failed to sign in. ${error.message}. Please try the link again or contact support.`;
+            });
+    }
+
     auth.onAuthStateChanged(async user => {
         const loginSection = document.getElementById('login-section');
         const mainWidget = document.getElementById('mainWidget');
