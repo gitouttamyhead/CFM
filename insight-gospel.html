@@ -59,8 +59,17 @@
         }
     </style>
             <div class="insight-actions" id="insight-actions" style="display:none;">
-                <button class="btn" id="editBtn">Edit</button>
-                <button class="btn" id="deleteBtn">Delete</button>
+                <div style="margin-bottom: 20px;">
+                    <button class="btn" id="editBtn">Edit</button>
+                    <button class="btn" id="deleteBtn">Delete</button>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <button class="btn" id="createRelatedBtn" style="background: #27ae60;">Create Related Insight</button>
+                    <button class="btn" id="linkRelatedBtn" style="background: #3498db;">Link Related Insight</button>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <button class="btn" id="printBtn" style="background: #9b59b6;">Print with Notes</button>
+                </div>
             </div>
         </div>
         <!-- Login Form -->
@@ -86,6 +95,36 @@
                 <input type="text" id="editTags" placeholder="Tags (comma separated)" style="width:100%;margin-bottom:10px;">
                 <button type="submit" class="btn">Save Changes</button>
                 <button type="button" class="btn" id="cancelEditBtn" style="background:#aaa;">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Related Insight Modal -->
+    <div id="relatedModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="relatedClose">&times;</span>
+            <h2 id="relatedModalTitle">Create Related Insight</h2>
+            <form id="relatedForm">
+                <div style="margin-bottom: 20px;">
+                    <label for="relatedTitle">Title:</label>
+                    <input type="text" id="relatedTitle" required style="width: 100%; padding: 8px; margin-top: 5px;">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label for="relatedQuill">Content:</label>
+                    <div id="relatedQuill" style="height:400px;margin-bottom:20px;"></div>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label for="relatedCategory">Category:</label>
+                    <select id="relatedCategory" required style="width: 100%; padding: 8px; margin-top: 5px;">
+                        <option value="">Select Category</option>
+                        <option value="gospel">Gospel Topics</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div style="text-align: right;">
+                    <button type="button" class="btn" onclick="closeRelatedModal()" style="margin-right: 10px;">Cancel</button>
+                    <button type="submit" class="btn" style="background: #27ae60;">Save Related Insight</button>
+                </div>
             </form>
         </div>
     </div>
@@ -305,9 +344,121 @@
         }
     };
 
-    window.onclick = function(event) {
-        if (event.target == document.getElementById('editModal')) document.getElementById('editModal').style.display = 'none';
-    };
+    // Related Insight Modal Functions
+    function openRelatedModal(mode) {
+        const modal = document.getElementById('relatedModal');
+        const title = document.getElementById('relatedModalTitle');
+        const form = document.getElementById('relatedForm');
+        
+        if (mode === 'create') {
+            title.textContent = 'Create Related Insight';
+            form.reset();
+            if (window.relatedQuill) {
+                window.relatedQuill.setText('');
+            }
+        } else {
+            title.textContent = 'Link Related Insight';
+            // Load existing insights for linking
+            loadInsightsForLinking();
+        }
+        
+        modal.style.display = 'block';
+    }
+
+    function closeRelatedModal() {
+        document.getElementById('relatedModal').style.display = 'none';
+    }
+
+    function loadInsightsForLinking() {
+        // This would load existing insights for linking
+        // Implementation depends on your data structure
+        console.log('Loading insights for linking...');
+    }
+
+    // Event Listeners for Related Modal
+    document.getElementById('createRelatedBtn').addEventListener('click', () => openRelatedModal('create'));
+    document.getElementById('linkRelatedBtn').addEventListener('click', () => openRelatedModal('link'));
+    document.getElementById('relatedClose').addEventListener('click', closeRelatedModal);
+
+    // Related Form Submission
+    document.getElementById('relatedForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const title = document.getElementById('relatedTitle').value;
+        const content = window.relatedQuill ? window.relatedQuill.root.innerHTML : '';
+        const category = document.getElementById('relatedCategory').value;
+        
+        try {
+            const insightData = {
+                title: title,
+                content: content,
+                category: category,
+                created: firebase.firestore.FieldValue.serverTimestamp(),
+                createdBy: currentUser.uid,
+                relatedTo: insightId // Link to current insight
+            };
+            
+            await db.collection(category === 'gospel' ? 'gospelInsights' : 'otherInsights').add(insightData);
+            closeRelatedModal();
+            alert('Related insight created successfully!');
+        } catch (error) {
+            console.error('Error creating related insight:', error);
+            alert('Error creating related insight');
+        }
+    });
+
+    // Print with Notes
+    document.getElementById('printBtn').addEventListener('click', () => {
+        const insight = document.getElementById('insight-details');
+        const printWindow = window.open('', '_blank');
+        
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Insight - ${document.getElementById('insight-title').textContent}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .insight { margin-bottom: 30px; }
+                        .notes { margin-top: 40px; border-top: 2px solid #ccc; padding-top: 20px; }
+                        .notes h3 { color: #333; }
+                        .notes textarea { width: 100%; height: 200px; margin-top: 10px; }
+                        @media print { .notes textarea { border: none; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="insight">
+                        ${insight.innerHTML}
+                    </div>
+                    <div class="notes">
+                        <h3>Personal Notes:</h3>
+                        <textarea placeholder="Add your personal notes here..."></textarea>
+                    </div>
+                </body>
+            </html>
+        `);
+        
+        printWindow.document.close();
+        printWindow.focus();
+    });
+
+    // Initialize Related Quill Editor
+    let relatedQuill;
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof Quill !== 'undefined') {
+            relatedQuill = new Quill('#relatedQuill', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['link', 'image'],
+                        ['clean']
+                    ]
+                }
+            });
+            window.relatedQuill = relatedQuill;
+        }
+    });
     </script>
 
     <!-- Firebase SDKs -->

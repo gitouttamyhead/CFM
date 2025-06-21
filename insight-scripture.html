@@ -73,8 +73,17 @@
             <a href="#" id="backLink" class="back-link">&larr; Back to Scripture Insights</a>
             <div id="insight-details"></div>
             <div class="insight-actions" id="insight-actions" style="display:none;">
-                <button class="btn" id="editBtn">Edit</button>
-                <button class="btn" id="deleteBtn">Delete</button>
+                <div style="margin-bottom: 20px;">
+                    <button class="btn" id="editBtn">Edit</button>
+                    <button class="btn" id="deleteBtn">Delete</button>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <button class="btn" id="createRelatedBtn" style="background: #27ae60;">Create Related Insight</button>
+                    <button class="btn" id="linkRelatedBtn" style="background: #f39c12;">Link Related Insight</button>
+                </div>
+                <div>
+                    <button class="btn" id="printBtn" style="background: #9b59b6;">Print with Notes</button>
+                </div>
             </div>
         </div>
         <!-- Login Form -->
@@ -101,6 +110,36 @@
                 <button type="submit" class="btn">Save Changes</button>
                 <button type="button" class="btn" id="cancelEditBtn" style="background:#aaa;">Cancel</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Related Insight Modal -->
+    <div id="relatedModal" class="modal">
+        <div class="modal-content">
+            <h2 id="relatedModalTitle">Create Related Insight</h2>
+            <form id="relatedForm">
+                <input type="text" id="relatedTitle" placeholder="Title" required style="width:100%;margin-bottom:15px;padding:10px;font-size:16px;">
+                <div id="relatedQuill" style="height:400px;margin-bottom:20px;"></div>
+                <input type="text" id="relatedTags" placeholder="Tags (comma separated)" style="width:100%;margin-bottom:20px;padding:10px;">
+                <div style="text-align:right;">
+                    <button type="submit" class="btn" style="margin-right:10px;">Save Related Insight</button>
+                    <button type="button" class="btn" id="cancelRelatedBtn" style="background:#aaa;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Link Related Insight Modal -->
+    <div id="linkModal" class="modal">
+        <div class="modal-content">
+            <h2>Link Related Insight</h2>
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="searchInsight" placeholder="Search insights..." style="width:100%;padding:10px;margin-bottom:10px;">
+                <div id="searchResults" style="max-height:300px;overflow-y:auto;border:1px solid #ddd;padding:10px;"></div>
+            </div>
+            <div style="text-align:right;">
+                <button type="button" class="btn" id="cancelLinkBtn" style="background:#aaa;">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -170,8 +209,23 @@
     const auth = firebase.auth();
 
     let editQuill;
+    let relatedQuill;
     document.addEventListener('DOMContentLoaded', () => {
         editQuill = new Quill('#editQuill', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ header: [1, 2, false] }],
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link'],
+                    [{ 'align': [] }],
+                    ['clean']
+                ]
+            }
+        });
+        
+        relatedQuill = new Quill('#relatedQuill', {
             theme: 'snow',
             modules: {
                 toolbar: [
@@ -329,8 +383,138 @@
         }
     };
 
-    window.onclick = function(event) {
-        if (event.target == document.getElementById('editModal')) document.getElementById('editModal').style.display = 'none';
+    document.getElementById('createRelatedBtn').onclick = () => {
+        document.getElementById('relatedModalTitle').textContent = 'Create Related Insight';
+        document.getElementById('relatedTitle').value = '';
+        relatedQuill.root.innerHTML = '';
+        document.getElementById('relatedTags').value = '';
+        document.getElementById('relatedModal').style.display = 'block';
+    };
+
+    document.getElementById('cancelRelatedBtn').onclick = () => {
+        document.getElementById('relatedModal').style.display = 'none';
+    };
+
+    document.getElementById('relatedForm').onsubmit = async e => {
+        e.preventDefault();
+        if (!canEdit()) return;
+        const title = document.getElementById('relatedTitle').value;
+        const content = relatedQuill.root.innerHTML;
+        const tags = document.getElementById('relatedTags').value;
+        
+        // Create the related insight
+        const relatedInsight = await db.collection(collectionName).add({
+            title, content, tags,
+            relatedTo: insightId,
+            created: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Update the current insight to link to the new one
+        await db.collection(collectionName).doc(insightId).update({
+            relatedInsights: firebase.firestore.FieldValue.arrayUnion(relatedInsight.id)
+        });
+        
+        document.getElementById('relatedModal').style.display = 'none';
+        loadInsight();
+    };
+
+    document.getElementById('linkRelatedBtn').onclick = () => {
+        document.getElementById('linkModal').style.display = 'block';
+        loadSearchResults();
+    };
+
+    document.getElementById('cancelLinkBtn').onclick = () => {
+        document.getElementById('linkModal').style.display = 'none';
+    };
+
+    document.getElementById('searchInsight').addEventListener('input', (e) => {
+        loadSearchResults(e.target.value);
+    });
+
+    async function loadSearchResults(searchTerm = '') {
+        const resultsDiv = document.getElementById('searchResults');
+        const snapshot = await db.collection(collectionName)
+            .where('title', '>=', searchTerm)
+            .where('title', '<=', searchTerm + '\uf8ff')
+            .limit(10)
+            .get();
+        
+        resultsDiv.innerHTML = '';
+        snapshot.forEach(doc => {
+            if (doc.id !== insightId) { // Don't show current insight
+                const data = doc.data();
+                const div = document.createElement('div');
+                div.style.padding = '10px';
+                div.style.borderBottom = '1px solid #eee';
+                div.style.cursor = 'pointer';
+                div.innerHTML = `<strong>${data.title}</strong><br><small>${data.tags || ''}</small>`;
+                div.onclick = () => linkInsight(doc.id);
+                resultsDiv.appendChild(div);
+            }
+        });
+    }
+
+    async function linkInsight(relatedInsightId) {
+        // Link the insights bidirectionally
+        await db.collection(collectionName).doc(insightId).update({
+            relatedInsights: firebase.firestore.FieldValue.arrayUnion(relatedInsightId)
+        });
+        await db.collection(collectionName).doc(relatedInsightId).update({
+            relatedInsights: firebase.firestore.FieldValue.arrayUnion(insightId)
+        });
+        
+        document.getElementById('linkModal').style.display = 'none';
+        loadInsight();
+    }
+
+    document.getElementById('printBtn').onclick = () => {
+        const printWindow = window.open('', '_blank');
+        const printContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>${currentInsight.title}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; }
+                    .insight-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+                    .insight-tags { color: #666; margin-bottom: 20px; }
+                    .insight-content { margin-bottom: 30px; }
+                    .notes-section { 
+                        border-top: 2px solid #333; 
+                        padding-top: 20px; 
+                        margin-top: 30px; 
+                    }
+                    .notes-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; }
+                    .notes-lines { 
+                        border-bottom: 1px solid #ccc; 
+                        height: 20px; 
+                        margin-bottom: 10px; 
+                    }
+                    @media print {
+                        .notes-lines { border-bottom: 1px solid #000; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="insight-title">${currentInsight.title}</div>
+                <div class="insight-tags">Tags: ${currentInsight.tags || ''}</div>
+                <div class="insight-content">${currentInsight.content}</div>
+                <div class="notes-section">
+                    <div class="notes-title">Personal Notes:</div>
+                    <div class="notes-lines"></div>
+                    <div class="notes-lines"></div>
+                    <div class="notes-lines"></div>
+                    <div class="notes-lines"></div>
+                    <div class="notes-lines"></div>
+
+                </div>
+            </body>
+            </html>
+        `;
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
     };
 
     function setBackLink() {
