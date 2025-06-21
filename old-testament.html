@@ -165,8 +165,8 @@
 
     function showLogin(show) {
         document.getElementById('login-section').style.display = show ? 'flex' : 'none';
-        document.getElementById('mainWidget').style.display = show ? 'block' : 'none';
         document.getElementById('addInsightBtn').style.display = (show || !canEdit()) ? 'none' : 'inline-block';
+        document.getElementById('mainContent').style.marginLeft = show ? '0' : '';
     }
 
     function canEdit() {
