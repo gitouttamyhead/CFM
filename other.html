@@ -260,8 +260,19 @@
     async function loadInsights() {
         const snapshot = await db.collection('otherInsights').orderBy('created', 'desc').get();
         const list = document.getElementById('insights-list');
+        list.innerHTML = 'Loading...';
+        let query = db.collection('otherInsights').orderBy('created', 'desc');
+
+        // Only fetch insights that are NOT related to another insight
+        query = query.where('relatedTo', '==', null);
+        
+        const snapshotQuery = await query.get();
         list.innerHTML = '';
-        snapshot.forEach(doc => {
+        if (snapshotQuery.empty) {
+            list.innerHTML = '<p>No insights yet. Be the first to add one!</p>';
+            return;
+        }
+        snapshotQuery.forEach(doc => {
             const data = doc.data();
             const card = document.createElement('div');
             card.className = 'insight-card';

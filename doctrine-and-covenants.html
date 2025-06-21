@@ -254,29 +254,29 @@
     });
 
     async function loadInsights() {
-        try {
-            const snapshot = await insightsCollection.orderBy('created', 'desc').get();
-            const list = document.getElementById('insights-list');
-            list.innerHTML = '';
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                const card = document.createElement('div');
-                card.className = 'insight-card';
-                card.innerHTML = `
-                    <div class="insight-title">${data.title}</div>
-                    <div>Tags: ${data.tags || ''}</div>
-                    <div class="insight-actions">
-                        <a href="insight-scripture.html?id=${doc.id}&collection=doctrineAndCovenantsInsights" class="btn">See Details</a>
-                        ${canEdit() ? `<button class="btn" onclick="editInsight('${doc.id}')">Edit</button>
-                        <button class="btn" onclick="deleteInsight('${doc.id}')">Delete</button>` : ''}
-                    </div>
-                `;
-                list.appendChild(card);
-            });
-        } catch (error) {
-            console.error('Error loading insights:', error);
-            document.getElementById('insights-list').innerHTML = '<p>Error loading insights. Please try again.</p>';
-        }
+        insightsList.innerHTML = 'Loading...';
+        let query = insightsCollection.orderBy('created', 'desc');
+
+        // Only fetch insights that are NOT related to another insight
+        query = query.where('relatedTo', '==', null);
+
+        const snapshot = await query.get();
+        insightsList.innerHTML = '';
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const card = document.createElement('div');
+            card.className = 'insight-card';
+            card.innerHTML = `
+                <div class="insight-title">${data.title}</div>
+                <div>Tags: ${data.tags || ''}</div>
+                <div class="insight-actions">
+                    <a href="insight-scripture.html?id=${doc.id}&collection=doctrineAndCovenantsInsights" class="btn">See Details</a>
+                    ${canEdit() ? `<button class="btn" onclick="editInsight('${doc.id}')">Edit</button>
+                    <button class="btn" onclick="deleteInsight('${doc.id}')">Delete</button>` : ''}
+                </div>
+            `;
+            insightsList.appendChild(card);
+        });
     }
 
     const modal = document.getElementById('insightModal');
