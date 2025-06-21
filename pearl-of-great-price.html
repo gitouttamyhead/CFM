@@ -163,6 +163,8 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
     const insightsCollection = db.collection('pearlOfGreatPriceInsights');
+    const insightsList = document.getElementById('insights-list');
+    const modal = document.getElementById('insightModal');
 
     let quill;
     document.addEventListener('DOMContentLoaded', () => {
@@ -280,7 +282,6 @@
     }, 50);
 
     // Modal functionality
-    const modal = document.getElementById('insightModal');
     const form = document.getElementById('insightForm');
     document.getElementById('addInsightBtn').onclick = () => openModal();
 

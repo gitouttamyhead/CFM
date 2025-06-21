@@ -163,6 +163,8 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
     const insightsCollection = db.collection('newTestamentInsights');
+    const insightsList = document.getElementById('insights-list');
+    const modal = document.getElementById('insightModal');
 
     let quill;
     document.addEventListener('DOMContentLoaded', () => {
@@ -279,7 +281,6 @@
         });
     }
 
-    const modal = document.getElementById('insightModal');
     const form = document.getElementById('insightForm');
     document.getElementById('addInsightBtn').onclick = () => openModal();
     document.getElementById('cancelModalBtn').onclick = () => { modal.style.display = 'none'; };
