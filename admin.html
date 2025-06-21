@@ -73,6 +73,19 @@
                     <!-- Users will be loaded here -->
                 </tbody>
             </table>
+            <div style="margin-top: 40px;">
+                <h2>Invite New User</h2>
+                <p>Create an invitation for a new user. Ask them to visit the site and create an account with the specified email to be automatically assigned their role.</p>
+                <form id="inviteForm" style="display: flex; gap: 10px; align-items: center;">
+                    <input type="email" id="inviteEmail" placeholder="User's Email" required style="flex-grow: 1; padding: 8px;">
+                    <select id="inviteRole" style="padding: 8px;">
+                        <option value="user">User</option>
+                        <option value="editor">Editor</option>
+                    </select>
+                    <button type="submit" class="btn">Create Invitation</button>
+                </form>
+                <div id="inviteStatus" style="margin-top: 10px;"></div>
+            </div>
         </div>
         <div id="notAdminMsg" style="color:red; text-align:center; display:none;">
             You must be an admin to view this page.
@@ -259,6 +272,58 @@
         await db.collection('users').doc(uid).update({ role });
         loadUsers();
     };
+
+    document.getElementById('inviteForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const email = document.getElementById('inviteEmail').value;
+        const role = document.getElementById('inviteRole').value;
+        const inviteStatus = document.getElementById('inviteStatus');
+
+        if (!isAdmin()) {
+            inviteStatus.textContent = 'You do not have permission to do this.';
+            inviteStatus.style.color = 'red';
+            return;
+        }
+
+        inviteStatus.textContent = 'Processing...';
+        inviteStatus.style.color = 'black';
+
+        try {
+            const usersRef = db.collection('users');
+            const invitationsRef = db.collection('invitations');
+
+            // Check if user already exists
+            const userQuery = await usersRef.where('email', '==', email).get();
+            if (!userQuery.empty) {
+                inviteStatus.textContent = 'A user with this email already exists.';
+                inviteStatus.style.color = 'red';
+                return;
+            }
+
+            // Check if invitation already exists and update it, otherwise create a new one
+            const inviteQuery = await invitationsRef.where('email', '==', email).get();
+            if (!inviteQuery.empty) {
+                const docId = inviteQuery.docs[0].id;
+                await invitationsRef.doc(docId).update({ role });
+                inviteStatus.textContent = `Invitation for ${email} updated to role: ${role}.`;
+                inviteStatus.style.color = 'orange';
+            } else {
+                await invitationsRef.add({
+                    email: email,
+                    role: role,
+                    invitedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                inviteStatus.textContent = `Invitation created for ${email} with role: ${role}.`;
+                inviteStatus.style.color = 'green';
+            }
+            document.getElementById('inviteForm').reset();
+
+        } catch (err) {
+            console.error("Error creating invitation: ", err);
+            inviteStatus.textContent = 'Error creating invitation: ' + err.message;
+            inviteStatus.style.color = 'red';
+        }
+    });
     </script>
 </body>
 </html>

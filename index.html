@@ -124,38 +124,82 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    let currentUser = null;
-    let currentUserRole = null;
-
-    function showLogin(show) {
-        document.getElementById('login-section').style.display = show ? 'flex' : 'none';
-        document.getElementById('mainWidget').style.display = show ? 'none' : 'block';
-        document.getElementById('mainContent').style.marginLeft = show ? '0' : '';
-    }
-
     auth.onAuthStateChanged(async user => {
-        currentUser = user;
+        const loginSection = document.getElementById('login-section');
+        const welcomeSection = document.getElementById('welcome-section');
+        const userEmailSpan = document.getElementById('user-email');
+
         if (user) {
-            const userDoc = await db.collection('users').doc(user.uid).get();
-            currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
-            showLogin(false);
+            loginSection.style.display = 'none';
+            welcomeSection.style.display = 'block';
+            userEmailSpan.textContent = user.email;
+
+            // Check if user document already exists
+            const userDocRef = db.collection('users').doc(user.uid);
+            const userDoc = await userDocRef.get();
+
+            if (!userDoc.exists) {
+                // This is a new user, check for an invitation
+                const invitationsRef = db.collection('invitations');
+                const inviteQuery = await invitationsRef.where('email', '==', user.email).limit(1).get();
+
+                let role = 'user'; // Default role
+                if (!inviteQuery.empty) {
+                    const inviteData = inviteQuery.docs[0].data();
+                    role = inviteData.role;
+                    // Delete the invitation so it can't be reused
+                    await invitationsRef.doc(inviteQuery.docs[0].id).delete();
+                }
+
+                // Create the new user document
+                await userDocRef.set({
+                    email: user.email,
+                    role: role,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+
         } else {
-            currentUserRole = null;
-            showLogin(true);
+            loginSection.style.display = 'block';
+            welcomeSection.style.display = 'none';
         }
-        window._navAuthState = { user: currentUser, role: currentUserRole };
-        if (navLoaded) setupNav(currentUser, currentUserRole);
+
+        // Pass auth state to nav loader
+        window._navAuthState = { user: user, role: null }; 
+        if (window.navLoaded) {
+            const userDoc = user ? await db.collection('users').doc(user.uid).get() : null;
+            const userRole = userDoc && userDoc.exists ? userDoc.data().role : null;
+            window._navAuthState.role = userRole;
+            setupNav(user, userRole);
+        }
     });
 
-    document.getElementById('loginForm').addEventListener('submit', async e => {
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+
+    loginForm.addEventListener('submit', async e => {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
         try {
             await auth.signInWithEmailAndPassword(email, password);
-            document.getElementById('loginError').textContent = '';
+            loginError.textContent = '';
         } catch (err) {
-            document.getElementById('loginError').textContent = err.message;
+            loginError.textContent = err.message;
+        }
+    });
+
+    document.getElementById('resetPasswordBtn').addEventListener('click', async () => {
+        const email = document.getElementById('loginEmail').value;
+        if (!email) {
+            loginError.textContent = 'Enter your email to reset password.';
+            return;
+        }
+        try {
+            await auth.sendPasswordResetEmail(email);
+            loginError.textContent = 'Password reset email sent!';
+        } catch (err) {
+            loginError.textContent = err.message;
         }
     });
 
@@ -174,20 +218,6 @@
             clearInterval(logoutInterval);
         }
     }, 50);
-
-    document.getElementById('resetPasswordBtn').addEventListener('click', async () => {
-        const email = document.getElementById('loginEmail').value;
-        if (!email) {
-            document.getElementById('loginError').textContent = 'Enter your email to reset password.';
-            return;
-        }
-        try {
-            await auth.sendPasswordResetEmail(email);
-            document.getElementById('loginError').textContent = 'Password reset email sent!';
-        } catch (err) {
-            document.getElementById('loginError').textContent = err.message;
-        }
-    });
     </script>
 </body>
 </html> 
