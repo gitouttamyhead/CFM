@@ -113,3 +113,50 @@ body.nav-open {
         transform: rotate(-45deg) translate(7px, -6px);
     }
 }
+
+.section-link {
+    display: block;
+    background: #3498db;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 4px;
+    padding: 16px;
+    margin: 20px 0;
+    font-size: 1.2em;
+    transition: background 0.2s;
+}
+
+.section-link:hover {
+    background: #217dbb;
+}
+
+.nav-submenu {
+    list-style: none;
+    padding-left: 20px;
+    margin: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.nav-item.open > .nav-submenu {
+    max-height: 500px; /* Adjust as needed */
+    transition: max-height 0.5s ease-in;
+}
+
+.nav-item > a {
+    position: relative;
+}
+
+.nav-item.has-submenu > a::after {
+    content: '›';
+    position: absolute;
+    right: 20px;
+    font-size: 1.5em;
+    transform: rotate(90deg);
+    transition: transform 0.3s;
+}
+
+.nav-item.has-submenu.open > a::after {
+    transform: rotate(-90deg);
+}

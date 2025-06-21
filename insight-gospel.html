@@ -92,6 +92,18 @@
             }
             const adminNavItem = navWrapper.querySelector('#adminNavItem');
             if (adminNavItem) adminNavItem.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
+
+            // Submenu toggle logic
+            const submenuToggles = navWrapper.querySelectorAll('.has-submenu > a');
+            submenuToggles.forEach(toggle => {
+                if (toggle.hasAttribute('data-submenu-listener')) return;
+                toggle.setAttribute('data-submenu-listener', 'true');
+                toggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    toggle.parentElement.classList.toggle('open');
+                });
+            });
+
         } else {
             if (hamburger) hamburger.style.display = 'none';
             if (navContainer) navContainer.style.display = 'none';
