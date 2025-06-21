@@ -258,7 +258,6 @@
     });
 
     async function loadInsights() {
-        const snapshot = await db.collection('gospelInsights').orderBy('created', 'desc').get();
         const list = document.getElementById('insights-list');
         list.innerHTML = 'Loading...';
         let query = db.collection('gospelInsights').orderBy('created', 'desc');
