@@ -88,8 +88,10 @@
         const hamburger = navWrapper.querySelector('.hamburger');
         const navContainer = navWrapper.querySelector('.nav-container');
         if (currentUser) {
-            if (hamburger) hamburger.style.display = '';
-            if (navContainer) navContainer.style.display = '';
+            // Explicitly show the navigation for logged-in users
+            if (navContainer) navContainer.style.display = 'block';
+            if (hamburger) hamburger.style.display = 'block'; // The CSS will hide this on large screens
+
             if (hamburger && navContainer && !hamburger.hasAttribute('data-nav-initialized')) {
                 hamburger.addEventListener('click', () => {
                     hamburger.classList.toggle('active');
