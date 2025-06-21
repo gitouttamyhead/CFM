@@ -411,34 +411,48 @@
     document.getElementById('printBtn').addEventListener('click', () => {
         const insight = document.getElementById('insight-details');
         const printWindow = window.open('', '_blank');
-        
         printWindow.document.write(`
             <html>
                 <head>
-                    <title>Insight - ${document.getElementById('insight-title').textContent}</title>
+                    <title>Insight - ${document.getElementById('insight-title') ? document.getElementById('insight-title').textContent : ''}</title>
                     <style>
                         body { font-family: Arial, sans-serif; margin: 20px; }
                         .insight { margin-bottom: 30px; }
+                        .page-break { page-break-after: always; }
                         .notes { margin-top: 40px; border-top: 2px solid #ccc; padding-top: 20px; }
                         .notes h3 { color: #333; }
-                        .notes textarea { width: 100%; height: 200px; margin-top: 10px; }
-                        @media print { .notes textarea { border: none; } }
+                        .notes-lines { border-bottom: 1px solid #ccc; height: 20px; margin-bottom: 10px; }
+                        @media print { 
+                            .notes textarea { border: none; }
+                            .page-break { display: block; page-break-after: always; }
+                            .notes-lines { border-bottom: 1px solid #000; }
+                        }
                     </style>
                 </head>
                 <body>
                     <div class="insight">
                         ${insight.innerHTML}
                     </div>
+                    <div class="page-break"></div>
                     <div class="notes">
                         <h3>Personal Notes:</h3>
-                        <textarea placeholder="Add your personal notes here..."></textarea>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
                     </div>
                 </body>
             </html>
         `);
-        
         printWindow.document.close();
         printWindow.focus();
+        printWindow.print();
     });
 
     // Initialize Related Quill Editor

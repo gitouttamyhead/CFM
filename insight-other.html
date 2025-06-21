@@ -460,44 +460,53 @@
     }
 
     // Print with Notes
-    document.getElementById('printBtn').onclick = () => {
+    function printInsightWithNotes() {
+        const insight = document.getElementById('insight-details');
         const printWindow = window.open('', '_blank');
-        const printContent = `
-            <!DOCTYPE html>
+        printWindow.document.write(`
             <html>
-            <head>
-                <title>${currentInsight.title}</title>
-                <style>
-                    body { font-family: Arial, sans-serif; margin: 20px; }
-                    .insight-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
-                    .insight-tags { color: #666; margin-bottom: 20px; }
-                    .insight-content { margin-bottom: 30px; }
-                    .notes-section { border-top: 2px solid #333; padding-top: 20px; margin-top: 30px; }
-                    .notes-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; }
-                    .notes-lines { border-bottom: 1px solid #ccc; height: 20px; margin-bottom: 10px; }
-                    @media print { .notes-lines { border-bottom: 1px solid #000; } }
-                </style>
-            </head>
-            <body>
-                <div class="insight-title">${currentInsight.title}</div>
-                <div class="insight-tags">Tags: ${currentInsight.tags || ''}</div>
-                <div class="insight-content">${currentInsight.content}</div>
-                <div class="notes-section">
-                    <div class="notes-title">Personal Notes:</div>
-                    <div class="notes-lines"></div>
-                    <div class="notes-lines"></div>
-                    <div class="notes-lines"></div>
-                    <div class="notes-lines"></div>
-                    <div class="notes-lines"></div>
-                </div>
-            </body>
+                <head>
+                    <title>Insight - ${document.getElementById('insight-title') ? document.getElementById('insight-title').textContent : ''}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .insight { margin-bottom: 30px; }
+                        .page-break { page-break-after: always; }
+                        .notes { margin-top: 40px; border-top: 2px solid #ccc; padding-top: 20px; }
+                        .notes h3 { color: #333; }
+                        .notes-lines { border-bottom: 1px solid #ccc; height: 20px; margin-bottom: 10px; }
+                        @media print { 
+                            .notes textarea { border: none; }
+                            .page-break { display: block; page-break-after: always; }
+                            .notes-lines { border-bottom: 1px solid #000; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="insight">
+                        ${insight.innerHTML}
+                    </div>
+                    <div class="page-break"></div>
+                    <div class="notes">
+                        <h3>Personal Notes:</h3>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
+                        <div class="notes-lines"></div>
+                    </div>
+                </body>
             </html>
-        `;
-        printWindow.document.write(printContent);
+        `);
         printWindow.document.close();
         printWindow.focus();
         printWindow.print();
-    };
+    }
+    document.getElementById('printBtn').onclick = printInsightWithNotes;
     </script>
 </body>
 </html>
