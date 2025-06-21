@@ -56,6 +56,46 @@
             gap: 10px;
             min-width: 250px;
         }
+        .related-insights-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+        .related-insights-section h4 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .related-insights-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .related-insight-item {
+            background: #f8f9fa;
+            border-left: 3px solid #007bff;
+            padding: 10px 15px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .related-insight-item:hover {
+            background: #e9ecef;
+        }
+        .related-insight-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .related-insight-title {
+            font-weight: 500;
+            color: #007bff;
+        }
+        .related-insight-tags {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-left: 8px;
+        }
     </style>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -336,10 +376,44 @@
             return;
         }
         currentInsight = doc.data();
+        
+        // Load related insights
+        let relatedInsightsHTML = '';
+        if (currentInsight.relatedInsights && currentInsight.relatedInsights.length > 0) {
+            const relatedDocs = await Promise.all(
+                currentInsight.relatedInsights.map(id => 
+                    db.collection(collectionName).doc(id).get()
+                )
+            );
+            
+            const validRelatedInsights = relatedDocs
+                .filter(doc => doc.exists)
+                .map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            if (validRelatedInsights.length > 0) {
+                relatedInsightsHTML = `
+                    <div class="related-insights-section">
+                        <h4>Related Insights:</h4>
+                        <div class="related-insights-list">
+                            ${validRelatedInsights.map(insight => `
+                                <div class="related-insight-item">
+                                    <a href="insight-scripture.html?id=${insight.id}&collection=${collectionName}" class="related-insight-link">
+                                        <span class="related-insight-title">${insight.title}</span>
+                                        ${insight.tags ? `<span class="related-insight-tags">(${insight.tags})</span>` : ''}
+                                    </a>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
         document.getElementById('insight-details').innerHTML = `
             <div class="insight-title">${currentInsight.title}</div>
             <div class="insight-tags">Tags: ${currentInsight.tags || ''}</div>
             <div class="insight-content">${currentInsight.content}</div>
+            ${relatedInsightsHTML}
         `;
         document.getElementById('insight-actions').style.display = canEdit() ? 'block' : 'none';
     }

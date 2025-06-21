@@ -349,10 +349,44 @@
             return;
         }
         currentInsight = doc.data();
+        
+        // Load related insights
+        let relatedInsightsHTML = '';
+        if (currentInsight.relatedInsights && currentInsight.relatedInsights.length > 0) {
+            const relatedDocs = await Promise.all(
+                currentInsight.relatedInsights.map(id => 
+                    db.collection('otherInsights').doc(id).get()
+                )
+            );
+            
+            const validRelatedInsights = relatedDocs
+                .filter(doc => doc.exists)
+                .map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            if (validRelatedInsights.length > 0) {
+                relatedInsightsHTML = `
+                    <div class="related-insights-section">
+                        <h4>Related Insights:</h4>
+                        <div class="related-insights-list">
+                            ${validRelatedInsights.map(insight => `
+                                <div class="related-insight-item">
+                                    <a href="insight-other.html?id=${insight.id}" class="related-insight-link">
+                                        <span class="related-insight-title">${insight.title}</span>
+                                        ${insight.tags ? `<span class="related-insight-tags">(${insight.tags})</span>` : ''}
+                                    </a>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
         document.getElementById('insight-details').innerHTML = `
             <div class="insight-title">${currentInsight.title}</div>
             <div class="insight-tags">Tags: ${currentInsight.tags || ''}</div>
             <div class="insight-content">${currentInsight.content}</div>
+            ${relatedInsightsHTML}
         `;
         document.getElementById('insight-actions').style.display = canEdit() ? 'block' : 'none';
     }
