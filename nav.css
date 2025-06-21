@@ -7,6 +7,10 @@ body {
     overflow-x: hidden;
 }
 
+body.nav-open {
+    overflow: hidden;
+}
+
 .nav-container {
     width: 250px;
     background: #2c3e50;
@@ -73,7 +77,7 @@ body {
     flex: 1;
     margin-left: 250px;
     padding: 20px;
-    transition: margin-left 0.3s ease, transform 0.3s ease;
+    transition: margin-left 0.3s ease;
 }
 
 @media (max-width: 768px) {
@@ -86,8 +90,15 @@ body {
     .main-content {
         margin-left: 0;
     }
-    .main-content.nav-open {
-        transform: translateX(250px);
+    .main-content.nav-open::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 500;
     }
     .hamburger {
         display: block;
