@@ -313,8 +313,11 @@
             await insightsCollection.doc(id).update({ title, content, tags });
         } else {
             await insightsCollection.add({
-                title, content, tags,
-                created: firebase.firestore.FieldValue.serverTimestamp()
+                title,
+                tags,
+                content,
+                created: firebase.firestore.FieldValue.serverTimestamp(),
+                relatedTo: null
             });
         }
         modal.style.display = 'none';

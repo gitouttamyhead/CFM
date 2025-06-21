@@ -322,7 +322,8 @@
         } else {
             await db.collection('otherInsights').add({
                 title, content, tags,
-                created: firebase.firestore.FieldValue.serverTimestamp()
+                created: firebase.firestore.FieldValue.serverTimestamp(),
+                relatedTo: null
             });
         }
         modal.style.display = 'none';

@@ -321,8 +321,11 @@
             await db.collection('gospelInsights').doc(id).update({ title, content, tags });
         } else {
             await db.collection('gospelInsights').add({
-                title, content, tags,
-                created: firebase.firestore.FieldValue.serverTimestamp()
+                title,
+                content,
+                tags,
+                created: firebase.firestore.FieldValue.serverTimestamp(),
+                relatedTo: null
             });
         }
         modal.style.display = 'none';
