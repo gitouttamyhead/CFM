@@ -172,9 +172,42 @@
     </style>
 </head>
 <body>
-    <div id="nav-placeholder"></div>
-    
-    <div class="main-content">
+    <!-- Shared Navigation -->
+    <div id="navWrapper">
+        <!-- nav.html -->
+        <button class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <nav class="nav-container">
+            <div class="close-nav-button">×</div>
+            <div class="nav-header">
+                <h2>Come Follow Me</h2>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="index.html">Home</a></li>
+                <li class="nav-item has-submenu">
+                    <a href="scripture.html">Scripture Insights</a>
+                    <ul class="nav-submenu">
+                        <li class="nav-item"><a href="old-testament.html">Old Testament</a></li>
+                        <li class="nav-item"><a href="new-testament.html">New Testament</a></li>
+                        <li class="nav-item"><a href="book-of-mormon.html">Book of Mormon</a></li>
+                        <li class="nav-item"><a href="doctrine-and-covenants.html">Doctrine & Covenants</a></li>
+                        <li class="nav-item"><a href="pearl-of-great-price.html">Pearl of Great Price</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item"><a href="gospel.html">Gospel Topics</a></li>
+                <li class="nav-item"><a href="other.html">Other Insights</a></li>
+                <li class="nav-item" id="adminNavItem" style="display:none;"><a href="admin.html">Admin Dashboard</a></li>
+                <li class="nav-item"><a href="profile.html">Profile</a></li>
+                <li class="nav-item"><a href="#" id="navLogout">Logout</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
         <div class="profile-container">
             <div class="profile-header">
                 <h1>User Profile</h1>
@@ -223,187 +256,19 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    
-    <!-- Standardized Navigation Script -->
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="nav.js"></script>
-
     <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBXyOXGktacbjg-X2tuVsmJ7nYLCwJZ5Nw",
-            authDomain: "comefollowme-d097a.firebaseapp.com",
-            projectId: "comefollowme-d097a",
-            storageBucket: "comefollowme-d097a.firebasestorage.app",
-            messagingSenderId: "725941283112",
-            appId: "1:725941283112:web:7071276f065bb3b7dd081d",
-            measurementId: "G-Z9HKN7M5K5"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        // Simplified auth logic
         const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        let currentUser = null;
-        let authStateEstablished = false;
-
-        // Initialize the application
-        async function initializeApp() {
-            try {
-                // Load navigation
-                const response = await fetch('nav.html');
-                const navHtml = await response.text();
-                document.getElementById('nav-placeholder').innerHTML = navHtml;
-                
-                // Setup navigation
-                setupNav();
-                
-                // Listen for auth state changes
-                auth.onAuthStateChanged(onAuthStateChanged);
-            } catch (error) {
-                console.error('Error initializing app:', error);
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = 'index.html';
             }
-        }
-
-        // Setup navigation functionality
-        function setupNav() {
-            // The standardized nav.js script handles most navigation functionality
-            // We just need to ensure it's called after navigation is loaded
-            if (typeof setupStandardizedNav === 'function') {
-                setupStandardizedNav();
-            }
-        }
-
-        // Handle auth state changes
-        async function onAuthStateChanged(user) {
-            if (user) {
-                currentUser = user;
-                await loadUserInfo();
-                setupPasswordForm();
-            } else {
-                // Only redirect if auth state is established and user is null
-                if (authStateEstablished) {
-                    window.location.href = 'index.html';
-                }
-            }
-            authStateEstablished = true;
-        }
-
-        // Load user information
-        async function loadUserInfo() {
-            try {
-                const userEmail = document.getElementById('userEmail');
-                const userRole = document.getElementById('userRole');
-                const userCreated = document.getElementById('userCreated');
-
-                userEmail.textContent = currentUser.email;
-
-                // Get user role from Firestore
-                const userDoc = await db.collection('users').doc(currentUser.uid).get();
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    userRole.textContent = userData.role || 'User';
-                    
-                    // Format creation date
-                    if (userData.createdAt) {
-                        const date = userData.createdAt.toDate();
-                        userCreated.textContent = date.toLocaleDateString();
-                    } else {
-                        userCreated.textContent = 'Unknown';
-                    }
-                } else {
-                    userRole.textContent = 'User';
-                    userCreated.textContent = 'Unknown';
-                }
-            } catch (error) {
-                console.error('Error loading user info:', error);
-                showAlert('Error loading user information', 'error');
-            }
-        }
-
-        // Setup password form
-        function setupPasswordForm() {
-            const passwordForm = document.getElementById('passwordForm');
-            passwordForm.addEventListener('submit', handlePasswordChange);
-        }
-
-        // Handle password change
-        async function handlePasswordChange(e) {
-            e.preventDefault();
-            
-            const currentPassword = document.getElementById('currentPassword').value;
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-
-            // Validation
-            if (newPassword !== confirmPassword) {
-                showAlert('New passwords do not match', 'error');
-                return;
-            }
-
-            if (newPassword.length < 6) {
-                showAlert('New password must be at least 6 characters long', 'error');
-                return;
-            }
-
-            // Show loading
-            const loading = document.getElementById('passwordLoading');
-            loading.style.display = 'block';
-
-            try {
-                // Re-authenticate user before password change
-                const credential = firebase.auth.EmailAuthProvider.credential(
-                    currentUser.email, 
-                    currentPassword
-                );
-                
-                await currentUser.reauthenticateWithCredential(credential);
-                
-                // Change password
-                await currentUser.updatePassword(newPassword);
-                
-                showAlert('Password updated successfully!', 'success');
-                clearPasswordForm();
-            } catch (error) {
-                console.error('Error changing password:', error);
-                if (error.code === 'auth/wrong-password') {
-                    showAlert('Current password is incorrect', 'error');
-                } else if (error.code === 'auth/weak-password') {
-                    showAlert('New password is too weak', 'error');
-                } else {
-                    showAlert('Error updating password: ' + error.message, 'error');
-                }
-            } finally {
-                loading.style.display = 'none';
-            }
-        }
-
-        // Clear password form
-        function clearPasswordForm() {
-            document.getElementById('currentPassword').value = '';
-            document.getElementById('newPassword').value = '';
-            document.getElementById('confirmPassword').value = '';
-        }
-
-        // Show alert message
-        function showAlert(message, type) {
-            const alert = document.getElementById('alertMessage');
-            alert.textContent = message;
-            alert.className = `alert alert-${type}`;
-            alert.style.display = 'block';
-            
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                alert.style.display = 'none';
-            }, 5000);
-        }
-
-        // Initialize the app when the page loads
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        });
     </script>
 </body>
 </html> 

@@ -47,12 +47,12 @@ function setupStandardizedNav() {
         if (toggle.hasAttribute('data-submenu-listener')) return;
         toggle.setAttribute('data-submenu-listener', 'true');
         toggle.addEventListener('click', (e) => {
-            // On mobile, let the main nav link handler close the menu.
-            // On desktop, just toggle the submenu.
-            if (window.innerWidth > 768) {
+            // On mobile, prevent navigation and toggle the submenu.
+            // On desktop, the default link behavior is fine, but we also toggle.
+            if (window.innerWidth <= 768) {
                 e.preventDefault();
-                toggle.parentElement.classList.toggle('open');
             }
+            toggle.parentElement.classList.toggle('open');
         });
     });
     

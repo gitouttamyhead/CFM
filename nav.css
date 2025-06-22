@@ -103,6 +103,7 @@ body.nav-active .main-content {
         align-items: center;
         background: #2c3e50;
         transition: opacity 0.3s ease, transform 0.3s ease;
+        overflow-y: auto;
     }
     
     body.nav-active .nav-container {
@@ -217,5 +218,5 @@ body.nav-active .main-content {
 }
 
 .nav-item.has-submenu.open > a::after {
-    transform: rotate(-90deg);
+    transform: rotate(270deg);
 }

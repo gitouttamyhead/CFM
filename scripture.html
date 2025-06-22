@@ -40,7 +40,38 @@
 </head>
 <body>
     <!-- Shared Navigation -->
-    <div id="navWrapper"></div>
+    <div id="navWrapper">
+        <!-- nav.html -->
+        <button class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <nav class="nav-container">
+            <div class="close-nav-button">×</div>
+            <div class="nav-header">
+                <h2>Come Follow Me</h2>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="index.html">Home</a></li>
+                <li class="nav-item has-submenu">
+                    <a href="scripture.html">Scripture Insights</a>
+                    <ul class="nav-submenu">
+                        <li class="nav-item"><a href="old-testament.html">Old Testament</a></li>
+                        <li class="nav-item"><a href="new-testament.html">New Testament</a></li>
+                        <li class="nav-item"><a href="book-of-mormon.html">Book of Mormon</a></li>
+                        <li class="nav-item"><a href="doctrine-and-covenants.html">Doctrine & Covenants</a></li>
+                        <li class="nav-item"><a href="pearl-of-great-price.html">Pearl of Great Price</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item"><a href="gospel.html">Gospel Topics</a></li>
+                <li class="nav-item"><a href="other.html">Other Insights</a></li>
+                <li class="nav-item" id="adminNavItem" style="display:none;"><a href="admin.html">Admin Dashboard</a></li>
+                <li class="nav-item"><a href="profile.html">Profile</a></li>
+                <li class="nav-item"><a href="#" id="navLogout">Logout</a></li>
+            </ul>
+        </nav>
+    </div>
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
@@ -65,129 +96,19 @@
         </div>
     </div>
 
-    <!-- Shared Navigation Loader and Logic -->
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="nav.js"></script>
     <script>
-    function setupNav(currentUser, currentUserRole) {
-        const navWrapper = document.getElementById('navWrapper');
-        if (!navWrapper) return;
-        const hamburger = navWrapper.querySelector('.hamburger');
-        const navContainer = navWrapper.querySelector('.nav-container');
-
-        if (currentUser) {
-            document.body.classList.add('nav-active');
-            if (hamburger) hamburger.style.display = '';
-            if (navContainer) navContainer.style.display = '';
-
-            if (hamburger && navContainer && !hamburger.hasAttribute('data-nav-initialized')) {
-                hamburger.addEventListener('click', () => {
-                    hamburger.classList.toggle('active');
-                    navContainer.classList.toggle('active');
-                });
-                hamburger.setAttribute('data-nav-initialized', 'true');
+        // Simplified auth logic
+        const auth = firebase.auth();
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                // Allow non-logged-in users to view content
             }
-            const adminNavItem = navWrapper.querySelector('#adminNavItem');
-            if (adminNavItem) {
-                adminNavItem.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
-            }
-            const submenuToggles = navWrapper.querySelectorAll('.has-submenu > a');
-            submenuToggles.forEach(toggle => {
-                if (toggle.hasAttribute('data-submenu-listener')) return;
-                toggle.setAttribute('data-submenu-listener', 'true');
-                toggle.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    toggle.parentElement.classList.toggle('open');
-                });
-            });
-            const navLogout = navWrapper.querySelector('#navLogout');
-             if (navLogout && !navLogout.hasAttribute('data-logout-listener')) {
-                navLogout.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    auth.signOut();
-                });
-                navLogout.setAttribute('data-logout-listener', 'true');
-            }
-        } else {
-            document.body.classList.remove('nav-active');
-            if (hamburger) hamburger.style.display = 'none';
-            if (navContainer) navContainer.style.display = 'none';
-        }
-    }
-
-    let navLoaded = false;
-    let authStateEstablished = false;
-
-    function initializeApp() {
-        if (navLoaded && authStateEstablished) {
-             setupNav(auth.currentUser, window.currentUserRole);
-        }
-    }
-    
-    fetch('nav.html')
-      .then(res => res.text())
-      .then(html => {
-        document.getElementById('navWrapper').innerHTML = html;
-        navLoaded = true;
-        initializeApp();
-      });
-    </script>
-
-    <!-- Firebase Auth and Page Logic -->
-    <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBXyOXGktacbjg-X2tuVsmJ7nYLCwJZ5Nw",
-        authDomain: "comefollowme-d097a.firebaseapp.com",
-        projectId: "comefollowme-d097a",
-        storageBucket: "comefollowme-d097a.firebasestorage.app",
-        messagingSenderId: "725941283112",
-        appId: "1:725941283112:web:7071276f065bb3b7dd081d",
-        measurementId: "G-Z9HKN7M5K5"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth();
-    window.currentUserRole = null;
-
-    auth.onAuthStateChanged(async user => {
-        const mainWidget = document.getElementById('mainWidget');
-
-        if (user) {
-            mainWidget.style.display = 'block';
-            const userDoc = await db.collection('users').doc(user.uid).get();
-            window.currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
-        } else {
-            // If not logged in, redirect to the home page (which will show the login form)
-            window.location.href = 'index.html';
-        }
-
-        authStateEstablished = true;
-        initializeApp();
-    });
-
-    document.getElementById('loginForm').addEventListener('submit', async e => {
-        e.preventDefault();
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        try {
-            await auth.signInWithEmailAndPassword(email, password);
-            document.getElementById('loginError').textContent = '';
-        } catch (err) {
-            document.getElementById('loginError').textContent = err.message;
-        }
-    });
-
-    document.getElementById('resetPasswordBtn').addEventListener('click', async () => {
-        const email = document.getElementById('loginEmail').value;
-        if (!email) {
-            document.getElementById('loginError').textContent = 'Enter your email to reset password.';
-            return;
-        }
-        try {
-            await auth.sendPasswordResetEmail(email);
-            document.getElementById('loginError').textContent = 'Password reset email sent!';
-        } catch (err) {
-            document.getElementById('loginError').textContent = err.message;
-        }
-    });
+        });
     </script>
 </body>
 </html>
