@@ -2,14 +2,31 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Check auth status and show/hide navigation
     if (typeof firebase !== 'undefined' && firebase.auth) {
-        firebase.auth().onAuthStateChanged(user => {
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        auth.onAuthStateChanged(user => {
             const navWrapper = document.getElementById('navWrapper');
-            if (navWrapper) {
-                if (user) {
-                    navWrapper.style.display = 'block';
-                } else {
-                    navWrapper.style.display = 'none';
-                }
+            const adminNavItem = document.getElementById('adminNavItem');
+
+            if (user) {
+                // Show the main navigation
+                if (navWrapper) navWrapper.style.display = 'block';
+                
+                // Check user role for admin link
+                const userDocRef = db.collection('users').doc(user.uid);
+                userDocRef.get().then(doc => {
+                    if (doc.exists && doc.data().role === 'admin') {
+                        if (adminNavItem) adminNavItem.style.display = 'block';
+                    } else {
+                        if (adminNavItem) adminNavItem.style.display = 'none';
+                    }
+                });
+
+            } else {
+                // Hide navigation if logged out
+                if (navWrapper) navWrapper.style.display = 'none';
+                if (adminNavItem) adminNavItem.style.display = 'none';
             }
         });
     }
@@ -57,12 +74,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Handle submenu toggles
-    const submenuItems = document.querySelectorAll('.has-submenu > a');
-    submenuItems.forEach(item => {
-        item.addEventListener('click', function(e) {
+    const submenuToggles = document.querySelectorAll('.has-submenu > a');
+    submenuToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            // Prevent navigation to the category page link
             e.preventDefault();
-            const submenu = this.nextElementSibling;
-            submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+            // Toggle the 'open' class on the parent LI element
+            this.parentElement.classList.toggle('open');
         });
     });
 }); 

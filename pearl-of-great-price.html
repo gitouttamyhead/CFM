@@ -121,15 +121,55 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="nav.js"></script>
     <script>
-        // Simple auth check - just show the page
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXyOXGktacbjg-X2tuVsmJ7nYLCwJZ5Nw",
+            authDomain: "comefollowme-d097a.firebaseapp.com",
+            projectId: "comefollowme-d097a",
+            storageBucket: "comefollowme-d097a.firebasestorage.app",
+            messagingSenderId: "725941283112",
+            appId: "1:725941283112:web:7071276f065bb3b7dd081d",
+            measurementId: "G-Z9HKN7M5K5"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
         const auth = firebase.auth();
+        const container = document.querySelector('.container');
+        const insightsList = document.getElementById('insights-list');
+
+        async function fetchInsights(category) {
+            insightsList.innerHTML = 'Loading...';
+            const snapshot = await db.collection('insights').where('category', '==', category).orderBy('createdAt', 'desc').get();
+            insightsList.innerHTML = '';
+            if (snapshot.empty) {
+                insightsList.innerHTML = '<p>No insights found for this category.</p>';
+                return;
+            }
+            snapshot.forEach(doc => {
+                const insight = doc.data();
+                const card = document.createElement('div');
+                card.className = 'insight-card';
+                card.innerHTML = `<div class="insight-title">${insight.title}</div><p>${insight.summary || ''}</p>`;
+                insightsList.appendChild(card);
+            });
+        }
+
+        container.style.display = 'none';
+
         auth.onAuthStateChanged(user => {
-            // Page is public, just ensure navigation works
+            container.style.display = 'block';
+            fetchInsights('Pearl of Great Price');
+            
+            const addInsightBtn = document.getElementById('addInsightBtn');
             if (user) {
-                // User is logged in - navigation will be shown by nav.js
+                db.collection('users').doc(user.uid).get().then(userDoc => {
+                    if (userDoc.exists && (userDoc.data().role === 'admin' || userDoc.data().role === 'editor')) {
+                        addInsightBtn.style.display = 'block';
+                    }
+                });
             } else {
-                // User is not logged in - they can still view content
-                // Navigation will be hidden by nav.js
+                addInsightBtn.style.display = 'none';
             }
         });
     </script>

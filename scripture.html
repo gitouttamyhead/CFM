@@ -102,16 +102,26 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="nav.js"></script>
     <script>
-        // Simple auth check - just show the page
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXyOXGktacbjg-X2tuVsmJ7nYLCwJZ5Nw",
+            authDomain: "comefollowme-d097a.firebaseapp.com",
+            projectId: "comefollowme-d097a",
+            storageBucket: "comefollowme-d097a.firebasestorage.app",
+            messagingSenderId: "725941283112",
+            appId: "1:725941283112:web:7071276f065bb3b7dd081d",
+            measurementId: "G-Z9HKN7M5K5"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const auth = firebase.auth();
+        const container = document.querySelector('.container');
+        
+        container.style.display = 'none';
+
         auth.onAuthStateChanged(user => {
-            // Page is public, just ensure navigation works
-            if (user) {
-                // User is logged in - navigation will be shown by nav.js
-            } else {
-                // User is not logged in - they can still view content
-                // Navigation will be hidden by nav.js
-            }
+            // This page is just a menu, so we just need to make sure the container is visible.
+            container.style.display = 'block';
         });
     </script>
 </body>

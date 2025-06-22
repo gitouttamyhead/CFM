@@ -65,6 +65,28 @@ body {
     background: #34495e;
 }
 
+.nav-item.open > .nav-submenu {
+    display: block;
+}
+
+.has-submenu > a {
+    position: relative;
+}
+
+.has-submenu > a::after {
+    content: '▶';
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8em;
+    transition: transform 0.2s;
+}
+
+.nav-item.open > a::after {
+    transform: translateY(-50%) rotate(90deg);
+}
+
 .nav-submenu .nav-item a {
     padding-left: 40px;
 }

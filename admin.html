@@ -107,26 +107,43 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="nav.js"></script>
     <script>
-        document.body.style.visibility = 'hidden';
-        const auth = firebase.auth();
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXyOXGktacbjg-X2tuVsmJ7nYLCwJZ5Nw",
+            authDomain: "comefollowme-d097a.firebaseapp.com",
+            projectId: "comefollowme-d097a",
+            storageBucket: "comefollowme-d097a.firebasestorage.app",
+            messagingSenderId: "725941283112",
+            appId: "1:725941283112:web:7071276f065bb3b7dd081d",
+            measurementId: "G-Z9HKN7M5K5"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.firestore();
+        const auth = firebase.auth();
+        const adminSection = document.getElementById('admin-section');
+        const notAdminMsg = document.getElementById('notAdminMsg');
 
-        const unsubscribe = auth.onAuthStateChanged(async user => {
-            unsubscribe(); // Run only once
+        auth.onAuthStateChanged(async user => {
             if (user) {
                 const userDoc = await db.collection('users').doc(user.uid).get();
-                const userRole = userDoc.exists ? userDoc.data().role : 'user';
-
-                if (userRole === 'admin') {
-                    document.body.style.visibility = 'visible';
-                    // loadUsers(); // Assuming loadUsers() is defined elsewhere on this page
+                if (userDoc.exists && userDoc.data().role === 'admin') {
+                    adminSection.style.display = 'block';
+                    // loadUsers(); // You would call your function to load user data here
                 } else {
-                    window.location.href = 'index.html'; // Not an admin
+                    notAdminMsg.style.display = 'block';
+                    setTimeout(() => { window.location.href = 'index.html'; }, 3000);
                 }
             } else {
-                window.location.href = 'index.html'; // Not logged in
+                notAdminMsg.style.display = 'block';
+                setTimeout(() => { window.location.href = 'index.html'; }, 3000);
             }
         });
+
+        // Placeholder for the function that loads users into the table
+        function loadUsers() {
+            console.log("loadUsers() called. Implement logic to fetch and display users.");
+        }
     </script>
 </body>
 </html>

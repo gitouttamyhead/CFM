@@ -262,13 +262,27 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="nav.js"></script>
     <script>
-        document.body.style.visibility = 'hidden';
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXyOXGktacbjg-X2tuVsmJ7nYLCwJZ5Nw",
+            authDomain: "comefollowme-d097a.firebaseapp.com",
+            projectId: "comefollowme-d097a",
+            storageBucket: "comefollowme-d097a.firebasestorage.app",
+            messagingSenderId: "725941283112",
+            appId: "1:725941283112:web:7071276f065bb3b7dd081d",
+            measurementId: "G-Z9HKN7M5K5"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
         const auth = firebase.auth();
-        const unsubscribe = auth.onAuthStateChanged(user => {
-            unsubscribe();
+        const mainContent = document.getElementById('mainContent');
+
+        auth.onAuthStateChanged(user => {
             if (user) {
-                document.body.style.visibility = 'visible';
-                // Any page-specific logic to load user data would go here
+                mainContent.style.display = 'block';
+                // You would call your function to load user profile data here
+                // e.g., loadUserProfile(user);
             } else {
                 window.location.href = 'index.html';
             }
