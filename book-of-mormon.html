@@ -106,12 +106,11 @@
         const container = document.querySelector('.container');
         const insightsList = document.getElementById('insights-list');
 
-        async function fetchInsights(category) {
+        async function fetchInsights() {
             insightsList.innerHTML = 'Loading...';
 
             try {
-                const snapshot = await db.collection('insights')
-                    .where('category', '==', category)
+                const snapshot = await db.collection('bookOfMormonInsights')
                     .orderBy('createdAt', 'desc')
                     .get();
                 
@@ -146,7 +145,7 @@
 
         auth.onAuthStateChanged(user => {
             container.style.display = 'block';
-            fetchInsights('Book of Mormon');
+            fetchInsights();
             
             const addInsightBtn = document.getElementById('addInsightBtn');
             if (user) {
