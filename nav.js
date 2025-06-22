@@ -3,55 +3,40 @@
 
 function setupStandardizedNav() {
     const hamburger = document.querySelector('.hamburger');
+    const closeButton = document.querySelector('.close-nav-button');
     const navContainer = document.querySelector('.nav-container');
     const body = document.body;
     
+    function openNav() {
+        body.classList.add('nav-active');
+    }
+
+    function closeNav() {
+        body.classList.remove('nav-active');
+    }
+
     if (hamburger) {
-        // Remove any existing listeners to prevent duplicates
-        hamburger.removeEventListener('click', handleHamburgerClick);
-        hamburger.removeEventListener('touchstart', handleHamburgerClick);
-        
-        // Add both click and touch events for better mobile support
-        hamburger.addEventListener('click', handleHamburgerClick);
-        hamburger.addEventListener('touchstart', handleHamburgerClick, { passive: true });
+        hamburger.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openNav();
+        });
     }
-    
-    // Handle hamburger click/touch
-    function handleHamburgerClick(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Toggle both class systems for compatibility
-        body.classList.toggle('nav-active');
-        hamburger.classList.toggle('active');
-        if (navContainer) {
-            navContainer.classList.toggle('active');
-        }
+
+    if (closeButton) {
+        closeButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeNav();
+        });
     }
-    
-    // Click outside to close (for mobile)
-    document.addEventListener('click', function(e) {
-        if (body.classList.contains('nav-active') && 
-            !hamburger.contains(e.target) && 
-            !navContainer.contains(e.target)) {
-            body.classList.remove('nav-active');
-            hamburger.classList.remove('active');
-            if (navContainer) {
-                navContainer.classList.remove('active');
-            }
-        }
-    });
     
     // Close nav when clicking on nav links (mobile)
     const navLinks = document.querySelectorAll('.nav-item a');
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
             if (window.innerWidth <= 768) {
-                body.classList.remove('nav-active');
-                hamburger.classList.remove('active');
-                if (navContainer) {
-                    navContainer.classList.remove('active');
-                }
+                closeNav();
             }
         });
     });

@@ -64,7 +64,6 @@ body {
     min-width: 45px;
     min-height: 45px;
     touch-action: manipulation;
-    transition: transform 0.3s ease;
 }
 
 .hamburger span {
@@ -90,56 +89,55 @@ body.nav-active .main-content {
 /* On mobile, the nav is an overlay, so the content margin is not needed */
 @media (max-width: 768px) {
     .nav-container {
-        transform: translateX(-100%);
-    }
-    
-    /* Support both class systems for compatibility */
-    .nav-container.active,
-    body.nav-active .nav-container {
-        transform: translateX(0);
-    }
-    
-    .main-content {
-        margin-left: 0 !important; /* Ensure no margin on mobile */
-    }
-    
-    /* Overlay background when nav is open */
-    body.nav-active::after,
-    .nav-overlay {
-        content: '';
+        transform: scale(0.95);
+        opacity: 0;
+        pointer-events: none;
         position: fixed;
         top: 0;
         left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
-        z-index: 999;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: #2c3e50;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    
+    body.nav-active .nav-container {
+        transform: scale(1);
         opacity: 1;
-        transition: opacity 0.3s ease;
+        pointer-events: auto;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
     }
     
     .hamburger {
         display: block;
     }
-    
+
+    .close-nav-button {
+        display: none;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1002;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 3em;
+        cursor: pointer;
+    }
+
+    body.nav-active .close-nav-button {
+        display: block;
+    }
+
     body.nav-active .hamburger {
-        transform: translateX(250px);
-    }
-    
-    /* Hamburger animation for both class systems */
-    .hamburger.active span:nth-child(1),
-    body.nav-active .hamburger span:nth-child(1) {
-        transform: rotate(45deg) translate(5px, 5px);
-    }
-    
-    .hamburger.active span:nth-child(2),
-    body.nav-active .hamburger span:nth-child(2) {
-        opacity: 0;
-    }
-    
-    .hamburger.active span:nth-child(3),
-    body.nav-active .hamburger span:nth-child(3) {
-        transform: rotate(-45deg) translate(7px, -6px);
+        display: none;
     }
     
     /* Prevent body scroll when nav is open */
