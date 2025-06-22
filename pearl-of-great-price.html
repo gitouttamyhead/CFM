@@ -89,8 +89,8 @@
     <div class="main-content" id="mainContent">
         <div class="container" style="display:none;">
             <h1>Pearl of Great Price Insights</h1>
+            <button id="addInsightBtn" class="btn" style="margin-bottom: 20px; display:none;">Add Main Insight</button>
             <div id="insights-list"></div>
-            <button id="addInsightBtn" class="btn" style="margin-top:20px; display:none;">Add Insight</button>
         </div>
     </div>
 
@@ -100,8 +100,10 @@
             <h2 id="modalTitle">Add Insight</h2>
             <form id="insightForm">
                 <input type="hidden" id="insightId">
+                <input type="hidden" id="relatedToId">
                 <input type="text" id="insightTitle" placeholder="Title" required style="width:100%;margin-bottom:10px;">
-                <div id="quillEditor" style="height:400px;margin-bottom:20px;"></div>
+                <div id="quillEditor" style="height:300px;margin-bottom:20px;"></div>
+                <textarea id="insightSummary" placeholder="Summary (optional, for main insights)" style="width:100%; height: 60px; margin-bottom:10px;"></textarea>
                 <input type="text" id="insightTags" placeholder="Tags (comma separated)" style="width:100%;margin-bottom:10px;">
                 <button type="submit" class="btn">Save Insight</button>
                 <button type="button" class="btn" id="cancelModalBtn" style="background:#aaa;">Cancel</button>
@@ -133,15 +135,42 @@
         const auth = firebase.auth();
         const container = document.querySelector('.container');
         const insightsList = document.getElementById('insights-list');
+        const addInsightBtn = document.getElementById('addInsightBtn');
 
+        let quill;
+        let currentUserRole = null;
+        const collectionName = 'pearlOfGreatPriceInsights';
+
+
+        // --- Modal Handling ---
+        const modal = document.getElementById('insightModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const form = document.getElementById('insightForm');
+        const cancelBtn = document.getElementById('cancelModalBtn');
+
+        function openModal() {
+            if (!quill) {
+                quill = new Quill('#quillEditor', { theme: 'snow' });
+            }
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+            form.reset();
+            quill.root.innerHTML = '';
+            document.getElementById('insightId').value = '';
+            document.getElementById('relatedToId').value = '';
+        }
+
+        cancelBtn.onclick = closeModal;
+
+        // --- CRUD Functions ---
         async function fetchInsights() {
             insightsList.innerHTML = 'Loading...';
-
+            
             try {
-                const snapshot = await db.collection('pearlOfGreatPriceInsights')
-                    .orderBy('created', 'desc')
-                    .get();
-                
+                const snapshot = await db.collection(collectionName).orderBy('created', 'desc').get();
                 insightsList.innerHTML = '';
 
                 if (snapshot.empty) {
@@ -149,41 +178,139 @@
                     return;
                 }
 
+                const insights = [];
                 snapshot.forEach(doc => {
-                    const insight = doc.data();
-                    const card = document.createElement('div');
-                    card.className = 'insight-card';
-                    
-                    const link = document.createElement('a');
-                    link.href = `insight-scripture.html?id=${doc.id}`;
-                    link.style.textDecoration = 'none';
-                    link.style.color = 'inherit';
-                    link.innerHTML = `<div class="insight-title">${insight.title}</div><p>${insight.summary || 'No summary available.'}</p>`;
-                    
-                    card.appendChild(link);
-                    insightsList.appendChild(card);
+                    insights.push({ id: doc.id, ...doc.data() });
                 });
+
+                const mainInsights = insights.filter(i => !i.relatedTo);
+
+                mainInsights.forEach(mainInsight => {
+                    const mainCard = document.createElement('div');
+                    mainCard.className = 'insight-card main-insight';
+                    
+                    let adminControls = '';
+                    if (currentUserRole === 'admin' || currentUserRole === 'editor') {
+                        adminControls = `
+                            <div class="insight-actions">
+                                <button class="btn" onclick="editInsight('${mainInsight.id}')">Edit</button>
+                                <button class="btn" onclick="deleteInsight('${mainInsight.id}')">Delete</button>
+                                <button class="btn" onclick="openAddRelatedModal('${mainInsight.id}')">Add Related Insight</button>
+                            </div>
+                        `;
+                    }
+
+                    mainCard.innerHTML = `
+                        <a href="insight-scripture.html?id=${mainInsight.id}&collection=${collectionName}" class="insight-link">
+                            <div class="insight-title">${mainInsight.title}</div>
+                        </a>
+                        ${adminControls}
+                    `;
+                    
+                    insightsList.appendChild(mainCard);
+                    
+                    const subInsights = insights.filter(i => i.relatedTo === mainInsight.id);
+                    if (subInsights.length > 0) {
+                        const subInsightsContainer = document.createElement('div');
+                        subInsightsContainer.className = 'sub-insights-list';
+                        let subInsightsHTML = '<h4>Related Insights:</h4><ul>';
+                        subInsights.forEach(subInsight => {
+                            let subAdminControls = '';
+                            if (currentUserRole === 'admin' || currentUserRole === 'editor') {
+                               subAdminControls = `
+                                 <button class="btn-link" onclick="editInsight('${subInsight.id}')">(Edit)</button>
+                                 <button class="btn-link" onclick="deleteInsight('${subInsight.id}')">(Delete)</button>
+                               `;
+                            }
+                            subInsightsHTML += `
+                              <li>
+                                <a href="insight-scripture.html?id=${subInsight.id}&collection=${collectionName}">${subInsight.title}</a>
+                                ${subAdminControls}
+                              </li>`;
+                        });
+                        subInsightsHTML += '</ul>';
+                        subInsightsContainer.innerHTML = subInsightsHTML;
+                        mainCard.appendChild(subInsightsContainer);
+                    }
+                });
+
             } catch (error) {
-                console.error("Error fetching insights: ", error);
+                console.error("Error fetching insights:", error);
                 insightsList.innerHTML = '<p>Error loading insights. Please try again later.</p>';
             }
         }
+        
+        addInsightBtn.onclick = () => {
+            modalTitle.textContent = "Add Main Insight";
+            openModal();
+        };
 
+        window.openAddRelatedModal = (parentId) => {
+            modalTitle.textContent = "Add Related Insight";
+            document.getElementById('relatedToId').value = parentId;
+            openModal();
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('insightId').value;
+            const relatedToId = document.getElementById('relatedToId').value;
+            const insightData = {
+                title: document.getElementById('insightTitle').value,
+                content: quill.root.innerHTML,
+                summary: document.getElementById('insightSummary').value,
+                tags: document.getElementById('insightTags').value.split(',').map(t => t.trim()),
+                created: firebase.firestore.FieldValue.serverTimestamp(),
+                relatedTo: relatedToId || null
+            };
+
+            if (id) { // Editing
+                await db.collection(collectionName).doc(id).update(insightData);
+            } else { // Creating
+                await db.collection(collectionName).add(insightData);
+            }
+            closeModal();
+            fetchInsights();
+        });
+
+        window.editInsight = async (id) => {
+            modalTitle.textContent = "Edit Insight";
+            const doc = await db.collection(collectionName).doc(id).get();
+            if (doc.exists) {
+                const data = doc.data();
+                document.getElementById('insightId').value = id;
+                document.getElementById('insightTitle').value = data.title;
+                quill.root.innerHTML = data.content;
+                document.getElementById('insightSummary').value = data.summary || '';
+                document.getElementById('insightTags').value = (data.tags || []).join(', ');
+                document.getElementById('relatedToId').value = data.relatedTo || '';
+                openModal();
+            }
+        }
+
+        window.deleteInsight = async (id) => {
+            if (confirm("Are you sure you want to delete this insight?")) {
+                await db.collection(collectionName).doc(id).delete();
+                fetchInsights();
+            }
+        }
+
+        // --- Auth Handling ---
         container.style.display = 'none';
-
         auth.onAuthStateChanged(user => {
             container.style.display = 'block';
-            fetchInsights();
-            
-            const addInsightBtn = document.getElementById('addInsightBtn');
             if (user) {
                 db.collection('users').doc(user.uid).get().then(userDoc => {
                     if (userDoc.exists && (userDoc.data().role === 'admin' || userDoc.data().role === 'editor')) {
+                        currentUserRole = userDoc.data().role;
                         addInsightBtn.style.display = 'block';
                     }
+                    fetchInsights(); // Fetch insights after role is determined
                 });
             } else {
+                currentUserRole = null;
                 addInsightBtn.style.display = 'none';
+                fetchInsights();
             }
         });
     </script>
