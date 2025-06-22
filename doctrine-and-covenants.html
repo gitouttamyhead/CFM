@@ -143,7 +143,7 @@
                     insights.push({ id: doc.id, ...doc.data() });
                 });
 
-                const mainInsights = insights.filter(i => !i.relatedTo);
+                const mainInsights = insights.filter(i => !i.relatedTo && !i.parentId);
 
                 mainInsights.forEach(mainInsight => {
                     const mainCard = document.createElement('div');
@@ -169,7 +169,7 @@
                     
                     insightsList.appendChild(mainCard);
                     
-                    const subInsights = insights.filter(i => i.relatedTo === mainInsight.id);
+                    const subInsights = insights.filter(i => i.relatedTo === mainInsight.id || i.parentId === mainInsight.id);
                     if (subInsights.length > 0) {
                         const subInsightsContainer = document.createElement('div');
                         subInsightsContainer.className = 'sub-insights-list';
