@@ -4,57 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Other Insights</title>
-    <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/quill1.3.7-table-module@1.4.2/dist/index.css" rel="stylesheet">
-    <link rel="stylesheet" href="nav.css"><!-- (Optional: your shared nav styles) -->
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; margin: 0; padding: 0; min-height: 100vh; }
-        .main-content { flex: 1; margin-left: 250px; padding: 20px; transition: margin-left 0.3s ease; }
-        .container { max-width: 800px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 30px; }
-        h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
-        .insight-card { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; margin-bottom: 20px; padding: 20px; }
-        .insight-title { font-size: 1.2em; font-weight: bold; margin-bottom: 10px; }
-        .insight-actions { margin-top: 10px; }
-        .btn { background: #3498db; color: #fff; border: none; border-radius: 4px; padding: 8px 16px; cursor: pointer; margin-right: 8px; }
-        .btn:disabled { background: #ccc; cursor: not-allowed; }
-        .modal { 
-            display: none; 
-            position: fixed; 
-            z-index: 1000; 
-            left: 0; 
-            top: 0; 
-            width: 100%; 
-            height: 100%; 
-            overflow: auto; 
-            background: rgba(0,0,0,0.5); 
-        }
-        .modal-content { 
-            background: #fff; 
-            margin: 2% auto; 
-            padding: 30px; 
-            border-radius: 8px; 
-            width: 90%; 
-            max-width: 1200px; 
-            max-height: 90vh; 
-            overflow-y: auto; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3); 
-        }
-        #login-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 0;
-        }
-        #loginForm {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            min-width: 250px;
-        }
-        @media (max-width: 768px) {
-            .main-content { margin-left: 0; }
-        }
-    </style>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="insights.css">
 </head>
 <body>
     <!-- Shared Navigation -->
@@ -224,9 +176,15 @@
                         subInsights.forEach(subInsight => {
                             let subAdminControls = '';
                             if (currentUserRole === 'admin' || currentUserRole === 'editor') {
-                               subAdminControls = `
-                                 <button class="btn-link" onclick="editInsight('${subInsight.id}')">(Edit)</button>
-                                 <button class="btn-link" onclick="deleteInsight('${subInsight.id}')">(Delete)</button>
+                                subAdminControls = `
+                                <span class="sub-insight-actions">
+                                    <button class="icon-btn" onclick="editInsight('${subInsight.id}')" title="Edit Insight">
+                                        <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>
+                                    </button>
+                                    <button class="icon-btn" onclick="deleteInsight('${subInsight.id}')" title="Delete Insight">
+                                        <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg>
+                                    </button>
+                                </span>
                                `;
                             }
                             subInsightsHTML += `
@@ -249,7 +207,11 @@
         
         addInsightBtn.onclick = () => {
             modalTitle.textContent = "Add Main Insight";
+            form.reset();
+            document.getElementById('insightId').value = '';
+            document.getElementById('relatedToId').value = '';
             openModal();
+            quill.root.innerHTML = ''; // Clear editor content
         };
 
         window.openAddRelatedModal = (parentId) => {
@@ -285,13 +247,13 @@
             const doc = await db.collection(collectionName).doc(id).get();
             if (doc.exists) {
                 const data = doc.data();
+                openModal(); // Open modal and initialize Quill first
                 document.getElementById('insightId').value = id;
                 document.getElementById('insightTitle').value = data.title;
                 quill.root.innerHTML = data.content;
                 document.getElementById('insightSummary').value = data.summary || '';
                 document.getElementById('insightTags').value = (data.tags || []).join(', ');
                 document.getElementById('relatedToId').value = data.relatedTo || '';
-                openModal();
             }
         }
 
