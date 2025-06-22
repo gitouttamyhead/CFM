@@ -26,13 +26,18 @@ body {
 }
 
 .nav-header {
-    padding: 20px;
-    border-bottom: 1px solid #34495e;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #f8f9fa;
 }
 
 .nav-header h2 {
     margin: 0;
-    color: white;
+    color: #333;
+    font-size: 1.5rem;
 }
 
 .nav-menu {
@@ -192,4 +197,20 @@ body {
 
 .nav-item.active {
     background: #3498db;
+}
+
+.search-icon {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: color 0.3s, background-color 0.3s;
+}
+
+.search-icon:hover {
+    color: #007bff;
+    background-color: #e9ecef;
 }
