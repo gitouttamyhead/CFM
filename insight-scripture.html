@@ -56,6 +56,20 @@
                 <a href="#" id="backLink" class="btn" style="background: #95a5a6;">Back to Insights</a>
             </div>
         </div>
+        <!-- Notes Section for Printing -->
+        <div id="notes-section" style="display: none;">
+            <h2>Notes</h2>
+            <div class="note-line"></div>
+            <div class="note-line"></div>
+            <div class="note-line"></div>
+            <div class="note-line"></div>
+            <div class="note-line"></div>
+            <div class="note-line"></div>
+            <div class="note-line"></div>
+            <div class="note-line"></div>
+            <div class="note-line"></div>
+            <div class="note-line"></div>
+        </div>
     </div>
     
     <!-- Related Insight Modal -->
@@ -153,19 +167,7 @@
 
         // Print functionality
         document.getElementById('printBtn').addEventListener('click', () => {
-            const nav = document.getElementById('navWrapper');
-            const actions = document.querySelector('.insight-actions');
-            
-            // Hide non-essential elements
-            nav.style.display = 'none';
-            actions.style.display = 'none';
-
-            // Trigger print
             window.print();
-
-            // Restore hidden elements after print dialog
-            nav.style.display = 'block';
-            actions.style.display = 'block';
         });
     </script>
 </body>
