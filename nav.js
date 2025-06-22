@@ -47,8 +47,12 @@ function setupStandardizedNav() {
         if (toggle.hasAttribute('data-submenu-listener')) return;
         toggle.setAttribute('data-submenu-listener', 'true');
         toggle.addEventListener('click', (e) => {
-            e.preventDefault();
-            toggle.parentElement.classList.toggle('open');
+            // On mobile, let the main nav link handler close the menu.
+            // On desktop, just toggle the submenu.
+            if (window.innerWidth > 768) {
+                e.preventDefault();
+                toggle.parentElement.classList.toggle('open');
+            }
         });
     });
     
@@ -67,12 +71,8 @@ function setupStandardizedNav() {
     // Handle window resize
     window.addEventListener('resize', () => {
         if (window.innerWidth > 768) {
-            // On desktop, ensure nav is properly positioned
-            body.classList.remove('nav-active');
-            hamburger.classList.remove('active');
-            if (navContainer) {
-                navContainer.classList.remove('active');
-            }
+            // On desktop, ensure nav is not active
+            closeNav();
         }
     });
 }
