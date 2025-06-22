@@ -210,7 +210,65 @@
         document.body.style.opacity = 1;
     });
 
-    // ... other listeners like loginForm, resetPasswordBtn, etc.
+    // Login form handler
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        const errorDiv = document.getElementById('loginError');
+        
+        try {
+            errorDiv.textContent = '';
+            await auth.signInWithEmailAndPassword(email, password);
+        } catch (error) {
+            console.error('Login error:', error);
+            errorDiv.textContent = error.message;
+        }
+    });
+
+    // Password reset handler
+    document.getElementById('resetPasswordBtn').addEventListener('click', async () => {
+        const email = document.getElementById('loginEmail').value;
+        const errorDiv = document.getElementById('loginError');
+        
+        if (!email) {
+            errorDiv.textContent = 'Please enter your email address first.';
+            return;
+        }
+        
+        try {
+            errorDiv.textContent = '';
+            await auth.sendPasswordResetEmail(email);
+            errorDiv.textContent = 'Password reset email sent! Check your inbox.';
+            errorDiv.style.color = 'green';
+        } catch (error) {
+            console.error('Password reset error:', error);
+            errorDiv.textContent = error.message;
+            errorDiv.style.color = 'red';
+        }
+    });
+
+    // Set password form handler (for new users)
+    document.getElementById('setPasswordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const errorDiv = document.getElementById('passwordError');
+        
+        if (newPassword !== confirmPassword) {
+            errorDiv.textContent = 'Passwords do not match.';
+            return;
+        }
+        
+        try {
+            errorDiv.textContent = '';
+            await auth.currentUser.updatePassword(newPassword);
+            document.getElementById('setPasswordModal').style.display = 'none';
+        } catch (error) {
+            console.error('Password update error:', error);
+            errorDiv.textContent = error.message;
+        }
+    });
     </script>
 </body>
 </html> 
