@@ -46,6 +46,9 @@
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
         <div class="container" style="display:none;">
+            <div class="top-actions" style="margin-bottom: 20px;">
+                <button class="btn btn-secondary" onclick="history.back()">&larr; Back</button>
+            </div>
             <h1 id="insightTitle"></h1>
             <div id="insightTags"></div>
             <div id="insightContent" class="insight-content"></div>
@@ -53,7 +56,10 @@
             <div class="insight-actions">
                 <button class="btn" id="printBtn">Print with Notes</button>
                 <button class="btn" id="createRelatedBtn" style="display:none; background: #27ae60; margin-right: 10px;">Create Related Insight</button>
-                <a href="#" id="backLink" class="btn" style="background: #95a5a6;">Back to Insights</a>
+            </div>
+
+            <div class="bottom-actions" style="margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="history.back()">&larr; Back</button>
             </div>
         </div>
         <!-- Notes Section for Printing -->
@@ -120,28 +126,6 @@
                 const insight = doc.data();
                 insightTitle.textContent = insight.title;
                 insightContent.innerHTML = insight.content; // Assumes content is safe HTML
-
-                // Set the back link based on the insight's category
-                const backLink = document.getElementById('backLink');
-                switch (insight.category) {
-                    case 'Old Testament':
-                        backLink.href = 'old-testament.html';
-                        break;
-                    case 'New Testament':
-                        backLink.href = 'new-testament.html';
-                        break;
-                    case 'Book of Mormon':
-                        backLink.href = 'book-of-mormon.html';
-                        break;
-                    case 'Doctrine & Covenants':
-                        backLink.href = 'doctrine-and-covenants.html';
-                        break;
-                    case 'Pearl of Great Price':
-                        backLink.href = 'pearl-of-great-price.html';
-                        break;
-                    default:
-                        backLink.href = 'scripture.html'; // Default fallback
-                }
             } else {
                 insightTitle.textContent = "Insight not found";
                 insightContent.innerHTML = "<p>The requested insight could not be found. It may have been moved or deleted.</p>";

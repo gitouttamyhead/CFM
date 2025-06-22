@@ -9,8 +9,9 @@ h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
 .sub-insights-list h4 { margin-top:0; }
 .sub-insights-list ul { list-style:none; padding-left:0; }
 .sub-insights-list li { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.sub-insights-list li a { color: #2980b9; text-decoration:none; }
+.sub-insights-list li a { color: #2980b9; text-decoration:none; flex: 1; margin-right: 15px;}
 .sub-insights-list li a:hover { text-decoration:underline; }
+.sub-insight-actions { flex-shrink: 0; display: flex; align-items: center; }
 .sub-insight-actions .icon-btn { background: none; border: none; cursor: pointer; padding: 2px 5px; vertical-align: middle; }
 .sub-insight-actions .icon-btn svg { width: 16px; height: 16px; fill: #7f8c8d; }
 .sub-insight-actions .icon-btn:hover svg { fill: #34495e; }
@@ -70,10 +71,10 @@ h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
         max-width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
+        page-break-after: always;
     }
     #notes-section {
         display: block !important;
-        page-break-before: always;
         padding-top: 20px;
     }
     .note-line {

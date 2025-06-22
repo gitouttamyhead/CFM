@@ -97,7 +97,7 @@
 
         let quill;
         let currentUserRole = null;
-        const collectionName = 'bookOfMormonInsights';
+        const collectionName = 'insights';
 
 
         // --- Modal Handling ---
@@ -128,7 +128,10 @@
             insightsList.innerHTML = 'Loading...';
             
             try {
-                const snapshot = await db.collection(collectionName).orderBy('created', 'desc').get();
+                const snapshot = await db.collection(collectionName)
+                    .where('category', '==', 'Book of Mormon')
+                    .orderBy('created', 'desc')
+                    .get();
                 insightsList.innerHTML = '';
 
                 if (snapshot.empty) {
@@ -229,7 +232,8 @@
                 summary: document.getElementById('insightSummary').value,
                 tags: document.getElementById('insightTags').value.split(',').map(t => t.trim()),
                 created: firebase.firestore.FieldValue.serverTimestamp(),
-                relatedTo: relatedToId || null
+                relatedTo: relatedToId || null,
+                category: 'Book of Mormon'
             };
 
             if (id) { // Editing
