@@ -136,12 +136,10 @@
 
         async function fetchInsights() {
             insightsList.innerHTML = 'Loading...';
-            console.log("Fetching from collection: doctrineAndCovenantsInsights");
+            const collectionName = 'doctrineAndCovenantsInsights';
 
             try {
-                const snapshot = await db.collection('doctrineAndCovenantsInsights').get();
-                
-                console.log("Snapshot size:", snapshot.size);
+                const snapshot = await db.collection(collectionName).orderBy('createdAt', 'desc').get();
                 insightsList.innerHTML = '';
 
                 if (snapshot.empty) {
@@ -149,23 +147,50 @@
                     return;
                 }
 
+                const insights = [];
                 snapshot.forEach(doc => {
-                    console.log("Doc data:", doc.data());
-                    const insight = doc.data();
-                    const card = document.createElement('div');
-                    card.className = 'insight-card';
-                    
-                    const link = document.createElement('a');
-                    link.href = `insight-scripture.html?id=${doc.id}`;
-                    link.style.textDecoration = 'none';
-                    link.style.color = 'inherit';
-                    link.innerHTML = `<div class="insight-title">${insight.title}</div><p>${insight.summary || 'No summary available.'}</p>`;
-                    
-                    card.appendChild(link);
-                    insightsList.appendChild(card);
+                    insights.push({ id: doc.id, ...doc.data() });
                 });
+
+                // Find the main insight (the one not related to any other)
+                const mainInsight = insights.find(i => !i.relatedTo);
+
+                if (mainInsight) {
+                    // Display main insight card
+                    const mainCard = document.createElement('div');
+                    mainCard.className = 'insight-card main-insight';
+                    const mainLink = document.createElement('a');
+                    mainLink.href = `insight-scripture.html?id=${mainInsight.id}&collection=${collectionName}`;
+                    mainLink.style.textDecoration = 'none';
+                    mainLink.style.color = 'inherit';
+                    mainLink.innerHTML = `<div class="insight-title">${mainInsight.title}</div><p>${mainInsight.summary || 'No summary available.'}</p>`;
+                    mainCard.appendChild(mainLink);
+                    insightsList.appendChild(mainCard);
+                    
+                    // Find and display related insights
+                    const subInsights = insights.filter(i => i.relatedTo === mainInsight.id);
+                    if (subInsights.length > 0) {
+                        const subInsightsContainer = document.createElement('div');
+                        subInsightsContainer.className = 'sub-insights-container';
+                        subInsights.forEach(insight => {
+                            const subCard = document.createElement('div');
+                            subCard.className = 'insight-card sub-insight';
+                            const subLink = document.createElement('a');
+                            subLink.href = `insight-scripture.html?id=${insight.id}&collection=${collectionName}`;
+                            subLink.style.textDecoration = 'none';
+                            subLink.style.color = 'inherit';
+                            subLink.innerHTML = `<div class="insight-title">${insight.title}</div>`;
+                            subCard.appendChild(subLink);
+                            subInsightsContainer.appendChild(subCard);
+                        });
+                        insightsList.appendChild(subInsightsContainer);
+                    }
+                } else {
+                    // Fallback if no main insight is found
+                    insightsList.innerHTML = '<p>Could not determine main insight for this category.</p>';
+                }
             } catch (error) {
-                console.error("Caught error in fetchInsights:", error);
+                console.error("Error fetching insights:", error);
                 insightsList.innerHTML = '<p>Error loading insights. Please try again later.</p>';
             }
         }
@@ -173,7 +198,6 @@
         container.style.display = 'none';
 
         auth.onAuthStateChanged(user => {
-            console.log("Auth state changed, user:", user);
             container.style.display = 'block';
             fetchInsights();
             
