@@ -27,13 +27,6 @@ function setupStandardizedNav() {
         if (navContainer) {
             navContainer.classList.toggle('active');
         }
-        
-        // Prevent body scroll when nav is open
-        if (body.classList.contains('nav-active')) {
-            body.style.overflow = 'hidden';
-        } else {
-            body.style.overflow = '';
-        }
     }
     
     // Click outside to close (for mobile)
@@ -46,7 +39,6 @@ function setupStandardizedNav() {
             if (navContainer) {
                 navContainer.classList.remove('active');
             }
-            body.style.overflow = '';
         }
     });
     
@@ -60,7 +52,6 @@ function setupStandardizedNav() {
                 if (navContainer) {
                     navContainer.classList.remove('active');
                 }
-                body.style.overflow = '';
             }
         });
     });
@@ -97,7 +88,6 @@ function setupStandardizedNav() {
             if (navContainer) {
                 navContainer.classList.remove('active');
             }
-            body.style.overflow = '';
         }
     });
 }

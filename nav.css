@@ -7,10 +7,6 @@ body {
     overflow-x: hidden;
 }
 
-body.nav-open {
-    overflow: hidden;
-}
-
 .nav-container {
     width: 250px;
     background: #2c3e50;
@@ -68,6 +64,7 @@ body.nav-open {
     min-width: 45px;
     min-height: 45px;
     touch-action: manipulation;
+    transition: transform 0.3s ease;
 }
 
 .hamburger span {
@@ -125,6 +122,10 @@ body.nav-active .main-content {
         display: block;
     }
     
+    body.nav-active .hamburger {
+        transform: translateX(250px);
+    }
+    
     /* Hamburger animation for both class systems */
     .hamburger.active span:nth-child(1),
     body.nav-active .hamburger span:nth-child(1) {
@@ -144,8 +145,6 @@ body.nav-active .main-content {
     /* Prevent body scroll when nav is open */
     body.nav-active {
         overflow: hidden;
-        position: fixed;
-        width: 100%;
     }
     
     /* Ensure nav is above overlay */
