@@ -77,10 +77,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const submenuToggles = document.querySelectorAll('.has-submenu > a');
     submenuToggles.forEach(toggle => {
         toggle.addEventListener('click', function(e) {
-            // Prevent navigation to the category page link
-            e.preventDefault();
-            // Toggle the 'open' class on the parent LI element
-            this.parentElement.classList.toggle('open');
+            // On desktop, prevent navigation and toggle the submenu.
+            // On mobile, allow navigation. The submenu can be opened by tapping the arrow.
+            if (window.innerWidth > 768) {
+                e.preventDefault();
+                this.parentElement.classList.toggle('open');
+            }
         });
     });
 }); 

@@ -74,13 +74,13 @@ body {
 }
 
 .has-submenu > a::after {
-    content: '▶';
+    content: '›';
     position: absolute;
     right: 20px;
     top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.8em;
-    transition: transform 0.2s;
+    transform: translateY(-50%) rotate(0deg);
+    font-size: 1.5em;
+    transition: transform 0.3s;
 }
 
 .nav-item.open > a::after {
@@ -113,6 +113,11 @@ body {
     height: 3px;
     background: white;
     transition: 0.3s;
+}
+
+.hamburger:focus, .close-nav-button:focus {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
 }
 
 /* Close button */
@@ -187,26 +192,4 @@ body {
 
 .nav-item.active {
     background: #3498db;
-}
-
-.nav-item.open > .nav-submenu {
-    max-height: 500px; /* Adjust as needed */
-    transition: max-height 0.5s ease-in;
-}
-
-.nav-item > a {
-    position: relative;
-}
-
-.nav-item.has-submenu > a::after {
-    content: '›';
-    position: absolute;
-    right: 20px;
-    font-size: 1.5em;
-    transform: rotate(90deg);
-    transition: transform 0.3s;
-}
-
-.nav-item.has-submenu.open > a::after {
-    transform: rotate(270deg);
 }

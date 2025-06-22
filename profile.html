@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Come Follow Me</title>
+    <title>User Profile</title>
     <link rel="stylesheet" href="nav.css">
     <style>
         body {
@@ -229,10 +229,6 @@
                 <h3>Change Password</h3>
                 <form id="passwordForm">
                     <div class="form-group">
-                        <label for="currentPassword">Current Password</label>
-                        <input type="password" id="currentPassword" required>
-                    </div>
-                    <div class="form-group">
                         <label for="newPassword">New Password</label>
                         <input type="password" id="newPassword" required minlength="6">
                     </div>
@@ -256,11 +252,13 @@
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Firebase Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <!-- Our Nav Script -->
     <script src="nav.js"></script>
+
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBXyOXGktacbjg-X2tuVsmJ7nYLCwJZ5Nw",
@@ -274,10 +272,32 @@
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
-        const db = firebase.firestore();
         const auth = firebase.auth();
-        const mainContent = document.getElementById('mainContent');
+        const db = firebase.firestore();
 
+        const mainContent = document.getElementById('mainContent');
+        const alertMessage = document.getElementById('alertMessage');
+        const passwordForm = document.getElementById('passwordForm');
+
+        // Show/hide loading spinners
+        function setLoading(isLoading, type) {
+            const loadingDiv = document.getElementById(`${type}Loading`);
+            if (loadingDiv) {
+                loadingDiv.style.display = isLoading ? 'block' : 'none';
+            }
+        }
+
+        // Show alert messages
+        function showAlert(message, type = 'success') {
+            alertMessage.textContent = message;
+            alertMessage.className = `alert alert-${type}`;
+            alertMessage.style.display = 'block';
+            setTimeout(() => {
+                alertMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        // Main auth state listener
         auth.onAuthStateChanged(user => {
             if (user) {
                 mainContent.style.display = 'block';
@@ -287,27 +307,55 @@
             }
         });
 
+        // Load user profile data
         async function loadUserProfile(user) {
-            const userEmail = document.getElementById('userEmail');
-            const userRole = document.getElementById('userRole');
-            const userCreated = document.getElementById('userCreated');
+            document.getElementById('userEmail').textContent = user.email;
+            const creationTime = new Date(user.metadata.creationTime);
+            document.getElementById('userCreated').textContent = creationTime.toLocaleDateString();
 
-            if (!user) return;
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if (userDoc.exists) {
+                document.getElementById('userRole').textContent = userDoc.data().role || 'user';
+            } else {
+                document.getElementById('userRole').textContent = 'user';
+            }
+        }
 
-            userEmail.textContent = user.email;
-            userCreated.textContent = new Date(user.metadata.creationTime).toLocaleDateString();
+        // Update user's password
+        passwordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (newPassword !== confirmPassword) {
+                showAlert('New passwords do not match.', 'error');
+                return;
+            }
+
+            const user = auth.currentUser;
+            if (!user) {
+                showAlert('No user is signed in. Please refresh and try again.', 'error');
+                return;
+            }
+
+            setLoading(true, 'password');
 
             try {
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (userDoc.exists) {
-                    userRole.textContent = userDoc.data().role || 'user';
-                } else {
-                    userRole.textContent = 'user';
-                }
+                await user.updatePassword(newPassword);
+                showAlert('Password updated successfully!', 'success');
+                clearPasswordForm();
             } catch (error) {
-                console.error("Error fetching user role:", error);
-                userRole.textContent = 'Error loading role';
+                console.error('Password Update Error:', error);
+                showAlert(`Error: ${error.message}`, 'error');
+            } finally {
+                setLoading(false, 'password');
             }
+        });
+
+        // Clear the password form
+        function clearPasswordForm() {
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
         }
     </script>
 </body>

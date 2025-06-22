@@ -49,10 +49,6 @@
             min-width: 250px;
         }
     </style>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 </head>
 <body>
     <!-- Shared Navigation -->
@@ -141,42 +137,36 @@
         async function fetchInsights(category) {
             insightsList.innerHTML = 'Loading...';
 
-            const mainInsightSnapshot = await db.collection('insights')
-                .where('category', '==', category)
-                .where('isMain', '==', true)
-                .limit(1)
-                .get();
-            
-            insightsList.innerHTML = '';
+            try {
+                const snapshot = await db.collection('insights')
+                    .where('category', '==', category)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+                
+                insightsList.innerHTML = '';
 
-            if (mainInsightSnapshot.empty) {
-                insightsList.innerHTML = '<p>No main insight found for this category.</p>';
-                return;
-            }
+                if (snapshot.empty) {
+                    insightsList.innerHTML = '<p>No insights found for this category.</p>';
+                    return;
+                }
 
-            const mainDoc = mainInsightSnapshot.docs[0];
-            const mainInsight = mainDoc.data();
-            const mainCard = document.createElement('div');
-            mainCard.className = 'insight-card main-insight';
-            mainCard.innerHTML = `<div class="insight-title">${mainInsight.title}</div><p>${mainInsight.summary || ''}</p>`;
-            insightsList.appendChild(mainCard);
-
-            const subInsightsSnapshot = await db.collection('insights')
-                .where('relatedTo', '==', mainDoc.id)
-                .orderBy('createdAt', 'desc')
-                .get();
-
-            if (!subInsightsSnapshot.empty) {
-                const subInsightsContainer = document.createElement('div');
-                subInsightsContainer.className = 'sub-insights-container';
-                subInsightsSnapshot.forEach(doc => {
+                snapshot.forEach(doc => {
                     const insight = doc.data();
                     const card = document.createElement('div');
-                    card.className = 'insight-card sub-insight';
-                    card.innerHTML = `<div class="insight-title">${insight.title}</div><p>${insight.summary || ''}</p>`;
-                    subInsightsContainer.appendChild(card);
+                    card.className = 'insight-card';
+                    
+                    const link = document.createElement('a');
+                    link.href = `insight-scripture.html?id=${doc.id}`;
+                    link.style.textDecoration = 'none';
+                    link.style.color = 'inherit';
+                    link.innerHTML = `<div class="insight-title">${insight.title}</div><p>${insight.summary || 'No summary available.'}</p>`;
+                    
+                    card.appendChild(link);
+                    insightsList.appendChild(card);
                 });
-                insightsList.appendChild(subInsightsContainer);
+            } catch (error) {
+                console.error("Error fetching insights: ", error);
+                insightsList.innerHTML = '<p>Error loading insights. Please try again later.</p>';
             }
         }
 

@@ -19,10 +19,6 @@
             background: #fff; margin: 2% auto; padding: 30px; border-radius: 8px; width: 90%; max-width: 1200px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3); 
         }
     </style>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 </head>
 <body>
     <!-- Shared Navigation -->
@@ -121,6 +117,28 @@
                 const insight = doc.data();
                 insightTitle.textContent = insight.title;
                 insightContent.innerHTML = insight.content; // Assumes content is safe HTML
+
+                // Set the back link based on the insight's category
+                const backLink = document.getElementById('backLink');
+                switch (insight.category) {
+                    case 'Old Testament':
+                        backLink.href = 'old-testament.html';
+                        break;
+                    case 'New Testament':
+                        backLink.href = 'new-testament.html';
+                        break;
+                    case 'Book of Mormon':
+                        backLink.href = 'book-of-mormon.html';
+                        break;
+                    case 'Doctrine & Covenants':
+                        backLink.href = 'doctrine-and-covenants.html';
+                        break;
+                    case 'Pearl of Great Price':
+                        backLink.href = 'pearl-of-great-price.html';
+                        break;
+                    default:
+                        backLink.href = 'scripture.html'; // Default fallback
+                }
             } else {
                 insightTitle.textContent = "Insight not found";
                 insightContent.innerHTML = "<p>The requested insight could not be found. It may have been moved or deleted.</p>";

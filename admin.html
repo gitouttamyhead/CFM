@@ -24,10 +24,6 @@
         .role-editor { color: #e67e22; font-weight: bold; }
         .role-user { color: #888; }
     </style>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 </head>
 <body>
     <!-- Shared Navigation -->
@@ -183,6 +179,38 @@
                 alert(`Failed to change role. See console for details.`);
             }
         }
+
+        // Handle the invitation form submission
+        const inviteForm = document.getElementById('inviteForm');
+        inviteForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const inviteEmail = document.getElementById('inviteEmail').value;
+            const inviteRole = document.getElementById('inviteRole').value;
+            const inviteStatus = document.getElementById('inviteStatus');
+
+            if (!inviteEmail) {
+                inviteStatus.textContent = 'Please enter an email address.';
+                inviteStatus.style.color = 'red';
+                return;
+            }
+
+            try {
+                // Add a document to the 'invitations' collection
+                await db.collection('invitations').doc(inviteEmail).set({
+                    email: inviteEmail,
+                    role: inviteRole,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                inviteStatus.textContent = `Invitation created for ${inviteEmail} with role ${inviteRole}.`;
+                inviteStatus.style.color = 'green';
+                inviteForm.reset();
+            } catch (error) {
+                console.error('Error creating invitation:', error);
+                inviteStatus.textContent = `Error: ${error.message}`;
+                inviteStatus.style.color = 'red';
+            }
+        });
     </script>
 </body>
 </html>
