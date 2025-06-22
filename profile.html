@@ -281,12 +281,34 @@
         auth.onAuthStateChanged(user => {
             if (user) {
                 mainContent.style.display = 'block';
-                // You would call your function to load user profile data here
-                // e.g., loadUserProfile(user);
+                loadUserProfile(user);
             } else {
                 window.location.href = 'index.html';
             }
         });
+
+        async function loadUserProfile(user) {
+            const userEmail = document.getElementById('userEmail');
+            const userRole = document.getElementById('userRole');
+            const userCreated = document.getElementById('userCreated');
+
+            if (!user) return;
+
+            userEmail.textContent = user.email;
+            userCreated.textContent = new Date(user.metadata.creationTime).toLocaleDateString();
+
+            try {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (userDoc.exists) {
+                    userRole.textContent = userDoc.data().role || 'user';
+                } else {
+                    userRole.textContent = 'user';
+                }
+            } catch (error) {
+                console.error("Error fetching user role:", error);
+                userRole.textContent = 'Error loading role';
+            }
+        }
     </script>
 </body>
 </html> 

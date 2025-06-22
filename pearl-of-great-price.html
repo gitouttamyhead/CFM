@@ -140,19 +140,44 @@
 
         async function fetchInsights(category) {
             insightsList.innerHTML = 'Loading...';
-            const snapshot = await db.collection('insights').where('category', '==', category).orderBy('createdAt', 'desc').get();
+
+            const mainInsightSnapshot = await db.collection('insights')
+                .where('category', '==', category)
+                .where('isMain', '==', true)
+                .limit(1)
+                .get();
+            
             insightsList.innerHTML = '';
-            if (snapshot.empty) {
-                insightsList.innerHTML = '<p>No insights found for this category.</p>';
+
+            if (mainInsightSnapshot.empty) {
+                insightsList.innerHTML = '<p>No main insight found for this category.</p>';
                 return;
             }
-            snapshot.forEach(doc => {
-                const insight = doc.data();
-                const card = document.createElement('div');
-                card.className = 'insight-card';
-                card.innerHTML = `<div class="insight-title">${insight.title}</div><p>${insight.summary || ''}</p>`;
-                insightsList.appendChild(card);
-            });
+
+            const mainDoc = mainInsightSnapshot.docs[0];
+            const mainInsight = mainDoc.data();
+            const mainCard = document.createElement('div');
+            mainCard.className = 'insight-card main-insight';
+            mainCard.innerHTML = `<div class="insight-title">${mainInsight.title}</div><p>${mainInsight.summary || ''}</p>`;
+            insightsList.appendChild(mainCard);
+
+            const subInsightsSnapshot = await db.collection('insights')
+                .where('relatedTo', '==', mainDoc.id)
+                .orderBy('createdAt', 'desc')
+                .get();
+
+            if (!subInsightsSnapshot.empty) {
+                const subInsightsContainer = document.createElement('div');
+                subInsightsContainer.className = 'sub-insights-container';
+                subInsightsSnapshot.forEach(doc => {
+                    const insight = doc.data();
+                    const card = document.createElement('div');
+                    card.className = 'insight-card sub-insight';
+                    card.innerHTML = `<div class="insight-title">${insight.title}</div><p>${insight.summary || ''}</p>`;
+                    subInsightsContainer.appendChild(card);
+                });
+                insightsList.appendChild(subInsightsContainer);
+            }
         }
 
         container.style.display = 'none';

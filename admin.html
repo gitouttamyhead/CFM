@@ -129,7 +129,7 @@
                 const userDoc = await db.collection('users').doc(user.uid).get();
                 if (userDoc.exists && userDoc.data().role === 'admin') {
                     adminSection.style.display = 'block';
-                    // loadUsers(); // You would call your function to load user data here
+                    await loadUsers();
                 } else {
                     notAdminMsg.style.display = 'block';
                     setTimeout(() => { window.location.href = 'index.html'; }, 3000);
@@ -140,9 +140,48 @@
             }
         });
 
-        // Placeholder for the function that loads users into the table
-        function loadUsers() {
-            console.log("loadUsers() called. Implement logic to fetch and display users.");
+        // Function to fetch and display users in the management table
+        async function loadUsers() {
+            const tableBody = document.querySelector('#usersTable tbody');
+            tableBody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+            
+            try {
+                const snapshot = await db.collection('users').get();
+                tableBody.innerHTML = ''; // Clear loading message
+                if (snapshot.empty) {
+                    tableBody.innerHTML = '<tr><td colspan="3">No users found.</td></tr>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const user = doc.data();
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${user.email}</td>
+                        <td>${user.role}</td>
+                        <td>
+                            <button class="btn" onclick="changeRole('${doc.id}', 'user')">Make User</button>
+                            <button class="btn" onclick="changeRole('${doc.id}', 'editor')">Make Editor</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error loading users:", error);
+                tableBody.innerHTML = '<tr><td colspan="3">Error loading users. See console for details.</td></tr>';
+            }
+        }
+
+        // Function to change a user's role
+        async function changeRole(uid, newRole) {
+            if (!uid || !newRole) return;
+            try {
+                await db.collection('users').doc(uid).update({ role: newRole });
+                console.log(`Successfully changed ${uid} to ${newRole}`);
+                loadUsers(); // Refresh the user list
+            } catch (error) {
+                console.error(`Error changing role for ${uid}:`, error);
+                alert(`Failed to change role. See console for details.`);
+            }
         }
     </script>
 </body>
