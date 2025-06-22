@@ -97,6 +97,7 @@
 
         let quill;
         let currentUserRole = null;
+        const collectionName = 'insights';
 
         // --- Modal Handling ---
         const modal = document.getElementById('insightModal');
@@ -124,10 +125,12 @@
         // --- CRUD Functions ---
         async function fetchInsights() {
             insightsList.innerHTML = 'Loading...';
-            const collectionName = 'doctrineAndCovenantsInsights';
 
             try {
-                const snapshot = await db.collection(collectionName).orderBy('created', 'desc').get();
+                const snapshot = await db.collection(collectionName)
+                    .where('category', '==', 'Doctrine & Covenants')
+                    .orderBy('created', 'desc')
+                    .get();
                 insightsList.innerHTML = '';
 
                 if (snapshot.empty) {
@@ -158,7 +161,7 @@
                     }
 
                     mainCard.innerHTML = `
-                        <a href="insight-scripture.html?id=${mainInsight.id}&collection=${collectionName}" class="insight-link">
+                        <a href="insight-scripture.html?id=${mainInsight.id}&collection=insights" class="insight-link">
                             <div class="insight-title">${mainInsight.title}</div>
                         </a>
                         ${adminControls}
@@ -187,7 +190,7 @@
                             }
                             subInsightsHTML += `
                               <li>
-                                <a href="insight-scripture.html?id=${subInsight.id}&collection=${collectionName}">${subInsight.title}</a>
+                                <a href="insight-scripture.html?id=${subInsight.id}&collection=insights">${subInsight.title}</a>
                                 ${subAdminControls}
                               </li>`;
                         });
@@ -228,10 +231,10 @@
                 summary: document.getElementById('insightSummary').value,
                 tags: document.getElementById('insightTags').value.split(',').map(t => t.trim()),
                 created: firebase.firestore.FieldValue.serverTimestamp(),
-                relatedTo: relatedToId || null
+                relatedTo: relatedToId || null,
+                category: 'Doctrine & Covenants'
             };
 
-            const collectionName = 'doctrineAndCovenantsInsights';
             if (id) { // Editing
                 await db.collection(collectionName).doc(id).update(insightData);
             } else { // Creating
@@ -243,7 +246,7 @@
 
         window.editInsight = async (id) => {
             modalTitle.textContent = "Edit Insight";
-            const doc = await db.collection('doctrineAndCovenantsInsights').doc(id).get();
+            const doc = await db.collection(collectionName).doc(id).get();
             if (doc.exists) {
                 const data = doc.data();
                 openModal(); // Open modal and initialize Quill first
@@ -258,7 +261,7 @@
 
         window.deleteInsight = async (id) => {
             if (confirm("Are you sure you want to delete this insight?")) {
-                await db.collection('doctrineAndCovenantsInsights').doc(id).delete();
+                await db.collection(collectionName).doc(id).delete();
                 fetchInsights();
             }
         }

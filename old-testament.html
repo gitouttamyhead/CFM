@@ -97,7 +97,7 @@
 
         let quill;
         let currentUserRole = null;
-        const collectionName = 'oldTestamentInsights';
+        const collectionName = 'insights';
 
 
         // --- Modal Handling ---
@@ -128,7 +128,10 @@
             insightsList.innerHTML = 'Loading...';
             
             try {
-                const snapshot = await db.collection(collectionName).orderBy('created', 'desc').get();
+                const snapshot = await db.collection(collectionName)
+                    .where('category', '==', 'Old Testament')
+                    .orderBy('created', 'desc')
+                    .get();
                 insightsList.innerHTML = '';
 
                 if (snapshot.empty) {
@@ -159,7 +162,7 @@
                     }
 
                     mainCard.innerHTML = `
-                        <a href="insight-scripture.html?id=${mainInsight.id}&collection=${collectionName}" class="insight-link">
+                        <a href="insight-scripture.html?id=${mainInsight.id}&collection=insights" class="insight-link">
                             <div class="insight-title">${mainInsight.title}</div>
                         </a>
                         ${adminControls}
@@ -188,7 +191,7 @@
                             }
                             subInsightsHTML += `
                               <li>
-                                <a href="insight-scripture.html?id=${subInsight.id}&collection=${collectionName}">${subInsight.title}</a>
+                                <a href="insight-scripture.html?id=${subInsight.id}&collection=insights">${subInsight.title}</a>
                                 ${subAdminControls}
                               </li>`;
                         });
@@ -229,7 +232,8 @@
                 summary: document.getElementById('insightSummary').value,
                 tags: document.getElementById('insightTags').value.split(',').map(t => t.trim()),
                 created: firebase.firestore.FieldValue.serverTimestamp(),
-                relatedTo: relatedToId || null
+                relatedTo: relatedToId || null,
+                category: 'Old Testament'
             };
 
             if (id) { // Editing
