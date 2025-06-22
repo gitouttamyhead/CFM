@@ -152,7 +152,10 @@
             }
         }
         window._navAuthState = { user: currentUser, role: currentUserRole };
-        if (navLoaded) setupNav(currentUser, currentUserRole);
+        if (navLoaded) {
+            // Use a minimal timeout to ensure the DOM has updated before setting up the nav
+            setTimeout(() => setupNav(currentUser, currentUserRole), 0);
+        }
     });
 
     document.getElementById('loginForm').addEventListener('submit', async e => {

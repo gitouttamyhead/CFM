@@ -216,7 +216,8 @@
 
         window._navAuthState = { user: user, role: currentUserRole };
         if (window.navLoaded) {
-            setupNav(user, currentUserRole);
+            // Use a minimal timeout to ensure the DOM has updated before setting up the nav
+            setTimeout(() => setupNav(user, currentUserRole), 0);
         }
     });
 
