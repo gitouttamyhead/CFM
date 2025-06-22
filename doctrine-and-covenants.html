@@ -142,14 +142,38 @@
                 snapshot.forEach(doc => {
                     insights.push({ id: doc.id, ...doc.data() });
                 });
-                console.log("ALL INSIGHTS FETCHED:", JSON.stringify(insights, null, 2));
+
+                // --- Robustness Fix: Fetch missing sub-insights by ID ---
+                let subInsightIdsToFetch = [];
+                insights.forEach(insight => {
+                    if (insight.relatedInsights && Array.isArray(insight.relatedInsights)) {
+                        // Find IDs that are not already in our 'insights' list
+                        insight.relatedInsights.forEach(subId => {
+                            if (!insights.some(i => i.id === subId)) {
+                                subInsightIdsToFetch.push(subId);
+                            }
+                        });
+                    }
+                });
+
+                if (subInsightIdsToFetch.length > 0) {
+                    const uniqueSubInsightIds = [...new Set(subInsightIdsToFetch)];
+                    const CHUNK_SIZE = 10; // Firestore 'in' query limit
+                    for (let i = 0; i < uniqueSubInsightIds.length; i += CHUNK_SIZE) {
+                        const chunk = uniqueSubInsightIds.slice(i, i + CHUNK_SIZE);
+                        const subInsightsSnapshot = await db.collection(collectionName)
+                            .where(firebase.firestore.FieldPath.documentId(), 'in', chunk)
+                            .get();
+                        subInsightsSnapshot.forEach(doc => {
+                            insights.push({ id: doc.id, ...doc.data() });
+                        });
+                    }
+                }
+                // --- End of fix ---
 
                 const mainInsights = insights.filter(i => !i.relatedTo && !i.parentId);
 
                 mainInsights.forEach(mainInsight => {
-                    console.log("PROCESSING MAIN INSIGHT:", JSON.stringify(mainInsight.title));
-                    console.log("RELATED INSIGHTS ARRAY:", JSON.stringify(mainInsight.relatedInsights));
-                    
                     const mainCard = document.createElement('div');
                     mainCard.className = 'insight-card main-insight';
                     
@@ -177,13 +201,9 @@
                     const subInsights = [];
                     if (mainInsight.relatedInsights && Array.isArray(mainInsight.relatedInsights)) {
                         mainInsight.relatedInsights.forEach(subId => {
-                            console.log(`LOOKING FOR SUB-INSIGHT WITH ID: ${subId}`);
                             const subInsight = insights.find(i => i.id === subId);
                             if (subInsight) {
-                                console.log("  -> FOUND:", JSON.stringify(subInsight.title));
                                 subInsights.push(subInsight);
-                            } else {
-                                console.log("  -> NOT FOUND in the fetched data.");
                             }
                         });
                     }

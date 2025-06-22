@@ -144,6 +144,33 @@
                     insights.push({ id: doc.id, ...doc.data() });
                 });
 
+                // --- Robustness Fix: Fetch missing sub-insights by ID ---
+                let subInsightIdsToFetch = [];
+                insights.forEach(insight => {
+                    if (insight.relatedInsights && Array.isArray(insight.relatedInsights)) {
+                        insight.relatedInsights.forEach(subId => {
+                            if (!insights.some(i => i.id === subId)) {
+                                subInsightIdsToFetch.push(subId);
+                            }
+                        });
+                    }
+                });
+
+                if (subInsightIdsToFetch.length > 0) {
+                    const uniqueSubInsightIds = [...new Set(subInsightIdsToFetch)];
+                    const CHUNK_SIZE = 10;
+                    for (let i = 0; i < uniqueSubInsightIds.length; i += CHUNK_SIZE) {
+                        const chunk = uniqueSubInsightIds.slice(i, i + CHUNK_SIZE);
+                        const subInsightsSnapshot = await db.collection(collectionName)
+                            .where(firebase.firestore.FieldPath.documentId(), 'in', chunk)
+                            .get();
+                        subInsightsSnapshot.forEach(doc => {
+                            insights.push({ id: doc.id, ...doc.data() });
+                        });
+                    }
+                }
+                // --- End of fix ---
+
                 const mainInsights = insights.filter(i => !i.relatedTo && !i.parentId);
 
                 mainInsights.forEach(mainInsight => {
