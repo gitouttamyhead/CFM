@@ -107,11 +107,24 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="nav.js"></script>
     <script>
-        // Simplified auth logic
+        document.body.style.visibility = 'hidden';
         const auth = firebase.auth();
-        auth.onAuthStateChanged(user => {
-            if (!user) {
-                window.location.href = 'index.html';
+        const db = firebase.firestore();
+
+        const unsubscribe = auth.onAuthStateChanged(async user => {
+            unsubscribe(); // Run only once
+            if (user) {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                const userRole = userDoc.exists ? userDoc.data().role : 'user';
+
+                if (userRole === 'admin') {
+                    document.body.style.visibility = 'visible';
+                    // loadUsers(); // Assuming loadUsers() is defined elsewhere on this page
+                } else {
+                    window.location.href = 'index.html'; // Not an admin
+                }
+            } else {
+                window.location.href = 'index.html'; // Not logged in
             }
         });
     </script>

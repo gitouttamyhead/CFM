@@ -121,12 +121,13 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="nav.js"></script>
     <script>
-        // Simplified auth logic
+        document.body.style.visibility = 'hidden';
         const auth = firebase.auth();
-        auth.onAuthStateChanged(user => {
-            if (!user) {
-                // Allow non-logged-in users to view content
-            }
+        const unsubscribe = auth.onAuthStateChanged(user => {
+            unsubscribe();
+            // This page is public, but we wait for auth to correctly show the UI
+            document.body.style.visibility = 'visible';
+            // Any logic to show/hide edit buttons based on user role would go here
         });
     </script>
 </body>

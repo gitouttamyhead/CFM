@@ -84,9 +84,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 </head>
-<body>
+<body style="opacity: 0; transition: opacity 0.3s;">
     <!-- Shared Navigation -->
-    <div id="navWrapper">
+    <div id="navWrapper" style="display: none;">
         <!-- nav.html -->
         <button class="hamburger">
             <span></span>
@@ -181,8 +181,10 @@
         const loginSection = document.getElementById('login-section');
         const mainWidget = document.getElementById('mainWidget');
         const adminNavItem = document.querySelector('#adminNavItem');
+        const navWrapper = document.getElementById('navWrapper');
 
         if (user) {
+            navWrapper.style.display = 'block';
             loginSection.style.display = 'none';
             mainWidget.style.display = 'block';
 
@@ -196,10 +198,16 @@
             }
 
         } else {
+            navWrapper.style.display = 'none';
             loginSection.style.display = 'block';
             mainWidget.style.display = 'none';
             adminNavItem.style.display = 'none';
         }
+    });
+
+    // Prevents flash of unstyled content
+    document.addEventListener('DOMContentLoaded', () => {
+        document.body.style.opacity = 1;
     });
 
     // ... other listeners like loginForm, resetPasswordBtn, etc.
