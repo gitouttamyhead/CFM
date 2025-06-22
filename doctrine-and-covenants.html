@@ -136,12 +136,14 @@
 
         async function fetchInsights() {
             insightsList.innerHTML = 'Loading...';
+            console.log("Fetching from collection: doctrineAndCovenantsInsights");
 
             try {
                 const snapshot = await db.collection('doctrineAndCovenantsInsights')
                     .orderBy('createdAt', 'desc')
                     .get();
                 
+                console.log("Snapshot size:", snapshot.size);
                 insightsList.innerHTML = '';
 
                 if (snapshot.empty) {
@@ -150,6 +152,7 @@
                 }
 
                 snapshot.forEach(doc => {
+                    console.log("Doc data:", doc.data());
                     const insight = doc.data();
                     const card = document.createElement('div');
                     card.className = 'insight-card';
@@ -164,7 +167,7 @@
                     insightsList.appendChild(card);
                 });
             } catch (error) {
-                console.error("Error fetching insights: ", error);
+                console.error("Caught error in fetchInsights:", error);
                 insightsList.innerHTML = '<p>Error loading insights. Please try again later.</p>';
             }
         }
@@ -172,6 +175,7 @@
         container.style.display = 'none';
 
         auth.onAuthStateChanged(user => {
+            console.log("Auth state changed, user:", user);
             container.style.display = 'block';
             fetchInsights();
             
