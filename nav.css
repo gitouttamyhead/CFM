@@ -7,22 +7,32 @@ body {
     overflow-x: hidden;
 }
 
+/* Simple, clean navigation styles */
 .nav-container {
-    width: 250px;
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100vh;
     background: #2c3e50;
     color: white;
-    position: fixed;
-    height: 100vh;
-    transition: transform 0.3s ease;
+    transition: left 0.3s ease;
     z-index: 1000;
-    top: 0;
+    overflow-y: auto;
+}
+
+.nav-container.active {
     left: 0;
 }
 
 .nav-header {
     padding: 20px;
-    text-align: center;
     border-bottom: 1px solid #34495e;
+}
+
+.nav-header h2 {
+    margin: 0;
+    color: white;
 }
 
 .nav-menu {
@@ -32,145 +42,108 @@ body {
 }
 
 .nav-item {
-    padding: 15px 20px;
     border-bottom: 1px solid #34495e;
 }
 
 .nav-item a {
+    display: block;
+    padding: 15px 20px;
     color: white;
     text-decoration: none;
-    display: block;
+    transition: background 0.2s;
 }
 
-.nav-item:hover {
+.nav-item a:hover {
     background: #34495e;
 }
 
-.nav-item.active {
-    background: #3498db;
+.nav-submenu {
+    display: none;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: #34495e;
 }
 
+.nav-submenu .nav-item a {
+    padding-left: 40px;
+}
+
+/* Hamburger button */
 .hamburger {
-    display: none;
     position: fixed;
     top: 20px;
     left: 20px;
     z-index: 1001;
     background: #2c3e50;
     border: none;
+    color: white;
     padding: 10px;
-    cursor: pointer;
     border-radius: 4px;
-    min-width: 45px;
-    min-height: 45px;
-    touch-action: manipulation;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .hamburger span {
-    display: block;
     width: 25px;
     height: 3px;
     background: white;
-    margin: 5px 0;
     transition: 0.3s;
-    pointer-events: none;
 }
 
+/* Close button */
+.close-nav-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+}
+
+/* Main content adjustment */
 .main-content {
-    transition: margin-left 0.3s ease;
+    margin-left: 0;
     padding: 20px;
+    transition: margin-left 0.3s ease;
 }
 
-/* When the nav is active on desktop, push the content over */
-body.nav-active .main-content {
-    margin-left: 250px;
-}
-
-/* On mobile, the nav is an overlay, so the content margin is not needed */
-@media (max-width: 768px) {
+/* Desktop styles */
+@media (min-width: 769px) {
     .nav-container {
-        transform: scale(0.95);
-        opacity: 0;
-        pointer-events: none;
-        position: fixed;
-        top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        background: #2c3e50;
-        transition: opacity 0.3s ease, transform 0.3s ease;
-        overflow-y: auto;
-    }
-    
-    body.nav-active .nav-container {
-        transform: scale(1);
-        opacity: 1;
-        pointer-events: auto;
+        width: 250px;
     }
     
     .main-content {
-        margin-left: 0 !important;
+        margin-left: 250px;
     }
     
     .hamburger {
-        display: block;
+        display: none;
     }
-
+    
     .close-nav-button {
         display: none;
+    }
+}
+
+/* Overlay for mobile */
+@media (max-width: 768px) {
+    .nav-container.active::before {
+        content: '';
         position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 1002;
-        background: none;
-        border: none;
-        color: white;
-        font-size: 3em;
-        cursor: pointer;
-    }
-
-    body.nav-active .close-nav-button {
-        display: block;
-    }
-
-    body.nav-active .hamburger {
-        display: none;
-    }
-    
-    /* Prevent body scroll when nav is open */
-    body.nav-active {
-        overflow: hidden;
-    }
-    
-    /* Ensure nav is above overlay */
-    .nav-container {
-        z-index: 1000;
-    }
-    
-    /* Better touch targets for mobile */
-    .nav-item {
-        padding: 18px 20px;
-        min-height: 44px;
-        display: flex;
-        align-items: center;
-    }
-    
-    .nav-item a {
-        width: 100%;
-        padding: 0;
-    }
-    
-    .hamburger {
-        min-width: 44px;
-        min-height: 44px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.5);
+        z-index: -1;
     }
 }
 
@@ -190,13 +163,8 @@ body.nav-active .main-content {
     background: #217dbb;
 }
 
-.nav-submenu {
-    list-style: none;
-    padding-left: 20px;
-    margin: 0;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out;
+.nav-item.active {
+    background: #3498db;
 }
 
 .nav-item.open > .nav-submenu {

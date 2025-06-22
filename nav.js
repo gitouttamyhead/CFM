@@ -1,85 +1,68 @@
-// Standardized Navigation Script for CFM
-// This provides consistent hamburger menu behavior across all pages
-
-function setupStandardizedNav() {
+// Simple navigation functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Check auth status and show/hide navigation
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+        firebase.auth().onAuthStateChanged(user => {
+            const navWrapper = document.getElementById('navWrapper');
+            if (navWrapper) {
+                if (user) {
+                    navWrapper.style.display = 'block';
+                } else {
+                    navWrapper.style.display = 'none';
+                }
+            }
+        });
+    }
+    
+    // Mobile menu toggle
     const hamburger = document.querySelector('.hamburger');
-    const closeButton = document.querySelector('.close-nav-button');
     const navContainer = document.querySelector('.nav-container');
-    const body = document.body;
+    const closeButton = document.querySelector('.close-nav-button');
     
-    function openNav() {
-        body.classList.add('nav-active');
-    }
-
-    function closeNav() {
-        body.classList.remove('nav-active');
-    }
-
     if (hamburger) {
-        hamburger.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            openNav();
+        hamburger.addEventListener('click', function() {
+            navContainer.classList.toggle('active');
         });
     }
-
+    
     if (closeButton) {
-        closeButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            closeNav();
+        closeButton.addEventListener('click', function() {
+            navContainer.classList.remove('active');
         });
     }
     
-    // Close nav when clicking on nav links (mobile)
-    const navLinks = document.querySelectorAll('.nav-item a');
-    navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            if (window.innerWidth <= 768) {
-                closeNav();
-            }
-        });
-    });
-    
-    // Handle submenu toggles
-    const submenuToggles = document.querySelectorAll('.has-submenu > a');
-    submenuToggles.forEach(toggle => {
-        if (toggle.hasAttribute('data-submenu-listener')) return;
-        toggle.setAttribute('data-submenu-listener', 'true');
-        toggle.addEventListener('click', (e) => {
-            // On mobile, prevent navigation and toggle the submenu.
-            // On desktop, the default link behavior is fine, but we also toggle.
-            if (window.innerWidth <= 768) {
-                e.preventDefault();
-            }
-            toggle.parentElement.classList.toggle('open');
-        });
-    });
-    
-    // Setup logout
-    const logoutBtn = document.getElementById('navLogout');
-    if (logoutBtn && !logoutBtn.hasAttribute('data-logout-listener')) {
-        logoutBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (typeof auth !== 'undefined') {
-                auth.signOut();
-            }
-        });
-        logoutBtn.setAttribute('data-logout-listener', 'true');
-    }
-    
-    // Handle window resize
-    window.addEventListener('resize', () => {
-        if (window.innerWidth > 768) {
-            // On desktop, ensure nav is not active
-            closeNav();
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!navContainer.contains(e.target) && !hamburger.contains(e.target)) {
+            navContainer.classList.remove('active');
         }
     });
-}
-
-// Auto-initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupStandardizedNav);
-} else {
-    setupStandardizedNav();
-} 
+    
+    // Handle logout
+    const logoutBtn = document.getElementById('navLogout');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                firebase.auth().signOut().then(() => {
+                    window.location.href = 'index.html';
+                }).catch((error) => {
+                    console.error('Logout error:', error);
+                    window.location.href = 'index.html';
+                });
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+    }
+    
+    // Handle submenu toggles
+    const submenuItems = document.querySelectorAll('.has-submenu > a');
+    submenuItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const submenu = this.nextElementSibling;
+            submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+}); 
