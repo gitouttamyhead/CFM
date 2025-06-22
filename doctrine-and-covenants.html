@@ -127,16 +127,21 @@
             insightsList.innerHTML = 'Loading...';
             
             try {
-                // Temporarily removed .where() and .orderBy() for debugging
-                const snapshot = await db.collection(collectionName).get();
+                const snapshot = await db.collection(collectionName)
+                    .where('category', '==', 'Doctrine & Covenants')
+                    .orderBy('created', 'desc')
+                    .get();
                 insightsList.innerHTML = '';
+
+                if (snapshot.empty) {
+                    insightsList.innerHTML = '<p>No insights found for this category.</p>';
+                    return;
+                }
 
                 const insights = [];
                 snapshot.forEach(doc => {
                     insights.push({ id: doc.id, ...doc.data() });
                 });
-
-                console.log("Data from Firestore:", JSON.stringify(insights, null, 2));
 
                 const mainInsights = insights.filter(i => !i.relatedTo && !i.parentId);
 
@@ -164,7 +169,17 @@
                     
                     insightsList.appendChild(mainCard);
                     
-                    const subInsights = insights.filter(i => i.relatedTo === mainInsight.id || i.parentId === mainInsight.id);
+                    // New, more robust logic for finding sub-insights
+                    const subInsights = [];
+                    if (mainInsight.relatedInsights && Array.isArray(mainInsight.relatedInsights)) {
+                        mainInsight.relatedInsights.forEach(subId => {
+                            const subInsight = insights.find(i => i.id === subId);
+                            if (subInsight) {
+                                subInsights.push(subInsight);
+                            }
+                        });
+                    }
+
                     if (subInsights.length > 0) {
                         const subInsightsContainer = document.createElement('div');
                         subInsightsContainer.className = 'sub-insights-list';
