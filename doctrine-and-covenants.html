@@ -125,23 +125,18 @@
         // --- CRUD Functions ---
         async function fetchInsights() {
             insightsList.innerHTML = 'Loading...';
-
+            
             try {
-                const snapshot = await db.collection(collectionName)
-                    .where('category', '==', 'Doctrine & Covenants')
-                    .orderBy('created', 'desc')
-                    .get();
+                // Temporarily removed .where() and .orderBy() for debugging
+                const snapshot = await db.collection(collectionName).get();
                 insightsList.innerHTML = '';
-
-                if (snapshot.empty) {
-                    insightsList.innerHTML = '<p>No insights found for this category.</p>';
-                    return;
-                }
 
                 const insights = [];
                 snapshot.forEach(doc => {
                     insights.push({ id: doc.id, ...doc.data() });
                 });
+
+                console.log("Data from Firestore:", JSON.stringify(insights, null, 2));
 
                 const mainInsights = insights.filter(i => !i.relatedTo && !i.parentId);
 
