@@ -231,12 +231,13 @@
     <script>
         // Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyBxGUOlJvH1_8WEl_EWBxGUOlJvH1_8WEl",
-            authDomain: "cfm-insights.firebaseapp.com",
-            projectId: "cfm-insights",
-            storageBucket: "cfm-insights.appspot.com",
-            messagingSenderId: "123456789012",
-            appId: "1:123456789012:web:abcdef1234567890"
+            apiKey: "AIzaSyBXyOXGktacbjg-X2tuVsmJ7nYLCwJZ5Nw",
+            authDomain: "comefollowme-d097a.firebaseapp.com",
+            projectId: "comefollowme-d097a",
+            storageBucket: "comefollowme-d097a.firebasestorage.app",
+            messagingSenderId: "725941283112",
+            appId: "1:725941283112:web:7071276f065bb3b7dd081d",
+            measurementId: "G-Z9HKN7M5K5"
         };
 
         // Initialize Firebase
@@ -245,6 +246,7 @@
         const db = firebase.firestore();
 
         let currentUser = null;
+        let authStateEstablished = false;
 
         // Initialize the application
         async function initializeApp() {
@@ -297,9 +299,12 @@
                 await loadUserInfo();
                 setupPasswordForm();
             } else {
-                // Redirect to login if not authenticated
-                window.location.href = 'index.html';
+                // Only redirect if auth state is established and user is null
+                if (authStateEstablished) {
+                    window.location.href = 'index.html';
+                }
             }
+            authStateEstablished = true;
         }
 
         // Load user information
