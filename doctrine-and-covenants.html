@@ -142,10 +142,14 @@
                 snapshot.forEach(doc => {
                     insights.push({ id: doc.id, ...doc.data() });
                 });
+                console.log("ALL INSIGHTS FETCHED:", JSON.stringify(insights, null, 2));
 
                 const mainInsights = insights.filter(i => !i.relatedTo && !i.parentId);
 
                 mainInsights.forEach(mainInsight => {
+                    console.log("PROCESSING MAIN INSIGHT:", JSON.stringify(mainInsight.title));
+                    console.log("RELATED INSIGHTS ARRAY:", JSON.stringify(mainInsight.relatedInsights));
+                    
                     const mainCard = document.createElement('div');
                     mainCard.className = 'insight-card main-insight';
                     
@@ -173,9 +177,13 @@
                     const subInsights = [];
                     if (mainInsight.relatedInsights && Array.isArray(mainInsight.relatedInsights)) {
                         mainInsight.relatedInsights.forEach(subId => {
+                            console.log(`LOOKING FOR SUB-INSIGHT WITH ID: ${subId}`);
                             const subInsight = insights.find(i => i.id === subId);
                             if (subInsight) {
+                                console.log("  -> FOUND:", JSON.stringify(subInsight.title));
                                 subInsights.push(subInsight);
+                            } else {
+                                console.log("  -> NOT FOUND in the fetched data.");
                             }
                         });
                     }
