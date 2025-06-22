@@ -139,9 +139,7 @@
             console.log("Fetching from collection: doctrineAndCovenantsInsights");
 
             try {
-                const snapshot = await db.collection('doctrineAndCovenantsInsights')
-                    .orderBy('createdAt', 'desc')
-                    .get();
+                const snapshot = await db.collection('doctrineAndCovenantsInsights').get();
                 
                 console.log("Snapshot size:", snapshot.size);
                 insightsList.innerHTML = '';
