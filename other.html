@@ -66,25 +66,9 @@
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
-        <div class="container">
+        <div class="container" style="display:none;">
             <h1>Other Insights</h1>
-
-            <!-- Login Form -->
-            <div id="login-section" style="display:none;">
-                <h2>Login</h2>
-                <form id="loginForm">
-                    <input type="email" id="loginEmail" placeholder="Email" required>
-                    <input type="password" id="loginPassword" placeholder="Password" required>
-                    <button type="submit" class="btn">Login</button>
-                </form>
-                <button id="resetPasswordBtn" class="btn" style="margin-top:10px;">Forgot Password?</button>
-                <div id="loginError" style="color:red; margin-top:10px;"></div>
-            </div>
-
-            <!-- Insights List -->
             <div id="insights-list"></div>
-
-            <!-- Add Insight Button (only for authorized users) -->
             <button id="addInsightBtn" class="btn" style="margin-top:20px; display:none;">Add Insight</button>
         </div>
     </div>
@@ -111,24 +95,26 @@
     <script>
     function setupNav(currentUser, currentUserRole) {
         const navWrapper = document.getElementById('navWrapper');
+        if (!navWrapper) return;
         const hamburger = navWrapper.querySelector('.hamburger');
         const navContainer = navWrapper.querySelector('.nav-container');
+
         if (currentUser) {
+            document.body.classList.add('nav-active');
             if (hamburger) hamburger.style.display = '';
             if (navContainer) navContainer.style.display = '';
+
             if (hamburger && navContainer && !hamburger.hasAttribute('data-nav-initialized')) {
                 hamburger.addEventListener('click', () => {
                     hamburger.classList.toggle('active');
                     navContainer.classList.toggle('active');
-                    document.body.classList.toggle('nav-open');
-                    document.getElementById('mainContent').classList.toggle('nav-open');
                 });
                 hamburger.setAttribute('data-nav-initialized', 'true');
             }
             const adminNavItem = navWrapper.querySelector('#adminNavItem');
-            if (adminNavItem) adminNavItem.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
-
-            // Submenu toggle logic
+            if (adminNavItem) {
+                adminNavItem.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
+            }
             const submenuToggles = navWrapper.querySelectorAll('.has-submenu > a');
             submenuToggles.forEach(toggle => {
                 if (toggle.hasAttribute('data-submenu-listener')) return;
@@ -138,20 +124,36 @@
                     toggle.parentElement.classList.toggle('open');
                 });
             });
-
+            const navLogout = navWrapper.querySelector('#navLogout');
+             if (navLogout && !navLogout.hasAttribute('data-logout-listener')) {
+                navLogout.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    auth.signOut();
+                });
+                navLogout.setAttribute('data-logout-listener', 'true');
+            }
         } else {
+            document.body.classList.remove('nav-active');
             if (hamburger) hamburger.style.display = 'none';
             if (navContainer) navContainer.style.display = 'none';
         }
     }
 
     let navLoaded = false;
+    let authStateEstablished = false;
+
+    function initializeApp() {
+        if (navLoaded && authStateEstablished) {
+             setupNav(auth.currentUser, window.currentUserRole);
+        }
+    }
+    
     fetch('nav.html')
       .then(res => res.text())
       .then(html => {
         document.getElementById('navWrapper').innerHTML = html;
         navLoaded = true;
-        if (window._navAuthState) setupNav(window._navAuthState.user, window._navAuthState.role);
+        initializeApp();
       });
     </script>
 
@@ -169,14 +171,10 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+    window.currentUserRole = null;
 
     let quill;
     document.addEventListener('DOMContentLoaded', () => {
-        Quill.register({
-            [`modules/${window.TableHandler.moduleName}`]: window.TableHandler
-        }, true);
-        window.rewirteFormats();
-
         quill = new Quill('#quillEditor', {
             theme: 'snow',
             modules: {
@@ -187,104 +185,51 @@
                     [{ 'color': [] }, { 'background': [] }],
                     ['link'],
                     [{ 'align': [] }],
-                    [window.TableHandler.toolName],
                     ['clean']
-                ],
-                [`${window.TableHandler.moduleName}`]: {
-                  fullWidth: true
-                }
+                ]
             }
         });
     });
 
-    let currentUser = null;
-    let currentUserRole = null;
-
-    function showLogin(show) {
-        document.getElementById('login-section').style.display = show ? 'flex' : 'none';
-        document.getElementById('addInsightBtn').style.display = (show || !canEdit()) ? 'none' : 'inline-block';
-        document.getElementById('mainContent').style.marginLeft = show ? '0' : '';
-    }
-
     function canEdit() {
-        return currentUser && (currentUserRole === 'admin' || currentUserRole === 'editor');
+        return auth.currentUser && (window.currentUserRole === 'admin' || window.currentUserRole === 'editor');
     }
 
     auth.onAuthStateChanged(async user => {
-        currentUser = user;
+        const container = document.querySelector('.container');
+        const addInsightBtn = document.getElementById('addInsightBtn');
+
         if (user) {
+            container.style.display = 'block';
             const userDoc = await db.collection('users').doc(user.uid).get();
-            currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
-            showLogin(false);
+            window.currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
+            
+            if (canEdit()) {
+                addInsightBtn.style.display = 'inline-block';
+            } else {
+                addInsightBtn.style.display = 'none';
+            }
             loadInsights();
         } else {
-            // Redirect to main site instead of showing login form
-            if (window.location.hostname !== 'comefollowme.netlify.app' || window.location.pathname !== '/') {
-                window.location.href = 'https://comefollowme.netlify.app';
-            }
+            window.location.href = 'index.html';
         }
-        window._navAuthState = { user: currentUser, role: currentUserRole };
-        if (navLoaded) setupNav(currentUser, currentUserRole);
-    });
 
-    document.getElementById('loginForm').addEventListener('submit', async e => {
-        e.preventDefault();
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        try {
-            await auth.signInWithEmailAndPassword(email, password);
-            document.getElementById('loginError').textContent = '';
-        } catch (err) {
-            document.getElementById('loginError').textContent = err.message;
-        }
-    });
-
-    function setupLogoutHandler() {
-        const navLogout = document.getElementById('navWrapper').querySelector('#navLogout');
-        if (navLogout) {
-            navLogout.addEventListener('click', (e) => {
-                e.preventDefault();
-                auth.signOut();
-            });
-        }
-    }
-    const logoutInterval = setInterval(() => {
-        if (document.getElementById('navWrapper').querySelector('#navLogout')) {
-            setupLogoutHandler();
-            clearInterval(logoutInterval);
-        }
-    }, 50);
-
-    document.getElementById('resetPasswordBtn').addEventListener('click', async () => {
-        const email = document.getElementById('loginEmail').value;
-        if (!email) {
-            document.getElementById('loginError').textContent = 'Enter your email to reset password.';
-            return;
-        }
-        try {
-            await auth.sendPasswordResetEmail(email);
-            document.getElementById('loginError').textContent = 'Password reset email sent!';
-        } catch (err) {
-            document.getElementById('loginError').textContent = err.message;
-        }
+        authStateEstablished = true;
+        initializeApp();
     });
 
     async function loadInsights() {
-        const snapshot = await db.collection('otherInsights').orderBy('created', 'desc').get();
         const list = document.getElementById('insights-list');
         list.innerHTML = 'Loading...';
-        let query = db.collection('otherInsights').orderBy('created', 'desc');
+        let query = db.collection('otherInsights').orderBy('created', 'desc').where('relatedTo', '==', null);
 
-        // Only fetch insights that are NOT related to another insight
-        query = query.where('relatedTo', '==', null);
-        
-        const snapshotQuery = await query.get();
+        const snapshot = await query.get();
         list.innerHTML = '';
-        if (snapshotQuery.empty) {
+        if (snapshot.empty) {
             list.innerHTML = '<p>No insights yet. Be the first to add one!</p>';
             return;
         }
-        for (const doc of snapshotQuery.docs) {
+        for (const doc of snapshot.docs) {
             const data = doc.data();
             const card = document.createElement('div');
             card.className = 'insight-card';
@@ -344,8 +289,10 @@
 
     window.editInsight = async function(id) {
         const doc = await db.collection('otherInsights').doc(id).get();
-        const data = doc.data();
-        openModal(id, data.title, data.content, data.tags);
+        if(doc.exists) {
+            const data = doc.data();
+            openModal(id, data.title, data.content, data.tags);
+        }
     };
 
     document.getElementById('cancelModalBtn').onclick = () => { modal.style.display = 'none'; };
@@ -361,7 +308,9 @@
             await db.collection('otherInsights').doc(id).update({ title, content, tags });
         } else {
             await db.collection('otherInsights').add({
-                title, content, tags,
+                title,
+                content,
+                tags,
                 created: firebase.firestore.FieldValue.serverTimestamp(),
                 relatedTo: null
             });

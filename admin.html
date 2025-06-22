@@ -4,16 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="nav.css"><!-- (Optional: your shared nav styles) -->
+    <link rel="stylesheet" href="nav.css">
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: #f5f5f5; 
-            margin: 0; 
-            padding: 0;
-            min-height: 100vh;
-        }
-        .main-content { flex: 1; margin-left: 250px; padding: 20px; transition: margin-left 0.3s ease; }
         .container {
             max-width: 900px;
             margin: 40px auto;
@@ -31,21 +23,6 @@
         .role-admin { color: #27ae60; font-weight: bold; }
         .role-editor { color: #e67e22; font-weight: bold; }
         .role-user { color: #888; }
-        #login-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 0;
-        }
-        #loginForm {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            min-width: 250px;
-        }
-        @media (max-width: 768px) {
-            .main-content { margin-left: 0; }
-        }
     </style>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -87,19 +64,9 @@
                 <div id="inviteStatus" style="margin-top: 10px;"></div>
             </div>
         </div>
-        <div id="notAdminMsg" style="color:red; text-align:center; display:none;">
-            You must be an admin to view this page.
-        </div>
-        <!-- Login Form -->
-        <div id="login-section" style="display:none;">
-            <h2>Login</h2>
-            <form id="loginForm">
-                <input type="email" id="loginEmail" placeholder="Email" required>
-                <input type="password" id="loginPassword" placeholder="Password" required>
-                <button type="submit" class="btn">Login</button>
-            </form>
-            <button id="resetPasswordBtn" class="btn" style="margin-top:10px;">Forgot Password?</button>
-            <div id="loginError" style="color:red; margin-top:10px;"></div>
+        <div id="notAdminMsg" style="color:red; text-align:center; padding: 40px; display:none;">
+            <h1>Access Denied</h1>
+            <p>You must be an admin to view this page. You will be redirected shortly.</p>
         </div>
     </div>
 
@@ -107,24 +74,26 @@
     <script>
     function setupNav(currentUser, currentUserRole) {
         const navWrapper = document.getElementById('navWrapper');
+        if (!navWrapper) return;
         const hamburger = navWrapper.querySelector('.hamburger');
         const navContainer = navWrapper.querySelector('.nav-container');
+
         if (currentUser) {
+            document.body.classList.add('nav-active');
             if (hamburger) hamburger.style.display = '';
             if (navContainer) navContainer.style.display = '';
+
             if (hamburger && navContainer && !hamburger.hasAttribute('data-nav-initialized')) {
                 hamburger.addEventListener('click', () => {
                     hamburger.classList.toggle('active');
                     navContainer.classList.toggle('active');
-                    document.body.classList.toggle('nav-open');
-                    document.getElementById('mainContent').classList.toggle('nav-open');
                 });
                 hamburger.setAttribute('data-nav-initialized', 'true');
             }
             const adminNavItem = navWrapper.querySelector('#adminNavItem');
-            if (adminNavItem) adminNavItem.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
-
-            // Submenu toggle logic
+            if (adminNavItem) {
+                adminNavItem.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
+            }
             const submenuToggles = navWrapper.querySelectorAll('.has-submenu > a');
             submenuToggles.forEach(toggle => {
                 if (toggle.hasAttribute('data-submenu-listener')) return;
@@ -134,20 +103,36 @@
                     toggle.parentElement.classList.toggle('open');
                 });
             });
-
+            const navLogout = navWrapper.querySelector('#navLogout');
+             if (navLogout && !navLogout.hasAttribute('data-logout-listener')) {
+                navLogout.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    auth.signOut();
+                });
+                navLogout.setAttribute('data-logout-listener', 'true');
+            }
         } else {
+            document.body.classList.remove('nav-active');
             if (hamburger) hamburger.style.display = 'none';
             if (navContainer) navContainer.style.display = 'none';
         }
     }
 
     let navLoaded = false;
+    let authStateEstablished = false;
+
+    function initializeApp() {
+        if (navLoaded && authStateEstablished) {
+             setupNav(auth.currentUser, window.currentUserRole);
+        }
+    }
+    
     fetch('nav.html')
       .then(res => res.text())
       .then(html => {
         document.getElementById('navWrapper').innerHTML = html;
         navLoaded = true;
-        if (window._navAuthState) setupNav(window._navAuthState.user, window._navAuthState.role);
+        initializeApp();
       });
     </script>
 
@@ -165,86 +150,31 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
-
-    let currentUser = null;
-    let currentUserRole = null;
-
-    function showLogin(show) {
-        document.getElementById('login-section').style.display = show ? 'flex' : 'none';
-        document.getElementById('navWrapper').style.display = show ? 'none' : 'block';
-        document.getElementById('mainContent').style.marginLeft = show ? '0' : '';
-    }
-
-    function isAdmin() {
-        return currentUser && currentUserRole === 'admin';
-    }
+    window.currentUserRole = null;
 
     auth.onAuthStateChanged(async user => {
-        currentUser = user;
+        const adminSection = document.getElementById('admin-section');
+        const notAdminMsg = document.getElementById('notAdminMsg');
+
         if (user) {
             const userDoc = await db.collection('users').doc(user.uid).get();
-            currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
-            
-            if (isAdmin()) {
-                document.getElementById('admin-section').style.display = 'block';
-                document.getElementById('notAdminMsg').style.display = 'none';
-                showLogin(false);
+            window.currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
+
+            if (window.currentUserRole === 'admin') {
+                adminSection.style.display = 'block';
+                notAdminMsg.style.display = 'none';
                 loadUsers();
             } else {
-                document.getElementById('admin-section').style.display = 'none';
-                document.getElementById('notAdminMsg').style.display = 'block';
-                showLogin(false); // Still hide login form, but show message
+                adminSection.style.display = 'none';
+                notAdminMsg.style.display = 'block';
+                setTimeout(() => { window.location.href = 'index.html'; }, 3000);
             }
         } else {
-            // Redirect to main site instead of showing login form
-            if (window.location.hostname !== 'comefollowme.netlify.app' || window.location.pathname !== '/') {
-                window.location.href = 'https://comefollowme.netlify.app';
-            }
+            window.location.href = 'index.html';
         }
-        window._navAuthState = { user: currentUser, role: currentUserRole };
-        if (navLoaded) setupNav(currentUser, currentUserRole);
-    });
 
-    document.getElementById('loginForm').addEventListener('submit', async e => {
-        e.preventDefault();
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        try {
-            await auth.signInWithEmailAndPassword(email, password);
-            document.getElementById('loginError').textContent = '';
-        } catch (err) {
-            document.getElementById('loginError').textContent = err.message;
-        }
-    });
-
-    function setupLogoutHandler() {
-        const navLogout = document.getElementById('navWrapper').querySelector('#navLogout');
-        if (navLogout) {
-            navLogout.addEventListener('click', (e) => {
-                e.preventDefault();
-                auth.signOut();
-            });
-        }
-    }
-    const logoutInterval = setInterval(() => {
-        if (document.getElementById('navWrapper').querySelector('#navLogout')) {
-            setupLogoutHandler();
-            clearInterval(logoutInterval);
-        }
-    }, 50);
-
-    document.getElementById('resetPasswordBtn').addEventListener('click', async () => {
-        const email = document.getElementById('loginEmail').value;
-        if (!email) {
-            document.getElementById('loginError').textContent = 'Enter your email to reset password.';
-            return;
-        }
-        try {
-            await auth.sendPasswordResetEmail(email);
-            document.getElementById('loginError').textContent = 'Password reset email sent!';
-        } catch (err) {
-            document.getElementById('loginError').textContent = err.message;
-        }
+        authStateEstablished = true;
+        initializeApp();
     });
 
     async function loadUsers() {
@@ -258,9 +188,9 @@
                 <td>${data.email || ''}</td>
                 <td class="role-${data.role}">${data.role || 'user'}</td>
                 <td>
-                    <button class="btn" onclick="changeRole('${doc.id}', 'admin')">Make Admin</button>
-                    <button class="btn" onclick="changeRole('${doc.id}', 'editor')">Make Editor</button>
-                    <button class="btn" onclick="changeRole('${doc.id}', 'user')">Make User</button>
+                    <button class="btn" onclick="changeRole('${doc.id}', 'admin')" ${data.role === 'admin' ? 'disabled' : ''}>Make Admin</button>
+                    <button class="btn" onclick="changeRole('${doc.id}', 'editor')" ${data.role === 'editor' ? 'disabled' : ''}>Make Editor</button>
+                    <button class="btn" onclick="changeRole('${doc.id}', 'user')" ${data.role === 'user' ? 'disabled' : ''}>Make User</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -268,7 +198,7 @@
     }
 
     window.changeRole = async function(uid, role) {
-        if (!isAdmin()) return;
+        if (window.currentUserRole !== 'admin') return;
         await db.collection('users').doc(uid).update({ role });
         loadUsers();
     };
@@ -279,7 +209,7 @@
         const role = document.getElementById('inviteRole').value;
         const inviteStatus = document.getElementById('inviteStatus');
 
-        if (!isAdmin()) {
+        if (window.currentUserRole !== 'admin') {
             inviteStatus.textContent = 'You do not have permission to do this.';
             inviteStatus.style.color = 'red';
             return;
@@ -296,9 +226,6 @@
                 inviteStatus.style.color = 'red';
                 return;
             }
-
-            // Action code settings for the email link.
-            // NOTE: Your domain must be authorized in the Firebase console for this to work.
             const actionCodeSettings = {
                 url: `${window.location.origin}/index.html`,
                 handleCodeInApp: true

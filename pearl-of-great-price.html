@@ -60,25 +60,9 @@
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
-        <div class="container">
+        <div class="container" style="display:none;">
             <h1>Pearl of Great Price Insights</h1>
-            
-            <!-- Login Form -->
-            <div id="login-section" style="display:none;">
-                <h2>Login</h2>
-                <form id="loginForm">
-                    <input type="email" id="loginEmail" placeholder="Email" required>
-                    <input type="password" id="loginPassword" placeholder="Password" required>
-                    <button type="submit" class="btn">Login</button>
-                </form>
-                <button id="resetPasswordBtn" class="btn" style="margin-top:10px;">Forgot Password?</button>
-                <div id="loginError" style="color:red; margin-top:10px;"></div>
-            </div>
-            
-            <!-- Insights List -->
             <div id="insights-list"></div>
-
-            <!-- Add Insight Button (only for authorized users) -->
             <button id="addInsightBtn" class="btn" style="margin-top:20px; display:none;">Add Insight</button>
         </div>
     </div>
@@ -104,24 +88,26 @@
     <script>
     function setupNav(currentUser, currentUserRole) {
         const navWrapper = document.getElementById('navWrapper');
+        if (!navWrapper) return;
         const hamburger = navWrapper.querySelector('.hamburger');
         const navContainer = navWrapper.querySelector('.nav-container');
+
         if (currentUser) {
+            document.body.classList.add('nav-active');
             if (hamburger) hamburger.style.display = '';
             if (navContainer) navContainer.style.display = '';
+
             if (hamburger && navContainer && !hamburger.hasAttribute('data-nav-initialized')) {
                 hamburger.addEventListener('click', () => {
                     hamburger.classList.toggle('active');
                     navContainer.classList.toggle('active');
-                    document.body.classList.toggle('nav-open');
-                    document.getElementById('mainContent').classList.toggle('nav-open');
                 });
                 hamburger.setAttribute('data-nav-initialized', 'true');
             }
             const adminNavItem = navWrapper.querySelector('#adminNavItem');
-            if (adminNavItem) adminNavItem.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
-
-            // Submenu toggle logic
+            if (adminNavItem) {
+                adminNavItem.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
+            }
             const submenuToggles = navWrapper.querySelectorAll('.has-submenu > a');
             submenuToggles.forEach(toggle => {
                 if (toggle.hasAttribute('data-submenu-listener')) return;
@@ -131,20 +117,36 @@
                     toggle.parentElement.classList.toggle('open');
                 });
             });
-
+            const navLogout = navWrapper.querySelector('#navLogout');
+             if (navLogout && !navLogout.hasAttribute('data-logout-listener')) {
+                navLogout.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    auth.signOut();
+                });
+                navLogout.setAttribute('data-logout-listener', 'true');
+            }
         } else {
+            document.body.classList.remove('nav-active');
             if (hamburger) hamburger.style.display = 'none';
             if (navContainer) navContainer.style.display = 'none';
         }
     }
 
     let navLoaded = false;
+    let authStateEstablished = false;
+
+    function initializeApp() {
+        if (navLoaded && authStateEstablished) {
+             setupNav(auth.currentUser, window.currentUserRole);
+        }
+    }
+    
     fetch('nav.html')
       .then(res => res.text())
       .then(html => {
         document.getElementById('navWrapper').innerHTML = html;
         navLoaded = true;
-        if (window._navAuthState) setupNav(window._navAuthState.user, window._navAuthState.role);
+        initializeApp();
       });
     </script>
 
@@ -163,8 +165,7 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
     const insightsCollection = db.collection('pearlOfGreatPriceInsights');
-    const insightsList = document.getElementById('insights-list');
-    const modal = document.getElementById('insightModal');
+    window.currentUserRole = null;
 
     let quill;
     document.addEventListener('DOMContentLoaded', () => {
@@ -184,68 +185,37 @@
         });
     });
 
-    let currentUser = null;
-    let currentUserRole = null;
-
-    function showLogin(show) {
-        document.getElementById('login-section').style.display = show ? 'flex' : 'none';
-        document.getElementById('addInsightBtn').style.display = (show || !canEdit()) ? 'none' : 'inline-block';
-        document.getElementById('mainContent').style.marginLeft = show ? '0' : '';
-    }
-
     function canEdit() {
-        return currentUser && (currentUserRole === 'admin' || currentUserRole === 'editor');
+        return auth.currentUser && (window.currentUserRole === 'admin' || window.currentUserRole === 'editor');
     }
 
     auth.onAuthStateChanged(async user => {
-        currentUser = user;
+        const container = document.querySelector('.container');
+        const addInsightBtn = document.getElementById('addInsightBtn');
+
         if (user) {
+            container.style.display = 'block';
             const userDoc = await db.collection('users').doc(user.uid).get();
-            currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
-            showLogin(false);
+            window.currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
+            
+            if (canEdit()) {
+                addInsightBtn.style.display = 'inline-block';
+            } else {
+                addInsightBtn.style.display = 'none';
+            }
             loadInsights();
         } else {
-            // Redirect to main site instead of showing login form
-            if (window.location.hostname !== 'comefollowme.netlify.app' || window.location.pathname !== '/') {
-                window.location.href = 'https://comefollowme.netlify.app';
-            }
+            window.location.href = 'index.html';
         }
-        window._navAuthState = { user: currentUser, role: currentUserRole };
-        if (navLoaded) setupNav(currentUser, currentUserRole);
-    });
 
-    document.getElementById('loginForm').addEventListener('submit', async e => {
-        e.preventDefault();
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        try {
-            await auth.signInWithEmailAndPassword(email, password);
-            document.getElementById('loginError').textContent = '';
-        } catch (err) {
-            document.getElementById('loginError').textContent = err.message;
-        }
-    });
-
-    document.getElementById('resetPasswordBtn').addEventListener('click', async () => {
-        const email = document.getElementById('loginEmail').value;
-        if (!email) {
-            document.getElementById('loginError').textContent = 'Enter your email to reset password.';
-            return;
-        }
-        try {
-            await auth.sendPasswordResetEmail(email);
-            document.getElementById('loginError').textContent = 'Password reset email sent!';
-        } catch (err) {
-            document.getElementById('loginError').textContent = err.message;
-        }
+        authStateEstablished = true;
+        initializeApp();
     });
 
     async function loadInsights() {
+        const insightsList = document.getElementById('insights-list');
         insightsList.innerHTML = 'Loading...';
-        let query = insightsCollection.orderBy('created', 'desc');
-
-        // Only fetch insights that are NOT related to another insight
-        query = query.where('relatedTo', '==', null);
+        const query = insightsCollection.where('relatedTo', '==', null).orderBy('created', 'desc');
 
         const snapshot = await query.get();
         insightsList.innerHTML = '';
@@ -254,14 +224,14 @@
             return;
         }
         for (const doc of snapshot.docs) {
-            const data = doc.data();
+            const insight = doc.data();
             const card = document.createElement('div');
             card.className = 'insight-card';
 
             let relatedInsightsHTML = '';
-            if (data.relatedInsights && data.relatedInsights.length > 0) {
+            if (insight.relatedInsights && insight.relatedInsights.length > 0) {
                 const relatedDocs = await Promise.all(
-                    data.relatedInsights.map(id => db.collection('pearlOfGreatPriceInsights').doc(id).get())
+                    insight.relatedInsights.map(id => insightsCollection.doc(id).get())
                 );
                 
                 const validRelatedInsights = relatedDocs
@@ -275,7 +245,7 @@
                             <ul>
                                 ${validRelatedInsights.map(related => `
                                     <li>
-                                        <a href="insight-scripture.html?id=${related.id}&collection=pearlOfGreatPriceInsights">${related.title}</a>
+                                        <a href="insight-scripture.html?id=${related.id}&collection=${insightsCollection.id}">${related.title}</a>
                                     </li>
                                 `).join('')}
                             </ul>
@@ -285,77 +255,44 @@
             }
 
             card.innerHTML = `
-                <div class="insight-title">${data.title}</div>
-                <div>Tags: ${data.tags || ''}</div>
+                <div class="insight-title">${insight.title}</div>
+                <div class="insight-tags">Tags: ${insight.tags || ''}</div>
                 ${relatedInsightsHTML}
                 <div class="insight-actions">
-                    <a href="insight-scripture.html?id=${doc.id}&collection=pearlOfGreatPriceInsights" class="btn">See Details</a>
-                    ${canEdit() ? `<button class="btn" onclick="editInsight('${doc.id}')">Edit</button>
-                    <button class="btn" onclick="deleteInsight('${doc.id}')">Delete</button>` : ''}
+                    <a href="insight-scripture.html?id=${doc.id}&collection=${insightsCollection.id}" class="btn">See Details</a>
+                    ${canEdit() ? `<button class="btn" onclick="openModal('${doc.id}')">Edit</button>` : ''}
+                    ${canEdit() ? `<button class="btn" onclick="deleteInsight('${doc.id}')">Delete</button>` : ''}
                 </div>
             `;
             insightsList.appendChild(card);
         }
     }
 
-    function setupLogoutHandler() {
-        const navLogout = document.getElementById('navWrapper').querySelector('#navLogout');
-        if (navLogout) {
-            navLogout.addEventListener('click', (e) => {
-                e.preventDefault();
-                auth.signOut();
-            });
-        }
-    }
-    const logoutInterval = setInterval(() => {
-        if (document.getElementById('navWrapper').querySelector('#navLogout')) {
-            setupLogoutHandler();
-            clearInterval(logoutInterval);
-        }
-    }, 50);
-
-    // Modal functionality
+    const modal = document.getElementById('insightModal');
     const form = document.getElementById('insightForm');
     document.getElementById('addInsightBtn').onclick = () => openModal();
-
-    function openModal(id = '', title = '', content = '', tags = '') {
-        document.getElementById('modalTitle').textContent = id ? 'Edit Insight' : 'Add Insight';
-        document.getElementById('insightId').value = id;
-        document.getElementById('insightTitle').value = title;
-        quill.root.innerHTML = content;
-        document.getElementById('insightTags').value = tags;
-        modal.style.display = 'block';
-    }
-
-    window.editInsight = async function(id) {
-        const doc = await insightsCollection.doc(id).get();
-        const data = doc.data();
-        openModal(id, data.title, data.content, data.tags);
-    };
-
     document.getElementById('cancelModalBtn').onclick = () => { modal.style.display = 'none'; };
 
-    form.onsubmit = async e => {
-        e.preventDefault();
-        if (!canEdit()) return;
-        const id = document.getElementById('insightId').value;
-        const title = document.getElementById('insightTitle').value;
-        const content = quill.root.innerHTML;
-        const tags = document.getElementById('insightTags').value;
+    function openModal(id = '') {
+        document.getElementById('modalTitle').textContent = id ? 'Edit Insight' : 'Add Insight';
+        document.getElementById('insightId').value = id;
+
         if (id) {
-            await insightsCollection.doc(id).update({ title, content, tags });
-        } else {
-            await insightsCollection.add({
-                title,
-                tags,
-                content,
-                created: firebase.firestore.FieldValue.serverTimestamp(),
-                relatedTo: null
+            insightsCollection.doc(id).get().then(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    document.getElementById('insightTitle').value = data.title;
+                    quill.root.innerHTML = data.content;
+                    document.getElementById('insightTags').value = data.tags;
+                }
             });
+        } else {
+            document.getElementById('insightTitle').value = '';
+            quill.root.innerHTML = '';
+            document.getElementById('insightTags').value = '';
         }
-        modal.style.display = 'none';
-        loadInsights();
-    };
+        modal.style.display = 'block';
+    }
 
     window.deleteInsight = async function(id) {
         if (!canEdit()) return;
@@ -364,6 +301,31 @@
             loadInsights();
         }
     };
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('insightId').value;
+        const title = document.getElementById('insightTitle').value;
+        const tags = document.getElementById('insightTags').value;
+        const content = quill.root.innerHTML;
+
+        if (id) {
+            await insightsCollection.doc(id).update({ title, tags, content });
+        } else {
+            await insightsCollection.add({
+                title,
+                tags,
+                content,
+                created: firebase.firestore.FieldValue.serverTimestamp(),
+                relatedTo: null 
+            });
+        }
+
+        modal.style.display = 'none';
+        form.reset();
+        quill.setText('');
+        loadInsights();
+    });
     </script>
 </body>
 </html>

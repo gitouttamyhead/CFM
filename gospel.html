@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gospel Topics</title>
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <link rel="stylesheet" href="nav.css"><!-- (Optional: your shared nav styles) -->
+    <link rel="stylesheet" href="nav.css">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; margin: 0; padding: 0; min-height: 100vh; }
-        .main-content { flex: 1; margin-left: 250px; padding: 20px; transition: margin-left 0.3s ease; }
         .container { max-width: 800px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 30px; }
         h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
         .insight-card { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; margin-bottom: 20px; padding: 20px; }
@@ -17,41 +15,10 @@
         .btn { background: #3498db; color: #fff; border: none; border-radius: 4px; padding: 8px 16px; cursor: pointer; margin-right: 8px; }
         .btn:disabled { background: #ccc; cursor: not-allowed; }
         .modal { 
-            display: none; 
-            position: fixed; 
-            z-index: 1000; 
-            left: 0; 
-            top: 0; 
-            width: 100%; 
-            height: 100%; 
-            overflow: auto; 
-            background: rgba(0,0,0,0.5); 
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background: rgba(0,0,0,0.5); 
         }
         .modal-content { 
-            background: #fff; 
-            margin: 2% auto; 
-            padding: 30px; 
-            border-radius: 8px; 
-            width: 90%; 
-            max-width: 1200px; 
-            max-height: 90vh; 
-            overflow-y: auto; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3); 
-        }
-        #login-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 0;
-        }
-        #loginForm {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            min-width: 250px;
-        }
-        @media (max-width: 768px) {
-            .main-content { margin-left: 0; }
+            background: #fff; margin: 2% auto; padding: 30px; border-radius: 8px; width: 90%; max-width: 1200px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3); 
         }
     </style>
     <!-- Firebase SDKs -->
@@ -65,25 +32,9 @@
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
-        <div class="container">
+        <div class="container" style="display:none;">
             <h1>Gospel Topics</h1>
-
-            <!-- Login Form -->
-            <div id="login-section" style="display:none;">
-                <h2>Login</h2>
-                <form id="loginForm">
-                    <input type="email" id="loginEmail" placeholder="Email" required>
-                    <input type="password" id="loginPassword" placeholder="Password" required>
-                    <button type="submit" class="btn">Login</button>
-                </form>
-                <button id="resetPasswordBtn" class="btn" style="margin-top:10px;">Forgot Password?</button>
-                <div id="loginError" style="color:red; margin-top:10px;"></div>
-            </div>
-
-            <!-- Insights List -->
             <div id="insights-list"></div>
-
-            <!-- Add Insight Button (only for authorized users) -->
             <button id="addInsightBtn" class="btn" style="margin-top:20px; display:none;">Add Insight</button>
         </div>
     </div>
@@ -109,24 +60,26 @@
     <script>
     function setupNav(currentUser, currentUserRole) {
         const navWrapper = document.getElementById('navWrapper');
+        if (!navWrapper) return;
         const hamburger = navWrapper.querySelector('.hamburger');
         const navContainer = navWrapper.querySelector('.nav-container');
+
         if (currentUser) {
+            document.body.classList.add('nav-active');
             if (hamburger) hamburger.style.display = '';
             if (navContainer) navContainer.style.display = '';
+
             if (hamburger && navContainer && !hamburger.hasAttribute('data-nav-initialized')) {
                 hamburger.addEventListener('click', () => {
                     hamburger.classList.toggle('active');
                     navContainer.classList.toggle('active');
-                    document.body.classList.toggle('nav-open');
-                    document.getElementById('mainContent').classList.toggle('nav-open');
                 });
                 hamburger.setAttribute('data-nav-initialized', 'true');
             }
             const adminNavItem = navWrapper.querySelector('#adminNavItem');
-            if (adminNavItem) adminNavItem.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
-
-            // Submenu toggle logic
+            if (adminNavItem) {
+                adminNavItem.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
+            }
             const submenuToggles = navWrapper.querySelectorAll('.has-submenu > a');
             submenuToggles.forEach(toggle => {
                 if (toggle.hasAttribute('data-submenu-listener')) return;
@@ -136,20 +89,36 @@
                     toggle.parentElement.classList.toggle('open');
                 });
             });
-
+            const navLogout = navWrapper.querySelector('#navLogout');
+             if (navLogout && !navLogout.hasAttribute('data-logout-listener')) {
+                navLogout.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    auth.signOut();
+                });
+                navLogout.setAttribute('data-logout-listener', 'true');
+            }
         } else {
+            document.body.classList.remove('nav-active');
             if (hamburger) hamburger.style.display = 'none';
             if (navContainer) navContainer.style.display = 'none';
         }
     }
 
     let navLoaded = false;
+    let authStateEstablished = false;
+
+    function initializeApp() {
+        if (navLoaded && authStateEstablished) {
+             setupNav(auth.currentUser, window.currentUserRole);
+        }
+    }
+    
     fetch('nav.html')
       .then(res => res.text())
       .then(html => {
         document.getElementById('navWrapper').innerHTML = html;
         navLoaded = true;
-        if (window._navAuthState) setupNav(window._navAuthState.user, window._navAuthState.role);
+        initializeApp();
       });
     </script>
 
@@ -167,6 +136,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+    window.currentUserRole = null;
 
     let quill;
     document.addEventListener('DOMContentLoaded', () => {
@@ -186,85 +156,37 @@
         });
     });
 
-    let currentUser = null;
-    let currentUserRole = null;
-
-    function showLogin(show) {
-        document.getElementById('login-section').style.display = show ? 'flex' : 'none';
-        document.getElementById('addInsightBtn').style.display = (show || !canEdit()) ? 'none' : 'inline-block';
-        document.getElementById('mainContent').style.marginLeft = show ? '0' : '';
-    }
-
     function canEdit() {
-        return currentUser && (currentUserRole === 'admin' || currentUserRole === 'editor');
+        return auth.currentUser && (window.currentUserRole === 'admin' || window.currentUserRole === 'editor');
     }
 
     auth.onAuthStateChanged(async user => {
-        currentUser = user;
+        const container = document.querySelector('.container');
+        const addInsightBtn = document.getElementById('addInsightBtn');
+
         if (user) {
+            container.style.display = 'block';
             const userDoc = await db.collection('users').doc(user.uid).get();
-            currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
-            showLogin(false);
+            window.currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
+            
+            if (canEdit()) {
+                addInsightBtn.style.display = 'inline-block';
+            } else {
+                addInsightBtn.style.display = 'none';
+            }
             loadInsights();
         } else {
-            // Redirect to main site instead of showing login form
-            if (window.location.hostname !== 'comefollowme.netlify.app' || window.location.pathname !== '/') {
-                window.location.href = 'https://comefollowme.netlify.app';
-            }
+            window.location.href = 'index.html';
         }
-        window._navAuthState = { user: currentUser, role: currentUserRole };
-        if (navLoaded) setupNav(currentUser, currentUserRole);
-    });
 
-    document.getElementById('loginForm').addEventListener('submit', async e => {
-        e.preventDefault();
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        try {
-            await auth.signInWithEmailAndPassword(email, password);
-            document.getElementById('loginError').textContent = '';
-        } catch (err) {
-            document.getElementById('loginError').textContent = err.message;
-        }
-    });
-
-    function setupLogoutHandler() {
-        const navLogout = document.getElementById('navWrapper').querySelector('#navLogout');
-        if (navLogout) {
-            navLogout.addEventListener('click', (e) => {
-                e.preventDefault();
-                auth.signOut();
-            });
-        }
-    }
-    const logoutInterval = setInterval(() => {
-        if (document.getElementById('navWrapper').querySelector('#navLogout')) {
-            setupLogoutHandler();
-            clearInterval(logoutInterval);
-        }
-    }, 50);
-
-    document.getElementById('resetPasswordBtn').addEventListener('click', async () => {
-        const email = document.getElementById('loginEmail').value;
-        if (!email) {
-            document.getElementById('loginError').textContent = 'Enter your email to reset password.';
-            return;
-        }
-        try {
-            await auth.sendPasswordResetEmail(email);
-            document.getElementById('loginError').textContent = 'Password reset email sent!';
-        } catch (err) {
-            document.getElementById('loginError').textContent = err.message;
-        }
+        authStateEstablished = true;
+        initializeApp();
     });
 
     async function loadInsights() {
         const list = document.getElementById('insights-list');
         list.innerHTML = 'Loading...';
-        let query = db.collection('gospelInsights').orderBy('created', 'desc');
-
-        // Only fetch insights that are NOT related to another insight
-        query = query.where('relatedTo', '==', null);
+        let query = db.collection('gospelInsights').orderBy('created', 'desc').where('relatedTo', '==', null);
 
         const snapshot = await query.get();
         list.innerHTML = '';
@@ -332,8 +254,10 @@
 
     window.editInsight = async function(id) {
         const doc = await db.collection('gospelInsights').doc(id).get();
-        const data = doc.data();
-        openModal(id, data.title, data.content, data.tags);
+        if(doc.exists) {
+            const data = doc.data();
+            openModal(id, data.title, data.content, data.tags);
+        }
     };
 
     document.getElementById('cancelModalBtn').onclick = () => { modal.style.display = 'none'; };

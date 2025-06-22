@@ -74,12 +74,16 @@ body.nav-open {
 }
 
 .main-content {
-    flex: 1;
-    margin-left: 250px;
-    padding: 20px;
     transition: margin-left 0.3s ease;
+    padding: 20px;
 }
 
+/* When the nav is active on desktop, push the content over */
+body.nav-active .main-content {
+    margin-left: 250px;
+}
+
+/* On mobile, the nav is an overlay, so the content margin is not needed */
 @media (max-width: 768px) {
     .nav-container {
         transform: translateX(-100%);
@@ -88,7 +92,7 @@ body.nav-open {
         transform: translateX(0);
     }
     .main-content {
-        margin-left: 0;
+        margin-left: 0 !important; /* Ensure no margin on mobile */
     }
     .main-content.nav-open::after {
         content: '';

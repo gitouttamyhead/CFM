@@ -69,26 +69,26 @@
     <script>
     function setupNav(currentUser, currentUserRole) {
         const navWrapper = document.getElementById('navWrapper');
+        if (!navWrapper) return;
         const hamburger = navWrapper.querySelector('.hamburger');
         const navContainer = navWrapper.querySelector('.nav-container');
+
         if (currentUser) {
-            // By setting the inline style to '', we allow the external stylesheet to control visibility.
-            if (navContainer) navContainer.style.display = '';
+            document.body.classList.add('nav-active');
             if (hamburger) hamburger.style.display = '';
+            if (navContainer) navContainer.style.display = '';
 
             if (hamburger && navContainer && !hamburger.hasAttribute('data-nav-initialized')) {
                 hamburger.addEventListener('click', () => {
                     hamburger.classList.toggle('active');
                     navContainer.classList.toggle('active');
-                    document.body.classList.toggle('nav-open');
-                    document.getElementById('mainContent').classList.toggle('nav-open');
                 });
                 hamburger.setAttribute('data-nav-initialized', 'true');
             }
             const adminNavItem = navWrapper.querySelector('#adminNavItem');
-            if (adminNavItem) adminNavItem.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
-
-            // Submenu toggle logic
+            if (adminNavItem) {
+                adminNavItem.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
+            }
             const submenuToggles = navWrapper.querySelectorAll('.has-submenu > a');
             submenuToggles.forEach(toggle => {
                 if (toggle.hasAttribute('data-submenu-listener')) return;
@@ -98,20 +98,36 @@
                     toggle.parentElement.classList.toggle('open');
                 });
             });
-
+            const navLogout = navWrapper.querySelector('#navLogout');
+             if (navLogout && !navLogout.hasAttribute('data-logout-listener')) {
+                navLogout.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    auth.signOut();
+                });
+                navLogout.setAttribute('data-logout-listener', 'true');
+            }
         } else {
+            document.body.classList.remove('nav-active');
             if (hamburger) hamburger.style.display = 'none';
             if (navContainer) navContainer.style.display = 'none';
         }
     }
 
     let navLoaded = false;
+    let authStateEstablished = false;
+
+    function initializeApp() {
+        if (navLoaded && authStateEstablished) {
+             setupNav(auth.currentUser, window.currentUserRole);
+        }
+    }
+    
     fetch('nav.html')
       .then(res => res.text())
       .then(html => {
         document.getElementById('navWrapper').innerHTML = html;
         navLoaded = true;
-        if (window._navAuthState) setupNav(window._navAuthState.user, window._navAuthState.role);
+        initializeApp();
       });
     </script>
 
@@ -129,33 +145,22 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
-
-    let currentUser = null;
-    let currentUserRole = null;
-
-    function showLogin(show) {
-        document.getElementById('login-section').style.display = show ? 'flex' : 'none';
-        document.getElementById('mainWidget').style.display = show ? 'none' : 'block';
-    }
+    window.currentUserRole = null;
 
     auth.onAuthStateChanged(async user => {
-        currentUser = user;
+        const mainWidget = document.getElementById('mainWidget');
+
         if (user) {
+            mainWidget.style.display = 'block';
             const userDoc = await db.collection('users').doc(user.uid).get();
-            currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
-            showLogin(false);
+            window.currentUserRole = userDoc.exists ? userDoc.data().role : 'user';
         } else {
-            // This part is for when the user is not logged in.
-            // On pages other than index.html, we redirect.
-            if (window.location.hostname !== 'comefollowme.netlify.app' || window.location.pathname !== '/') {
-                window.location.href = 'https://comefollowme.netlify.app';
-            }
+            // If not logged in, redirect to the home page (which will show the login form)
+            window.location.href = 'index.html';
         }
-        window._navAuthState = { user: currentUser, role: currentUserRole };
-        if (navLoaded) {
-            // Use a minimal timeout to ensure the DOM has updated before setting up the nav
-            setTimeout(() => setupNav(currentUser, currentUserRole), 0);
-        }
+
+        authStateEstablished = true;
+        initializeApp();
     });
 
     document.getElementById('loginForm').addEventListener('submit', async e => {
@@ -169,22 +174,6 @@
             document.getElementById('loginError').textContent = err.message;
         }
     });
-
-    function setupLogoutHandler() {
-        const navLogout = document.getElementById('navWrapper').querySelector('#navLogout');
-        if (navLogout) {
-            navLogout.addEventListener('click', (e) => {
-                e.preventDefault();
-                auth.signOut();
-            });
-        }
-    }
-    const logoutInterval = setInterval(() => {
-        if (document.getElementById('navWrapper').querySelector('#navLogout')) {
-            setupLogoutHandler();
-            clearInterval(logoutInterval);
-        }
-    }, 50);
 
     document.getElementById('resetPasswordBtn').addEventListener('click', async () => {
         const email = document.getElementById('loginEmail').value;
