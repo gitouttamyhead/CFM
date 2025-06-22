@@ -146,7 +146,7 @@
 
             try {
                 const snapshot = await db.collection('otherInsights')
-                    .orderBy('createdAt', 'desc')
+                    .orderBy('created', 'desc')
                     .get();
                 
                 insightsList.innerHTML = '';

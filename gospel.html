@@ -110,7 +110,7 @@
 
             try {
                 const snapshot = await db.collection('gospelInsights')
-                    .orderBy('createdAt', 'desc')
+                    .orderBy('created', 'desc')
                     .get();
                 
                 insightsList.innerHTML = '';

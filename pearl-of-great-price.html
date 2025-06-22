@@ -139,7 +139,7 @@
 
             try {
                 const snapshot = await db.collection('pearlOfGreatPriceInsights')
-                    .orderBy('createdAt', 'desc')
+                    .orderBy('created', 'desc')
                     .get();
                 
                 insightsList.innerHTML = '';

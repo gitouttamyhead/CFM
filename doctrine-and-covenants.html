@@ -139,7 +139,7 @@
             const collectionName = 'doctrineAndCovenantsInsights';
 
             try {
-                const snapshot = await db.collection(collectionName).orderBy('createdAt', 'desc').get();
+                const snapshot = await db.collection(collectionName).orderBy('created', 'desc').get();
                 insightsList.innerHTML = '';
 
                 if (snapshot.empty) {
