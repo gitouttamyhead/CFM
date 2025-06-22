@@ -19,6 +19,8 @@ body.nav-open {
     height: 100vh;
     transition: transform 0.3s ease;
     z-index: 1000;
+    top: 0;
+    left: 0;
 }
 
 .nav-header {
@@ -62,6 +64,10 @@ body.nav-open {
     border: none;
     padding: 10px;
     cursor: pointer;
+    border-radius: 4px;
+    min-width: 45px;
+    min-height: 45px;
+    touch-action: manipulation;
 }
 
 .hamburger span {
@@ -71,6 +77,7 @@ body.nav-open {
     background: white;
     margin: 5px 0;
     transition: 0.3s;
+    pointer-events: none;
 }
 
 .main-content {
@@ -88,13 +95,20 @@ body.nav-active .main-content {
     .nav-container {
         transform: translateX(-100%);
     }
-    .nav-container.active {
+    
+    /* Support both class systems for compatibility */
+    .nav-container.active,
+    body.nav-active .nav-container {
         transform: translateX(0);
     }
+    
     .main-content {
         margin-left: 0 !important; /* Ensure no margin on mobile */
     }
-    .main-content.nav-open::after {
+    
+    /* Overlay background when nav is open */
+    body.nav-active::after,
+    .nav-overlay {
         content: '';
         position: fixed;
         top: 0;
@@ -102,19 +116,63 @@ body.nav-active .main-content {
         right: 0;
         bottom: 0;
         background: rgba(0,0,0,0.5);
-        z-index: 500;
+        z-index: 999;
+        opacity: 1;
+        transition: opacity 0.3s ease;
     }
+    
     .hamburger {
         display: block;
     }
-    .hamburger.active span:nth-child(1) {
+    
+    /* Hamburger animation for both class systems */
+    .hamburger.active span:nth-child(1),
+    body.nav-active .hamburger span:nth-child(1) {
         transform: rotate(45deg) translate(5px, 5px);
     }
-    .hamburger.active span:nth-child(2) {
+    
+    .hamburger.active span:nth-child(2),
+    body.nav-active .hamburger span:nth-child(2) {
         opacity: 0;
     }
-    .hamburger.active span:nth-child(3) {
+    
+    .hamburger.active span:nth-child(3),
+    body.nav-active .hamburger span:nth-child(3) {
         transform: rotate(-45deg) translate(7px, -6px);
+    }
+    
+    /* Prevent body scroll when nav is open */
+    body.nav-active {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+    }
+    
+    /* Ensure nav is above overlay */
+    .nav-container {
+        z-index: 1000;
+    }
+    
+    /* Better touch targets for mobile */
+    .nav-item {
+        padding: 18px 20px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .nav-item a {
+        width: 100%;
+        padding: 0;
+    }
+    
+    .hamburger {
+        min-width: 44px;
+        min-height: 44px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
     }
 }
 

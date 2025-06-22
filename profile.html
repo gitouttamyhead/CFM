@@ -227,6 +227,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Standardized Navigation Script -->
+    <script src="nav.js"></script>
 
     <script>
         // Firebase configuration
@@ -268,27 +271,10 @@
 
         // Setup navigation functionality
         function setupNav() {
-            const hamburger = document.querySelector('.hamburger');
-            const body = document.body;
-            
-            if (hamburger) {
-                hamburger.addEventListener('click', () => {
-                    body.classList.toggle('nav-active');
-                });
-            }
-
-            // Setup logout
-            const logoutBtn = document.getElementById('navLogout');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    try {
-                        await auth.signOut();
-                        window.location.href = 'index.html';
-                    } catch (error) {
-                        console.error('Error signing out:', error);
-                    }
-                });
+            // The standardized nav.js script handles most navigation functionality
+            // We just need to ensure it's called after navigation is loaded
+            if (typeof setupStandardizedNav === 'function') {
+                setupStandardizedNav();
             }
         }
 
