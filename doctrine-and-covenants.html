@@ -205,8 +205,11 @@
                 tableButton.innerHTML = '📊';
                 tableButton.title = 'Insert Table';
                 tableButton.className = 'ql-insertTable';
-                tableButton.onclick = function() {
+                tableButton.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     insertTable();
+                    return false;
                 };
                 
                 // Insert the button after the image button
@@ -434,49 +437,117 @@
 
         // Custom table insertion function
         function insertTable() {
-            const rows = prompt('Enter number of rows (1-10):', '3');
-            const cols = prompt('Enter number of columns (1-10):', '3');
+            // Create a custom input modal
+            const tableModal = document.createElement('div');
+            tableModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            `;
             
-            if (rows && cols) {
-                const rowCount = Math.min(Math.max(parseInt(rows), 1), 10);
-                const colCount = Math.min(Math.max(parseInt(cols), 1), 10);
+            const tableContent = document.createElement('div');
+            tableContent.style.cssText = `
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                min-width: 300px;
+            `;
+            
+            tableContent.innerHTML = `
+                <h3>Insert Table</h3>
+                <div style="margin: 15px 0;">
+                    <label>Rows (1-10): <input type="number" id="tableRows" value="3" min="1" max="10" style="width: 60px; margin-left: 10px;"></label>
+                </div>
+                <div style="margin: 15px 0;">
+                    <label>Columns (1-10): <input type="number" id="tableCols" value="3" min="1" max="10" style="width: 60px; margin-left: 10px;"></label>
+                </div>
+                <div style="text-align: right; margin-top: 20px;">
+                    <button id="cancelTable" style="margin-right: 10px; padding: 8px 16px; background: #ccc; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+                    <button id="insertTableBtn" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Insert Table</button>
+                </div>
+            `;
+            
+            tableModal.appendChild(tableContent);
+            document.body.appendChild(tableModal);
+            
+            // Focus on first input
+            document.getElementById('tableRows').focus();
+            
+            // Handle cancel
+            document.getElementById('cancelTable').onclick = function() {
+                document.body.removeChild(tableModal);
+            };
+            
+            // Handle insert
+            document.getElementById('insertTableBtn').onclick = function() {
+                const rows = parseInt(document.getElementById('tableRows').value);
+                const cols = parseInt(document.getElementById('tableCols').value);
                 
+                if (isNaN(rows) || isNaN(cols) || rows < 1 || rows > 10 || cols < 1 || cols > 10) {
+                    alert('Please enter valid numbers between 1 and 10');
+                    return;
+                }
+                
+                // Create table HTML
                 let tableHTML = '<table style="border-collapse: collapse; width: 100%; margin: 10px 0;">';
-                
-                for (let i = 0; i < rowCount; i++) {
+                for (let i = 0; i < rows; i++) {
                     tableHTML += '<tr>';
-                    for (let j = 0; j < colCount; j++) {
+                    for (let j = 0; j < cols; j++) {
                         tableHTML += '<td style="border: 1px solid #ddd; padding: 8px; text-align: left;">';
-                        tableHTML += '&nbsp;'; // Non-breaking space to ensure cell has content
+                        tableHTML += '&nbsp;';
                         tableHTML += '</td>';
                     }
                     tableHTML += '</tr>';
                 }
-                
                 tableHTML += '</table>';
                 
-                // Insert the table at current cursor position using a safer method
+                // Get current selection
                 const range = quill.getSelection();
-                if (range) {
-                    // Insert a newline first, then the table
-                    quill.insertText(range.index, '\n');
-                    quill.clipboard.dangerouslyPasteHTML(range.index + 1, tableHTML);
-                    // Add another newline after the table
-                    quill.insertText(range.index + 1 + tableHTML.length, '\n');
-                    // Set cursor position after the table
-                    quill.setSelection(range.index + 1 + tableHTML.length + 1);
-                } else {
-                    // If no selection, insert at the end
-                    const length = quill.getLength();
-                    quill.insertText(length, '\n');
-                    quill.clipboard.dangerouslyPasteHTML(length + 1, tableHTML);
-                    quill.insertText(length + 1 + tableHTML.length, '\n');
-                    quill.setSelection(length + 1 + tableHTML.length + 1);
-                }
+                const insertIndex = range ? range.index : quill.getLength();
                 
-                // Ensure the editor maintains focus
+                // Insert newline before table
+                quill.insertText(insertIndex, '\n');
+                
+                // Insert the table HTML directly
+                quill.clipboard.dangerouslyPasteHTML(insertIndex + 1, tableHTML);
+                
+                // Insert newline after table and set cursor position
+                const finalLength = quill.getLength();
+                quill.insertText(finalLength, '\n');
+                quill.setSelection(finalLength + 1);
                 quill.focus();
-            }
+                
+                // Remove the modal
+                document.body.removeChild(tableModal);
+            };
+            
+            // Handle Enter key
+            document.getElementById('tableRows').onkeypress = function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('tableCols').focus();
+                }
+            };
+            
+            document.getElementById('tableCols').onkeypress = function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('insertTableBtn').click();
+                }
+            };
+            
+            // Handle escape key
+            tableModal.onkeydown = function(e) {
+                if (e.key === 'Escape') {
+                    document.getElementById('cancelTable').click();
+                }
+            };
         }
     </script>
 </body>
