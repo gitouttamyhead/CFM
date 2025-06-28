@@ -181,23 +181,42 @@
                 quill = new Quill('#quillEditor', { 
                     theme: 'snow',
                     modules: {
-                        toolbar: [
-                            [{ 'header': [1, 2, 3, false] }],
-                            ['bold', 'italic', 'underline', 'strike'],
-                            [{ 'color': [] }, { 'background': [] }],
-                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                            ['link', 'image'],
-                            ['insertTable'],
-                            ['clean']
-                        ]
+                        toolbar: {
+                            container: [
+                                [{ 'header': [1, 2, 3, false] }],
+                                ['bold', 'italic', 'underline', 'strike'],
+                                [{ 'color': [] }, { 'background': [] }],
+                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                ['link', 'image'],
+                                ['clean']
+                            ],
+                            handlers: {
+                                'insertTable': function() {
+                                    insertTable();
+                                }
+                            }
+                        }
                     }
                 });
 
-                // Add custom table insertion handler
+                // Add custom table button to toolbar
                 const toolbar = quill.getModule('toolbar');
-                toolbar.addHandler('insertTable', function() {
+                const tableButton = document.createElement('button');
+                tableButton.innerHTML = '📊';
+                tableButton.title = 'Insert Table';
+                tableButton.className = 'ql-insertTable';
+                tableButton.onclick = function() {
                     insertTable();
-                });
+                };
+                
+                // Insert the button after the image button
+                const toolbarContainer = toolbar.container;
+                const imageButton = toolbarContainer.querySelector('.ql-image');
+                if (imageButton) {
+                    imageButton.parentNode.insertBefore(tableButton, imageButton.nextSibling);
+                } else {
+                    toolbarContainer.appendChild(tableButton);
+                }
             }
             modal.style.display = 'block';
         }
