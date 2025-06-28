@@ -157,6 +157,12 @@
                 <input type="text" id="relatedTitle" placeholder="Title" required style="width:100%;margin-bottom:10px;">
                 <div id="relatedQuillEditor" style="height:400px;margin-bottom:20px;"></div>
                 <input type="text" id="relatedTags" placeholder="Tags (comma separated)" style="width:100%;margin-bottom:10px;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" id="sendEmailNotification" style="margin-right: 8px;">
+                        Send email notification to users about this related insight
+                    </label>
+                </div>
                 <button type="submit" class="btn">Save Related Insight</button>
                 <button type="button" class="btn" id="cancelRelatedModalBtn" style="background:#aaa;">Cancel</button>
             </form>
@@ -164,6 +170,8 @@
     </div>
     
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="email-notifications.js"></script>
 
     <!-- Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -255,7 +263,28 @@
                          collectionName === 'otherInsights' ? 'Other' : 'Scripture'
             };
 
-            await db.collection(collectionName).add(insightData);
+            // Save the insight
+            const docRef = await db.collection(collectionName).add(insightData);
+            insightData.id = docRef.id;
+
+            // Handle email notification for new related insights
+            const sendEmailNotification = document.getElementById('sendEmailNotification').checked;
+            if (sendEmailNotification) {
+                // Get current user info for the notification
+                const currentUser = auth.currentUser;
+                if (currentUser) {
+                    const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                    if (userDoc.exists) {
+                        insightData.creatorName = userDoc.data().name || currentUser.email.split('@')[0];
+                    }
+                }
+                
+                // Show email notification modal
+                setTimeout(() => {
+                    window.EmailNotifications.showEmailNotificationModal(insightData, true);
+                }, 500);
+            }
+
             closeRelatedModal();
             alert('Related insight created successfully!');
         });

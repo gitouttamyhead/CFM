@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="nav.css">
     <link rel="stylesheet" href="insights.css">
     <script src="https://cdn.tiny.cloud/1/ewx52xiayai247q9zlnoay8tigea0svtpwbigdrpuizkxj7j/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="email-notifications.js"></script>
 </head>
 <body>
     <!-- Shared Navigation -->
@@ -135,6 +137,12 @@
                 <div id="quillEditor" style="height:300px;margin-bottom:20px;"></div>
                 <textarea id="insightSummary" placeholder="Summary (optional, for main insights)" style="width:100%; height: 60px; margin-bottom:10px;"></textarea>
                 <input type="text" id="insightTags" placeholder="Tags (comma separated)" style="width:100%;margin-bottom:10px;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" id="sendEmailNotification" style="margin-right: 8px;">
+                        Send email notification to users about this insight
+                    </label>
+                </div>
                 <button type="submit" class="btn">Save Insight</button>
                 <button type="button" class="btn" id="cancelModalBtn" style="background:#aaa;">Cancel</button>
             </form>
@@ -255,6 +263,9 @@
                                 <button class="btn" onclick="editInsight('${mainInsight.id}')">Edit</button>
                                 <button class="btn" onclick="deleteInsight('${mainInsight.id}')">Delete</button>
                                 <button class="btn" onclick="openAddRelatedModal('${mainInsight.id}')">Add Related Insight</button>
+                                <button class="btn" onclick="resendEmailNotification('${mainInsight.id}')" style="background: #e67e22;">
+                                    <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; margin-right: 5px; vertical-align: middle;"><path fill="currentColor" d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>Resend Email
+                                </button>
                             </div>
                         `;
                     }
@@ -335,11 +346,35 @@
                 category: 'Gospel Topics'
             };
 
+            let insightId = id;
+            let isNewInsight = !id;
+
             if (id) { // Editing
                 await db.collection(collectionName).doc(id).update(insightData);
             } else { // Creating
-                await db.collection(collectionName).add(insightData);
+                const docRef = await db.collection(collectionName).add(insightData);
+                insightId = docRef.id;
+                insightData.id = insightId;
             }
+
+            // Handle email notification for new insights
+            const sendEmailNotification = document.getElementById('sendEmailNotification').checked;
+            if (sendEmailNotification && isNewInsight) {
+                // Get current user info for the notification
+                const currentUser = auth.currentUser;
+                if (currentUser) {
+                    const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                    if (userDoc.exists) {
+                        insightData.creatorName = userDoc.data().name || currentUser.email.split('@')[0];
+                    }
+                }
+                
+                // Show email notification modal
+                setTimeout(() => {
+                    window.EmailNotifications.showEmailNotificationModal(insightData, true);
+                }, 500);
+            }
+
             closeModal();
             fetchInsights();
         });
@@ -363,6 +398,29 @@
             if (confirm("Are you sure you want to delete this insight?")) {
                 await db.collection(collectionName).doc(id).delete();
                 fetchInsights();
+            }
+        }
+
+        window.resendEmailNotification = async (id) => {
+            try {
+                const doc = await db.collection(collectionName).doc(id).get();
+                if (doc.exists) {
+                    const insightData = { id: doc.id, ...doc.data() };
+                    
+                    // Get current user info for the notification
+                    const currentUser = auth.currentUser;
+                    if (currentUser) {
+                        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                        if (userDoc.exists) {
+                            insightData.creatorName = userDoc.data().name || currentUser.email.split('@')[0];
+                        }
+                    }
+                    
+                    window.EmailNotifications.showEmailNotificationModal(insightData, false);
+                }
+            } catch (error) {
+                console.error('Error loading insight for email notification:', error);
+                alert('Error loading insight data. Please try again.');
             }
         }
 
