@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="nav.css">
     <link rel="stylesheet" href="insights.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill-better-table@1.2.10/dist/quill-better-table.min.css" />
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 </head>
 <body>
     <!-- Shared Navigation -->
@@ -178,50 +179,46 @@
         const form = document.getElementById('insightForm');
         const cancelBtn = document.getElementById('cancelModalBtn');
 
+        // Initialize TinyMCE on the insight editor
         function openModal() {
-            // Register the table module before creating the Quill instance
-            Quill.register({
-              'modules/better-table': QuillBetterTable
-            }, true);
-
-            if (!quill) {
-              quill = new Quill('#quillEditor', {
-                theme: 'snow',
-                modules: {
-                  'better-table': {
-                    operationMenu: {
-                      items: {
-                        unmergeCells: {
-                          text: 'Unmerge cells'
-                        }
-                      },
-                    },
-                    color: {
-                      colors: ['red', 'green', 'yellow', 'blue', 'white'],
-                      text: 'Background Colors'
-                    }
-                  },
-                  toolbar: [
-                    [{ 'header': [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{ 'color': [] }, { 'background': [] }],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    ['link', 'image'],
-                    ['table'], // This is the new table button!
-                    ['clean']
-                  ]
-                }
-              });
-            }
-            modal.style.display = 'block';
+          if (!window.tinymce || tinymce.editors.length === 0) {
+            tinymce.init({
+              selector: '#quillEditor',
+              height: 300,
+              menubar: false,
+              plugins: [
+                'advlist autolink lists link image charmap preview anchor',
+                'searchreplace visualblocks code fullscreen',
+                'insertdatetime media table paste code help wordcount',
+                'textcolor'
+              ],
+              toolbar: [
+                'undo redo | blocks | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify',
+                'bullist numlist outdent indent | link image table | removeformat | help'
+              ],
+              content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+              setup: function(editor) {
+                editor.on('init', function() {
+                  // If editing, load content
+                  const id = document.getElementById('insightId').value;
+                  if (id && window.lastInsightContent) {
+                    editor.setContent(window.lastInsightContent);
+                  }
+                });
+              }
+            });
+          }
+          modal.style.display = 'block';
         }
 
         function closeModal() {
-            modal.style.display = 'none';
-            form.reset();
-            quill.root.innerHTML = '';
-            document.getElementById('insightId').value = '';
-            document.getElementById('relatedToId').value = '';
+          modal.style.display = 'none';
+          form.reset();
+          if (window.tinymce && tinymce.get('quillEditor')) {
+            tinymce.get('quillEditor').setContent('');
+          }
+          document.getElementById('insightId').value = '';
+          document.getElementById('relatedToId').value = '';
         }
 
         cancelBtn.onclick = closeModal;
@@ -367,9 +364,11 @@
             e.preventDefault();
             const id = document.getElementById('insightId').value;
             const relatedToId = document.getElementById('relatedToId').value;
+            const editorContent = tinymce.get('quillEditor').getContent();
+            window.lastInsightContent = editorContent;
             const insightData = {
                 title: document.getElementById('insightTitle').value,
-                content: quill.root.innerHTML,
+                content: editorContent,
                 summary: document.getElementById('insightSummary').value,
                 tags: document.getElementById('insightTags').value.split(',').map(t => t.trim()),
                 created: firebase.firestore.FieldValue.serverTimestamp(),
@@ -394,7 +393,7 @@
                 openModal(); // Open modal and initialize Quill first
                 document.getElementById('insightId').value = id;
                 document.getElementById('insightTitle').value = data.title;
-                quill.root.innerHTML = data.content;
+                tinymce.get('quillEditor').setContent(data.content);
                 document.getElementById('insightSummary').value = data.summary || '';
                 document.getElementById('insightTags').value = (data.tags || []).join(', ');
                 document.getElementById('relatedToId').value = data.relatedTo || '';
