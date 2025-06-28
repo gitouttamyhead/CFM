@@ -7,6 +7,7 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="nav.css">
     <link rel="stylesheet" href="insights.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill-better-table@1.2.10/dist/quill-better-table.min.css" />
 </head>
 <body>
     <!-- Shared Navigation -->
@@ -141,6 +142,7 @@
     </div>
 
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quill-better-table@1.2.10/dist/quill-better-table.min.js"></script>
 
     <!-- Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -177,70 +179,39 @@
         const cancelBtn = document.getElementById('cancelModalBtn');
 
         function openModal() {
-            // --- Allow tables in Quill clipboard (register before Quill instance) ---
-            const Clipboard = Quill.import('modules/clipboard');
-            class PlainClipboard extends Clipboard {
-              onPaste(e) {
-                if (e.defaultPrevented) return;
-                e.preventDefault();
-                const html = (e.originalEvent || e).clipboardData.getData('text/html');
-                if (html && html.includes('<table')) {
-                  const range = this.quill.getSelection();
-                  if (range) {
-                    this.quill.clipboard.dangerouslyPasteHTML(range.index, html, 'user');
-                  } else {
-                    this.quill.clipboard.dangerouslyPasteHTML(this.quill.getLength(), html, 'user');
-                  }
-                } else {
-                  super.onPaste(e);
-                }
-              }
-            }
-            Quill.register('modules/clipboard', PlainClipboard, true);
+            // Register the table module before creating the Quill instance
+            Quill.register({
+              'modules/better-table': QuillBetterTable
+            }, true);
 
             if (!quill) {
-                quill = new Quill('#quillEditor', { 
-                    theme: 'snow',
-                    modules: {
-                        toolbar: {
-                            container: [
-                                [{ 'header': [1, 2, 3, false] }],
-                                ['bold', 'italic', 'underline', 'strike'],
-                                [{ 'color': [] }, { 'background': [] }],
-                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                                ['link', 'image'],
-                                ['clean']
-                            ],
-                            handlers: {
-                                'insertTable': function() {
-                                    insertTable();
-                                }
-                            }
+              quill = new Quill('#quillEditor', {
+                theme: 'snow',
+                modules: {
+                  'better-table': {
+                    operationMenu: {
+                      items: {
+                        unmergeCells: {
+                          text: 'Unmerge cells'
                         }
+                      },
+                    },
+                    color: {
+                      colors: ['red', 'green', 'yellow', 'blue', 'white'],
+                      text: 'Background Colors'
                     }
-                });
-
-                // Add custom table button to toolbar
-                const toolbar = quill.getModule('toolbar');
-                const tableButton = document.createElement('button');
-                tableButton.innerHTML = '📊';
-                tableButton.title = 'Insert Table';
-                tableButton.className = 'ql-insertTable';
-                tableButton.onclick = function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    insertTable();
-                    return false;
-                };
-                
-                // Insert the button after the image button
-                const toolbarContainer = toolbar.container;
-                const imageButton = toolbarContainer.querySelector('.ql-image');
-                if (imageButton) {
-                    imageButton.parentNode.insertBefore(tableButton, imageButton.nextSibling);
-                } else {
-                    toolbarContainer.appendChild(tableButton);
+                  },
+                  toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                    ['table'], // This is the new table button!
+                    ['clean']
+                  ]
                 }
+              });
             }
             modal.style.display = 'block';
         }
@@ -455,129 +426,6 @@
                 fetchInsights();
             }
         });
-
-        // Custom table insertion function
-        function insertTable() {
-            // Create a custom input modal
-            const tableModal = document.createElement('div');
-            tableModal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.5);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 10000;
-            `;
-            
-            const tableContent = document.createElement('div');
-            tableContent.style.cssText = `
-                background: white;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                min-width: 300px;
-            `;
-            
-            tableContent.innerHTML = `
-                <h3>Insert Table</h3>
-                <div style="margin: 15px 0;">
-                    <label>Rows (1-10): <input type="number" id="tableRows" value="3" min="1" max="10" style="width: 60px; margin-left: 10px;"></label>
-                </div>
-                <div style="margin: 15px 0;">
-                    <label>Columns (1-10): <input type="number" id="tableCols" value="3" min="1" max="10" style="width: 60px; margin-left: 10px;"></label>
-                </div>
-                <div style="text-align: right; margin-top: 20px;">
-                    <button id="cancelTable" style="margin-right: 10px; padding: 8px 16px; background: #ccc; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
-                    <button id="insertTableBtn" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Insert Table</button>
-                </div>
-            `;
-            
-            tableModal.appendChild(tableContent);
-            document.body.appendChild(tableModal);
-            
-            // Focus on first input
-            document.getElementById('tableRows').focus();
-            
-            // Handle cancel
-            document.getElementById('cancelTable').onclick = function() {
-                document.body.removeChild(tableModal);
-            };
-            
-            // Handle insert
-            document.getElementById('insertTableBtn').onclick = function() {
-                const rows = parseInt(document.getElementById('tableRows').value);
-                const cols = parseInt(document.getElementById('tableCols').value);
-                
-                if (isNaN(rows) || isNaN(cols) || rows < 1 || rows > 10 || cols < 1 || cols > 10) {
-                    alert('Please enter valid numbers between 1 and 10');
-                    return;
-                }
-                
-                // Create table HTML with more visible styling
-                let tableHTML = '<table style="border-collapse: collapse; width: 100%; margin: 10px 0; border: 2px solid #333;">';
-                for (let i = 0; i < rows; i++) {
-                    tableHTML += '<tr>';
-                    for (let j = 0; j < cols; j++) {
-                        tableHTML += '<td style="border: 1px solid #333; padding: 12px; text-align: left; background-color: #f9f9f9; min-width: 80px; height: 40px;">';
-                        tableHTML += '&nbsp;';
-                        tableHTML += '</td>';
-                    }
-                    tableHTML += '</tr>';
-                }
-                tableHTML += '</table>';
-                
-                // Get current selection
-                const range = quill.getSelection();
-                const insertIndex = range ? range.index : quill.getLength();
-                
-                console.log('Inserting table at index:', insertIndex);
-                console.log('Table HTML:', tableHTML);
-                
-                // Insert newline before table
-                quill.insertText(insertIndex, '\n');
-                
-                // Insert the table HTML directly
-                quill.clipboard.dangerouslyPasteHTML(insertIndex + 1, tableHTML);
-                
-                // Insert newline after table and set cursor position
-                const finalLength = quill.getLength();
-                quill.insertText(finalLength, '\n');
-                quill.setSelection(finalLength + 1);
-                quill.focus();
-                
-                // Remove the modal
-                document.body.removeChild(tableModal);
-                
-                // Show a brief message to confirm insertion
-                setTimeout(() => {
-                    alert('Table inserted successfully! You should see it in the editor.');
-                }, 100);
-            };
-            
-            // Handle Enter key
-            document.getElementById('tableRows').onkeypress = function(e) {
-                if (e.key === 'Enter') {
-                    document.getElementById('tableCols').focus();
-                }
-            };
-            
-            document.getElementById('tableCols').onkeypress = function(e) {
-                if (e.key === 'Enter') {
-                    document.getElementById('insertTableBtn').click();
-                }
-            };
-            
-            // Handle escape key
-            tableModal.onkeydown = function(e) {
-                if (e.key === 'Escape') {
-                    document.getElementById('cancelTable').click();
-                }
-            };
-        }
     </script>
 </body>
 </html>
