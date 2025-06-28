@@ -3,9 +3,9 @@
 
 // EmailJS configuration
 const EMAILJS_CONFIG = {
-    serviceId: 'YOUR_EMAILJS_SERVICE_ID', // Replace with your EmailJS service ID
-    templateId: 'cfm_insight_notification', // Replace with your template ID
-    userId: 'YOUR_EMAILJS_USER_ID' // Replace with your EmailJS user ID
+    serviceId: 'service_ug84ky3', // Replace with your EmailJS service ID
+    templateId: 'template_0e5qk9b', // Replace with your template ID
+    userId: 'GAP4HMvMHFU4_vmj_' // Replace with your EmailJS user ID
 };
 
 // Initialize EmailJS
