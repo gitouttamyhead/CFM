@@ -302,8 +302,8 @@
             }
         });
 
-        async function fetchInsight(id) {
-            const docRef = db.collection('insights').doc(id);
+        async function fetchInsight(id, collection) {
+            const docRef = db.collection(collection).doc(id);
             const doc = await docRef.get();
 
             if (doc.exists) {
@@ -323,9 +323,10 @@
             
             const urlParams = new URLSearchParams(window.location.search);
             const insightId = urlParams.get('id');
+            const collectionName = urlParams.get('collection');
 
-            if (insightId) {
-                fetchInsight(insightId);
+            if (insightId && collectionName) {
+                fetchInsight(insightId, collectionName);
             } else {
                 insightTitle.textContent = "No insight specified";
                 insightContent.innerHTML = "<p>Please provide an insight ID in the URL.</p>";
