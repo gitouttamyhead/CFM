@@ -7,6 +7,7 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="nav.css">
     <link rel="stylesheet" href="insights.css">
+    <script src="https://cdn.tiny.cloud/1/ewx52xiayai247q9zlnoay8tigea0svtpwbigdrpuizkxj7j/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 </head>
 <body>
     <!-- Shared Navigation -->
@@ -197,55 +198,41 @@
         const cancelRelatedBtn = document.getElementById('cancelRelatedModalBtn');
 
         function openRelatedModal() {
-            if (!relatedQuill) {
-                relatedQuill = new Quill('#relatedQuillEditor', { 
-                    theme: 'snow',
-                    modules: {
-                        toolbar: {
-                            container: [
-                                [{ 'header': [1, 2, 3, false] }],
-                                ['bold', 'italic', 'underline', 'strike'],
-                                [{ 'color': [] }, { 'background': [] }],
-                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                                ['link', 'image'],
-                                ['clean']
-                            ],
-                            handlers: {
-                                'insertTable': function() {
-                                    insertTable(relatedQuill);
-                                }
-                            }
-                        }
-                    }
-                });
-
-                // Add custom table button to toolbar
-                const toolbar = relatedQuill.getModule('toolbar');
-                const tableButton = document.createElement('button');
-                tableButton.innerHTML = '📊';
-                tableButton.title = 'Insert Table';
-                tableButton.className = 'ql-insertTable';
-                tableButton.onclick = function() {
-                    insertTable(relatedQuill);
-                };
-                
-                // Insert the button after the image button
-                const toolbarContainer = toolbar.container;
-                const imageButton = toolbarContainer.querySelector('.ql-image');
-                if (imageButton) {
-                    imageButton.parentNode.insertBefore(tableButton, imageButton.nextSibling);
-                } else {
-                    toolbarContainer.appendChild(tableButton);
-                }
+            if (window.tinymce && tinymce.get('relatedQuillEditor')) {
+                tinymce.get('relatedQuillEditor').remove();
             }
+            tinymce.init({
+                selector: '#relatedQuillEditor',
+                height: 300,
+                menubar: false,
+                plugins: [
+                    'advlist autolink lists link image charmap preview anchor',
+                    'searchreplace visualblocks code fullscreen',
+                    'insertdatetime media table paste code help wordcount',
+                    'textcolor',
+                    'table'
+                ],
+                toolbar: [
+                    'undo redo | blocks | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify',
+                    'bullist numlist outdent indent | link image table | removeformat | help'
+                ],
+                content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+                setup: function(editor) {
+                    editor.on('init', function() {
+                        if (window.lastRelatedInsightContent) {
+                            editor.setContent(window.lastRelatedInsightContent);
+                        }
+                    });
+                }
+            });
             relatedModal.style.display = 'block';
         }
 
         function closeRelatedModal() {
             relatedModal.style.display = 'none';
             relatedForm.reset();
-            if (relatedQuill) {
-                relatedQuill.root.innerHTML = '';
+            if (window.tinymce && tinymce.get('relatedQuillEditor')) {
+                tinymce.get('relatedQuillEditor').remove();
             }
         }
 
@@ -256,15 +243,17 @@
             e.preventDefault();
             const urlParams = new URLSearchParams(window.location.search);
             const parentId = urlParams.get('id');
-            const collectionName = urlParams.get('collection') || 'otherInsights';
-            
+            const collectionName = urlParams.get('collection');
+            const editorContent = tinymce.get('relatedQuillEditor').getContent();
+            window.lastRelatedInsightContent = editorContent;
             const insightData = {
                 title: document.getElementById('relatedTitle').value,
-                content: relatedQuill.root.innerHTML,
+                content: editorContent,
                 tags: document.getElementById('relatedTags').value.split(',').map(t => t.trim()),
                 created: firebase.firestore.FieldValue.serverTimestamp(),
                 relatedTo: parentId,
-                category: 'Other'
+                category: collectionName === 'gospelInsights' ? 'Gospel Topics' : 
+                         collectionName === 'otherInsights' ? 'Other' : 'Scripture'
             };
 
             await db.collection(collectionName).add(insightData);

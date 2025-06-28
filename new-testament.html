@@ -7,6 +7,7 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="nav.css">
     <link rel="stylesheet" href="insights.css">
+    <script src="https://cdn.tiny.cloud/1/ewx52xiayai247q9zlnoay8tigea0svtpwbigdrpuizkxj7j/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 </head>
 <body>
     <!-- Shared Navigation -->
@@ -177,55 +178,49 @@
         const form = document.getElementById('insightForm');
         const cancelBtn = document.getElementById('cancelModalBtn');
 
+        // Initialize TinyMCE on the insight editor
         function openModal() {
-            if (!quill) {
-                quill = new Quill('#quillEditor', { 
-                    theme: 'snow',
-                    modules: {
-                        toolbar: {
-                            container: [
-                                [{ 'header': [1, 2, 3, false] }],
-                                ['bold', 'italic', 'underline', 'strike'],
-                                [{ 'color': [] }, { 'background': [] }],
-                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                                ['link', 'image'],
-                                ['clean']
-                            ],
-                            handlers: {
-                                'insertTable': function() {
-                                    insertTable();
-                                }
-                            }
-                        }
-                    }
-                });
-
-                // Add custom table button to toolbar
-                const toolbar = quill.getModule('toolbar');
-                const tableButton = document.createElement('button');
-                tableButton.innerHTML = '📊';
-                tableButton.title = 'Insert Table';
-                tableButton.className = 'ql-insertTable';
-                tableButton.onclick = function() {
-                    insertTable();
-                };
-                
-                // Insert the button after the image button
-                const toolbarContainer = toolbar.container;
-                const imageButton = toolbarContainer.querySelector('.ql-image');
-                if (imageButton) {
-                    imageButton.parentNode.insertBefore(tableButton, imageButton.nextSibling);
-                } else {
-                    toolbarContainer.appendChild(tableButton);
-                }
+            // Destroy any existing TinyMCE instance
+            if (window.tinymce && tinymce.get('quillEditor')) {
+                tinymce.get('quillEditor').remove();
             }
+
+            tinymce.init({
+                selector: '#quillEditor',
+                height: 300,
+                menubar: false,
+                plugins: [
+                    'advlist autolink lists link image charmap preview anchor',
+                    'searchreplace visualblocks code fullscreen',
+                    'insertdatetime media table paste code help wordcount',
+                    'textcolor',
+                    'table'
+                ],
+                toolbar: [
+                    'undo redo | blocks | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify',
+                    'bullist numlist outdent indent | link image table | removeformat | help'
+                ],
+                content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+                setup: function(editor) {
+                    editor.on('init', function() {
+                        // If editing, load content
+                        const id = document.getElementById('insightId').value;
+                        if (id && window.lastInsightContent) {
+                            editor.setContent(window.lastInsightContent);
+                        }
+                    });
+                }
+            });
+
             modal.style.display = 'block';
         }
 
         function closeModal() {
             modal.style.display = 'none';
             form.reset();
-            quill.root.innerHTML = '';
+            if (window.tinymce && tinymce.get('quillEditor')) {
+                tinymce.get('quillEditor').remove();
+            }
             document.getElementById('insightId').value = '';
             document.getElementById('relatedToId').value = '';
         }
@@ -357,7 +352,6 @@
             document.getElementById('insightId').value = '';
             document.getElementById('relatedToId').value = '';
             openModal();
-            quill.root.innerHTML = ''; // Clear editor content
         };
 
         window.openAddRelatedModal = (parentId) => {
@@ -370,9 +364,11 @@
             e.preventDefault();
             const id = document.getElementById('insightId').value;
             const relatedToId = document.getElementById('relatedToId').value;
+            const editorContent = tinymce.get('quillEditor').getContent();
+            window.lastInsightContent = editorContent;
             const insightData = {
                 title: document.getElementById('insightTitle').value,
-                content: quill.root.innerHTML,
+                content: editorContent,
                 summary: document.getElementById('insightSummary').value,
                 tags: document.getElementById('insightTags').value.split(',').map(t => t.trim()),
                 created: firebase.firestore.FieldValue.serverTimestamp(),
@@ -394,10 +390,10 @@
             const doc = await db.collection(collectionName).doc(id).get();
             if (doc.exists) {
                 const data = doc.data();
-                openModal(); // Open modal and initialize Quill first
+                openModal(); // Open modal and initialize TinyMCE first
                 document.getElementById('insightId').value = id;
                 document.getElementById('insightTitle').value = data.title;
-                quill.root.innerHTML = data.content;
+                tinymce.get('quillEditor').setContent(data.content);
                 document.getElementById('insightSummary').value = data.summary || '';
                 document.getElementById('insightTags').value = (data.tags || []).join(', ');
                 document.getElementById('relatedToId').value = data.relatedTo || '';
@@ -429,53 +425,6 @@
                 fetchInsights();
             }
         });
-
-        // Custom table insertion function
-        function insertTable() {
-            const rows = prompt('Enter number of rows (1-10):', '3');
-            const cols = prompt('Enter number of columns (1-10):', '3');
-            
-            if (rows && cols) {
-                const rowCount = Math.min(Math.max(parseInt(rows), 1), 10);
-                const colCount = Math.min(Math.max(parseInt(cols), 1), 10);
-                
-                let tableHTML = '<table style="border-collapse: collapse; width: 100%; margin: 10px 0;">';
-                
-                for (let i = 0; i < rowCount; i++) {
-                    tableHTML += '<tr>';
-                    for (let j = 0; j < colCount; j++) {
-                        tableHTML += '<td style="border: 1px solid #ddd; padding: 8px; text-align: left;">';
-                        tableHTML += '&nbsp;'; // Non-breaking space to ensure cell has content
-                        tableHTML += '</td>';
-                    }
-                    tableHTML += '</tr>';
-                }
-                
-                tableHTML += '</table>';
-                
-                // Insert the table at current cursor position using a safer method
-                const range = quill.getSelection();
-                if (range) {
-                    // Insert a newline first, then the table
-                    quill.insertText(range.index, '\n');
-                    quill.clipboard.dangerouslyPasteHTML(range.index + 1, tableHTML);
-                    // Add another newline after the table
-                    quill.insertText(range.index + 1 + tableHTML.length, '\n');
-                    // Set cursor position after the table
-                    quill.setSelection(range.index + 1 + tableHTML.length + 1);
-                } else {
-                    // If no selection, insert at the end
-                    const length = quill.getLength();
-                    quill.insertText(length, '\n');
-                    quill.clipboard.dangerouslyPasteHTML(length + 1, tableHTML);
-                    quill.insertText(length + 1 + tableHTML.length, '\n');
-                    quill.setSelection(length + 1 + tableHTML.length + 1);
-                }
-                
-                // Ensure the editor maintains focus
-                quill.focus();
-            }
-        }
     </script>
 </body>
 </html>
