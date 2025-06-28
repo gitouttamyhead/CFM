@@ -177,6 +177,27 @@
         const cancelBtn = document.getElementById('cancelModalBtn');
 
         function openModal() {
+            // --- Allow tables in Quill clipboard (register before Quill instance) ---
+            const Clipboard = Quill.import('modules/clipboard');
+            class PlainClipboard extends Clipboard {
+              onPaste(e) {
+                if (e.defaultPrevented) return;
+                e.preventDefault();
+                const html = (e.originalEvent || e).clipboardData.getData('text/html');
+                if (html && html.includes('<table')) {
+                  const range = this.quill.getSelection();
+                  if (range) {
+                    this.quill.clipboard.dangerouslyPasteHTML(range.index, html, 'user');
+                  } else {
+                    this.quill.clipboard.dangerouslyPasteHTML(this.quill.getLength(), html, 'user');
+                  }
+                } else {
+                  super.onPaste(e);
+                }
+              }
+            }
+            Quill.register('modules/clipboard', PlainClipboard, true);
+
             if (!quill) {
                 quill = new Quill('#quillEditor', { 
                     theme: 'snow',
@@ -199,26 +220,27 @@
                     }
                 });
 
-                // --- Allow tables in Quill clipboard ---
-                const Clipboard = Quill.import('modules/clipboard');
-                class PlainClipboard extends Clipboard {
-                  onPaste(e) {
-                    if (e.defaultPrevented) return;
+                // Add custom table button to toolbar
+                const toolbar = quill.getModule('toolbar');
+                const tableButton = document.createElement('button');
+                tableButton.innerHTML = '📊';
+                tableButton.title = 'Insert Table';
+                tableButton.className = 'ql-insertTable';
+                tableButton.onclick = function(e) {
                     e.preventDefault();
-                    const html = (e.originalEvent || e).clipboardData.getData('text/html');
-                    if (html && html.includes('<table')) {
-                      const range = this.quill.getSelection();
-                      if (range) {
-                        this.quill.clipboard.dangerouslyPasteHTML(range.index, html, 'user');
-                      } else {
-                        this.quill.clipboard.dangerouslyPasteHTML(this.quill.getLength(), html, 'user');
-                      }
-                    } else {
-                      super.onPaste(e);
-                    }
-                  }
+                    e.stopPropagation();
+                    insertTable();
+                    return false;
+                };
+                
+                // Insert the button after the image button
+                const toolbarContainer = toolbar.container;
+                const imageButton = toolbarContainer.querySelector('.ql-image');
+                if (imageButton) {
+                    imageButton.parentNode.insertBefore(tableButton, imageButton.nextSibling);
+                } else {
+                    toolbarContainer.appendChild(tableButton);
                 }
-                Quill.register('modules/clipboard', PlainClipboard, true);
             }
             modal.style.display = 'block';
         }
