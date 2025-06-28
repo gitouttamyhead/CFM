@@ -189,6 +189,77 @@
         const insightTitle = document.getElementById('insightTitle');
         const insightContent = document.getElementById('insightContent');
 
+        let relatedQuill;
+
+        // Initialize related insight modal
+        const relatedModal = document.getElementById('relatedModal');
+        const relatedForm = document.getElementById('relatedForm');
+        const cancelRelatedBtn = document.getElementById('cancelRelatedModalBtn');
+
+        function openRelatedModal() {
+            if (!relatedQuill) {
+                relatedQuill = new Quill('#relatedQuillEditor', { 
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            [{ 'header': [1, 2, 3, false] }],
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ 'color': [] }, { 'background': [] }],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            ['link', 'image'],
+                            ['clean']
+                        ]
+                    }
+                });
+            }
+            relatedModal.style.display = 'block';
+        }
+
+        function closeRelatedModal() {
+            relatedModal.style.display = 'none';
+            relatedForm.reset();
+            if (relatedQuill) {
+                relatedQuill.root.innerHTML = '';
+            }
+        }
+
+        cancelRelatedBtn.onclick = closeRelatedModal;
+
+        // Handle related insight form submission
+        relatedForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const urlParams = new URLSearchParams(window.location.search);
+            const parentId = urlParams.get('id');
+            const collectionName = urlParams.get('collection');
+            
+            const insightData = {
+                title: document.getElementById('relatedTitle').value,
+                content: relatedQuill.root.innerHTML,
+                tags: document.getElementById('relatedTags').value.split(',').map(t => t.trim()),
+                created: firebase.firestore.FieldValue.serverTimestamp(),
+                relatedTo: parentId,
+                category: collectionName === 'gospelInsights' ? 'Gospel Topics' : 
+                         collectionName === 'otherInsights' ? 'Other' : 'Scripture'
+            };
+
+            await db.collection(collectionName).add(insightData);
+            closeRelatedModal();
+            alert('Related insight created successfully!');
+        });
+
+        // Show create related button for admins/editors
+        const createRelatedBtn = document.getElementById('createRelatedBtn');
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                db.collection('users').doc(user.uid).get().then(userDoc => {
+                    if (userDoc.exists && (userDoc.data().role === 'admin' || userDoc.data().role === 'editor')) {
+                        createRelatedBtn.style.display = 'block';
+                        createRelatedBtn.onclick = openRelatedModal;
+                    }
+                });
+            }
+        });
+
         async function fetchInsight(id, collection) {
             const docRef = db.collection(collection).doc(id);
             const doc = await docRef.get();
