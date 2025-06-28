@@ -253,6 +253,10 @@
             const parentId = urlParams.get('id');
             const collectionName = urlParams.get('collection');
             const editorContent = tinymce.get('relatedQuillEditor').getContent();
+            if (!editorContent || editorContent.trim() === "") {
+                alert("Content cannot be empty.");
+                return;
+            }
             window.lastRelatedInsightContent = editorContent;
             const insightData = {
                 title: document.getElementById('relatedTitle').value,

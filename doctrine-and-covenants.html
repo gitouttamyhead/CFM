@@ -381,6 +381,10 @@
             const id = document.getElementById('insightId').value;
             const relatedToId = document.getElementById('relatedToId').value;
             const editorContent = tinymce.get('quillEditor').getContent();
+            if (!editorContent || editorContent.trim() === "") {
+                alert("Content cannot be empty.");
+                return;
+            }
             window.lastInsightContent = editorContent;
             const insightData = {
                 title: document.getElementById('insightTitle').value,
