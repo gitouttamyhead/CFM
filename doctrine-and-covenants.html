@@ -181,33 +181,37 @@
 
         // Initialize TinyMCE on the insight editor
         function openModal() {
-          if (!window.tinymce || tinymce.editors.length === 0) {
-            tinymce.init({
-              selector: '#quillEditor',
-              height: 300,
-              menubar: false,
-              plugins: [
-                'advlist autolink lists link image charmap preview anchor',
-                'searchreplace visualblocks code fullscreen',
-                'insertdatetime media table paste code help wordcount',
-                'textcolor'
-              ],
-              toolbar: [
-                'undo redo | blocks | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify',
-                'bullist numlist outdent indent | link image table | removeformat | help'
-              ],
-              content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
-              setup: function(editor) {
-                editor.on('init', function() {
-                  // If editing, load content
-                  const id = document.getElementById('insightId').value;
-                  if (id && window.lastInsightContent) {
-                    editor.setContent(window.lastInsightContent);
-                  }
-                });
-              }
-            });
+          // Destroy any existing TinyMCE instance
+          if (window.tinymce && tinymce.get('quillEditor')) {
+            tinymce.get('quillEditor').remove();
           }
+
+          tinymce.init({
+            selector: '#quillEditor',
+            height: 300,
+            menubar: false,
+            plugins: [
+              'advlist autolink lists link image charmap preview anchor',
+              'searchreplace visualblocks code fullscreen',
+              'insertdatetime media table paste code help wordcount',
+              'textcolor'
+            ],
+            toolbar: [
+              'undo redo | blocks | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify',
+              'bullist numlist outdent indent | link image table | removeformat | help'
+            ],
+            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+            setup: function(editor) {
+              editor.on('init', function() {
+                // If editing, load content
+                const id = document.getElementById('insightId').value;
+                if (id && window.lastInsightContent) {
+                  editor.setContent(window.lastInsightContent);
+                }
+              });
+            }
+          });
+
           modal.style.display = 'block';
         }
 
@@ -215,7 +219,7 @@
           modal.style.display = 'none';
           form.reset();
           if (window.tinymce && tinymce.get('quillEditor')) {
-            tinymce.get('quillEditor').setContent('');
+            tinymce.get('quillEditor').remove();
           }
           document.getElementById('insightId').value = '';
           document.getElementById('relatedToId').value = '';
