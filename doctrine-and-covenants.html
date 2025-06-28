@@ -455,13 +455,27 @@
                 
                 tableHTML += '</table>';
                 
-                // Insert the table at current cursor position
+                // Insert the table at current cursor position using a safer method
                 const range = quill.getSelection();
                 if (range) {
-                    quill.clipboard.dangerouslyPasteHTML(range.index, tableHTML);
+                    // Insert a newline first, then the table
+                    quill.insertText(range.index, '\n');
+                    quill.clipboard.dangerouslyPasteHTML(range.index + 1, tableHTML);
+                    // Add another newline after the table
+                    quill.insertText(range.index + 1 + tableHTML.length, '\n');
+                    // Set cursor position after the table
+                    quill.setSelection(range.index + 1 + tableHTML.length + 1);
                 } else {
-                    quill.clipboard.dangerouslyPasteHTML(quill.getLength(), tableHTML);
+                    // If no selection, insert at the end
+                    const length = quill.getLength();
+                    quill.insertText(length, '\n');
+                    quill.clipboard.dangerouslyPasteHTML(length + 1, tableHTML);
+                    quill.insertText(length + 1 + tableHTML.length, '\n');
+                    quill.setSelection(length + 1 + tableHTML.length + 1);
                 }
+                
+                // Ensure the editor maintains focus
+                quill.focus();
             }
         }
     </script>
