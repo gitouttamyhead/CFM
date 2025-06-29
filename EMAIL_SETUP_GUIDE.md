@@ -6,6 +6,19 @@ This guide will help you set up the email notification system for the Come Follo
 
 The email notification system allows creators to send email notifications to users when new insights are created. It also provides the ability to resend notifications for existing insights.
 
+## Important: EmailJS Limitations
+
+**EmailJS Free Plan Limitations:**
+- Recipient email verification is only available in the Pro plan ($15/month)
+- Without verification, emails may not be delivered to recipients
+- Only the sender's email address is guaranteed to receive emails
+
+**Solutions:**
+1. **Upgrade to EmailJS Pro** ($15/month) - Get recipient verification
+2. **Use SendGrid** (Recommended) - Free tier with 100 emails/day, no verification needed
+3. **Use Mailgun** - Free tier with 5,000 emails/month for 3 months
+4. **Use Firebase Functions** - Server-side email sending
+
 ## Features
 
 - **New Insight Notifications**: Send emails when creating new insights
@@ -14,29 +27,27 @@ The email notification system allows creators to send email notifications to use
 - **Direct Links**: Emails contain direct links to the insights
 - **Notification Logging**: All sent notifications are logged in Firestore
 
-## Setup Steps
+## Setup Options
 
-### 1. EmailJS Account Setup
+### Option 1: EmailJS (Current Setup)
 
+#### EmailJS Account Setup
 1. Go to [EmailJS](https://www.emailjs.com/) and create a free account
 2. Verify your email address
 3. Add your email service (Gmail, Outlook, etc.)
 
-### 2. Create Email Template
-
+#### Create Email Template
 1. In EmailJS dashboard, go to "Email Templates"
 2. Click "Create New Template"
 3. Use the template from `emailjs-template-example.html` as a reference
 4. Save the template and note the **Template ID**
 
-### 3. Configure EmailJS Settings
-
+#### Configure EmailJS Settings
 1. In EmailJS dashboard, go to "Account" → "API Keys"
 2. Note your **Public Key**
 3. Go to "Email Services" and note your **Service ID**
 
-### 4. Update Configuration
-
+#### Update Configuration
 Edit the `email-notifications.js` file and update the configuration:
 
 ```javascript
@@ -47,14 +58,36 @@ const EMAILJS_CONFIG = {
 };
 ```
 
-### 5. Add EmailJS SDK to Pages
+#### For Pro Users: Verify Recipients
+1. Upgrade to EmailJS Pro ($15/month)
+2. Go to "Account" → "Email Verification"
+3. Add and verify all recipient email addresses
 
-The EmailJS SDK has already been added to the Old Testament and Gospel Topics pages. For other pages, add these lines in the `<head>` section:
+### Option 2: SendGrid (Recommended Alternative)
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-<script src="email-notifications.js"></script>
+#### SendGrid Setup
+1. Go to [SendGrid](https://sendgrid.com/) and create a free account
+2. Verify your sender email address
+3. Create an API key with "Mail Send" permissions
+4. Note your API key
+
+#### Update Configuration
+Edit the `email-notifications.js` file and update the SendGrid configuration:
+
+```javascript
+const ALTERNATIVE_EMAIL_CONFIG = {
+    sendGridApiKey: 'YOUR_SENDGRID_API_KEY', // Add your SendGrid API key here
+    fromEmail: 'your-email@gmail.com', // Your verified sender email
+    fromName: 'Come Follow Me Insights'
+};
 ```
+
+#### Switch to SendGrid
+To use SendGrid instead of EmailJS, modify the `sendInsightNotification` function to use `sendEmailWithSendGrid` instead of `emailjs.send`.
+
+### Option 3: Firebase Functions (Advanced)
+
+For a more robust solution, consider using Firebase Functions with a server-side email service.
 
 ## Usage
 
@@ -129,7 +162,13 @@ All sent notifications are logged in the `emailNotifications` collection with th
    - Check EmailJS dashboard for any service errors
    - Ensure your email service is properly configured
 
-4. **Template variables not working**
+4. **Emails sent but not received**
+   - **EmailJS Free Plan**: Recipients need to be verified (Pro plan only)
+   - Check spam/junk folders
+   - Verify sender email is properly configured
+   - Consider switching to SendGrid or another service
+
+5. **Template variables not working**
    - Verify template variable names match exactly
    - Check that the template is saved and published in EmailJS
 
@@ -143,15 +182,17 @@ All sent notifications are logged in the `emailNotifications` collection with th
 ## Security Considerations
 
 - EmailJS public key is safe to expose in client-side code
+- SendGrid API keys should be kept secure (consider using environment variables)
 - User email addresses are only used for notifications
 - All email sending is logged for audit purposes
 - Only admins and editors can send notifications
 
 ## Cost Considerations
 
-- EmailJS free tier includes 200 emails per month
-- Additional emails cost $0.20 per 100 emails
-- Consider implementing rate limiting for production use
+- **EmailJS Free**: 200 emails/month (limited recipient verification)
+- **EmailJS Pro**: $15/month (unlimited emails, recipient verification)
+- **SendGrid Free**: 100 emails/day (no recipient verification needed)
+- **Mailgun Free**: 5,000 emails/month for 3 months
 
 ## Future Enhancements
 

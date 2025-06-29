@@ -1,15 +1,22 @@
 // Email Notification System for CFM Insights
 // This file handles sending email notifications when insights are created or updated
 //
-// IMPORTANT: For emails to be delivered, recipient email addresses must be verified in your EmailJS account.
-// To verify emails: Go to EmailJS Dashboard → Account → Email Verification → Add and verify each email address.
-// Alternatively, you can use a different email service that doesn't require recipient verification.
+// IMPORTANT: EmailJS free plan has limitations with recipient verification.
+// For production use, consider upgrading to EmailJS Pro or using a different email service.
+// Alternative solutions: SendGrid, Mailgun, or Firebase Functions with Nodemailer
 
 // EmailJS configuration
 const EMAILJS_CONFIG = {
     serviceId: 'service_ug84ky3', // Replace with your EmailJS service ID
     templateId: 'template_0e5qk9b', // Replace with your template ID
     userId: 'GAP4HMvMHFU4_vmj_' // Replace with your EmailJS user ID
+};
+
+// Alternative email service configuration (for future use)
+const ALTERNATIVE_EMAIL_CONFIG = {
+    sendGridApiKey: 'YOUR_SENDGRID_API_KEY', // Do not commit real keys!
+    fromEmail: 'comefollowmeapp@gmail.com',
+    fromName: 'Come Follow Me Insights'
 };
 
 // Initialize EmailJS
@@ -44,13 +51,8 @@ async function getAllUsers() {
     }
 }
 
-// Send email notification
+// Replace sendInsightNotification with Netlify function version
 async function sendInsightNotification(insightData, recipientEmails, isNewInsight = true) {
-    if (typeof emailjs === 'undefined') {
-        console.error('EmailJS not available');
-        return { success: false, error: 'EmailJS not available' };
-    }
-
     if (!recipientEmails || recipientEmails.length === 0) {
         return { success: false, error: 'No recipients specified' };
     }
@@ -66,33 +68,25 @@ async function sendInsightNotification(insightData, recipientEmails, isNewInsigh
             insightUrl = `${window.location.origin}/insight-scripture.html?id=${insightData.id}&collection=insights`;
         }
 
-        // Send individual emails to each recipient
+        // Send individual emails to each recipient using the Netlify function
         const results = [];
         for (const email of recipientEmails) {
             try {
-                // Prepare email template parameters for individual recipient
-                const templateParams = {
-                    to_email: email,
-                    insight_title: insightData.title,
-                    insight_summary: insightData.summary || insightData.content.substring(0, 200) + '...',
-                    insight_category: insightData.category,
-                    insight_url: insightUrl,
-                    action_type: isNewInsight ? 'created' : 'updated',
-                    creator_name: insightData.creatorName || 'A team member',
-                    created_date: new Date().toLocaleDateString()
-                };
-
-                // Send email using EmailJS
-                const response = await emailjs.send(
-                    EMAILJS_CONFIG.serviceId,
-                    EMAILJS_CONFIG.templateId,
-                    templateParams
-                );
-
-                results.push({ email, success: true, messageId: response.text });
-                console.log(`Email sent successfully to ${email}`);
+                const htmlContent = createEmailHTML(insightData, insightUrl, isNewInsight);
+                const subject = `New Insight: ${insightData.title}`;
+                const response = await fetch('/.netlify/functions/send-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ to: email, subject, html: htmlContent })
+                });
+                const data = await response.json();
+                console.log('Netlify function response:', data);
+                if (data.success) {
+                    results.push({ email, success: true });
+                } else {
+                    results.push({ email, success: false, error: data.error });
+                }
             } catch (error) {
-                console.error(`Error sending email to ${email}:`, error);
                 results.push({ email, success: false, error: error.message });
             }
         }
@@ -108,8 +102,8 @@ async function sendInsightNotification(insightData, recipientEmails, isNewInsigh
             console.warn('Some emails failed to send:', failedSends);
         }
 
-        return { 
-            success: successfulSends > 0, 
+        return {
+            success: successfulSends > 0,
             message: `Sent ${successfulSends} of ${recipientEmails.length} emails successfully`,
             results: results
         };
@@ -232,6 +226,17 @@ async function showEmailNotificationModal(insightData, isNewInsight = true) {
                 }
             }
             
+            if (result.note) {
+                message += '\n\n' + result.note;
+            }
+            
+            // Add troubleshooting information
+            message += '\n\n💡 Troubleshooting:';
+            message += '\n• Check your EmailJS dashboard for actual delivery status';
+            message += '\n• Verify recipient emails in EmailJS: Dashboard → Account → Email Verification';
+            message += '\n• Check spam/junk folders';
+            message += '\n• Ensure your EmailJS service is properly configured';
+            
             alert(message);
             modal.style.display = 'none';
         } else {
@@ -267,9 +272,54 @@ function addEmailNotificationButton(insightCard, insightData) {
     }
 }
 
+// Test EmailJS configuration
+async function testEmailJSConfiguration() {
+    if (typeof emailjs === 'undefined') {
+        console.error('EmailJS not available');
+        alert('EmailJS SDK not loaded. Please check your script tags.');
+        return;
+    }
+
+    try {
+        console.log('Testing EmailJS configuration...');
+        console.log('Service ID:', EMAILJS_CONFIG.serviceId);
+        console.log('Template ID:', EMAILJS_CONFIG.templateId);
+        console.log('User ID:', EMAILJS_CONFIG.userId);
+
+        // Test with a simple template
+        const testParams = {
+            to_email: 'test@example.com',
+            insight_title: 'Test Email',
+            insight_summary: 'This is a test email to verify EmailJS configuration.',
+            insight_category: 'Test',
+            insight_url: 'https://example.com',
+            action_type: 'test',
+            creator_name: 'Test User',
+            created_date: new Date().toLocaleDateString()
+        };
+
+        console.log('Sending test email...');
+        const response = await emailjs.send(
+            EMAILJS_CONFIG.serviceId,
+            EMAILJS_CONFIG.templateId,
+            testParams
+        );
+
+        console.log('Test email response:', response);
+        alert('EmailJS configuration test completed. Check console for details.');
+        
+    } catch (error) {
+        console.error('EmailJS configuration test failed:', error);
+        alert(`EmailJS configuration test failed: ${error.message}\n\nCheck console for details.`);
+    }
+}
+
 // Initialize the email notification system
 document.addEventListener('DOMContentLoaded', function() {
     initEmailJS();
+    
+    // Add test function to window for easy access
+    window.testEmailJS = testEmailJSConfiguration;
 });
 
 // Export functions for use in other files
@@ -277,5 +327,90 @@ window.EmailNotifications = {
     sendInsightNotification,
     showEmailNotificationModal,
     addEmailNotificationButton,
-    getAllUsers
-}; 
+    getAllUsers,
+    testEmailJSConfiguration
+};
+
+// Send email using SendGrid (alternative to EmailJS)
+async function sendEmailWithSendGrid(recipientEmail, subject, htmlContent) {
+    if (!ALTERNATIVE_EMAIL_CONFIG.sendGridApiKey) {
+        throw new Error('SendGrid API key not configured');
+    }
+
+    const emailData = {
+        personalizations: [{
+            to: [{ email: recipientEmail }]
+        }],
+        from: {
+            email: ALTERNATIVE_EMAIL_CONFIG.fromEmail,
+            name: ALTERNATIVE_EMAIL_CONFIG.fromName
+        },
+        subject: subject,
+        content: [{
+            type: 'text/html',
+            value: htmlContent
+        }]
+    };
+
+    try {
+        const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${ALTERNATIVE_EMAIL_CONFIG.sendGridApiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(emailData)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`SendGrid error: ${errorData.errors?.[0]?.message || response.statusText}`);
+        }
+
+        return { success: true, messageId: response.headers.get('x-message-id') };
+    } catch (error) {
+        console.error('SendGrid error:', error);
+        throw error;
+    }
+}
+
+// Create HTML email content
+function createEmailHTML(insightData, insightUrl, isNewInsight) {
+    return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: #3498db; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+                .content { background: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px; }
+                .insight-title { font-size: 24px; color: #2c3e50; margin-bottom: 10px; }
+                .insight-summary { background: white; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0; }
+                .cta-button { display: inline-block; background: #27ae60; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>Come Follow Me - New Insight Available</h1>
+            </div>
+            <div class="content">
+                <p>Hello!</p>
+                <p>${insightData.creatorName || 'A team member'} has ${isNewInsight ? 'created' : 'updated'} a new insight in the <strong>${insightData.category}</strong> category.</p>
+                <div class="insight-title">${insightData.title}</div>
+                <div class="insight-summary">
+                    <strong>Summary:</strong><br>
+                    ${insightData.summary || insightData.content.substring(0, 200) + '...'}
+                </div>
+                <p>Click the button below to view the full insight:</p>
+                <a href="${insightUrl}" class="cta-button">View Insight</a>
+                <p>This insight was ${isNewInsight ? 'created' : 'updated'} on ${new Date().toLocaleDateString()}.</p>
+                <div class="footer">
+                    <p>You received this email because you're a member of the Come Follow Me insights community.</p>
+                    <p>If you have any questions, please contact your administrator.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+} 
