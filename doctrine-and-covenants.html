@@ -180,6 +180,7 @@
         let quill;
         let currentUserRole = null;
         const collectionName = 'insights';
+        let editorContentToSet = null;
 
         // --- Modal Handling ---
         const modal = document.getElementById('insightModal');
@@ -210,7 +211,10 @@
             content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
             setup: function(editor) {
                 editor.on('init', function() {
-                    // Do not set content here for editing - it will be set in editInsight
+                    if (editorContentToSet !== null) {
+                        editor.setContent(editorContentToSet);
+                        editorContentToSet = null;
+                    }
                 });
             }
           });
@@ -427,23 +431,13 @@
             const doc = await db.collection(collectionName).doc(id).get();
             if (doc.exists) {
                 const data = doc.data();
-                openModal(); // This initializes TinyMCE
-                // Wait for TinyMCE to be ready before setting content
-                const setEditorContent = () => {
-                    const editor = tinymce.get('quillEditor');
-                    console.log('Setting editor content:', data.content, 'Editor:', editor);
-                    if (editor) {
-                        editor.setContent(data.content || "");
-                    } else {
-                        setTimeout(setEditorContent, 50);
-                    }
-                };
-                setEditorContent();
+                editorContentToSet = data.content || "";
+                openModal();
                 document.getElementById('insightId').value = id;
                 document.getElementById('insightTitle').value = data.title;
-                document.getElementById('insightSummary').value = data.summary || '';
-                document.getElementById('insightTags').value = (data.tags || []).join(', ');
-                document.getElementById('relatedToId').value = data.relatedTo || '';
+                document.getElementById('insightSummary').value = data.summary || "";
+                document.getElementById('insightSections').value = data.sections || "";
+                document.getElementById('sendEmailNotification').checked = false;
             }
         }
 
