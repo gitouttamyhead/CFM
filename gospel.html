@@ -195,11 +195,10 @@
                 height: 300,
                 menubar: false,
                 plugins: [
-                    'advlist autolink lists link image charmap preview anchor',
-                    'searchreplace visualblocks code fullscreen',
-                    'insertdatetime media table paste code help wordcount',
-                    'textcolor',
-                    'table'
+                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview', 'anchor',
+                    'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                    'insertdatetime', 'media', 'table', 'paste', 'code', 'help', 'wordcount',
+                    'textcolor', 'table'
                 ],
                 toolbar: [
                     'undo redo | blocks | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify',
@@ -208,7 +207,7 @@
                 content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
                 setup: function(editor) {
                     editor.on('init', function() {
-                        // Do not set content here for editing
+                        // Do not set content here for editing - it will be set in editInsight
                     });
                 }
             });
