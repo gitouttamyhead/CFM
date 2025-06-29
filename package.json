@@ -1,0 +1,23 @@
+{
+  "name": "cfm",
+  "version": "1.0.0",
+  "main": "email-notifications.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gitouttamyhead/CFM.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gitouttamyhead/CFM/issues"
+  },
+  "homepage": "https://github.com/gitouttamyhead/CFM#readme",
+  "description": "",
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.5"
+  }
+}
