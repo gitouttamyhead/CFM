@@ -29,41 +29,7 @@ The email notification system allows creators to send email notifications to use
 
 ## Setup Options
 
-### Option 1: EmailJS (Current Setup)
-
-#### EmailJS Account Setup
-1. Go to [EmailJS](https://www.emailjs.com/) and create a free account
-2. Verify your email address
-3. Add your email service (Gmail, Outlook, etc.)
-
-#### Create Email Template
-1. In EmailJS dashboard, go to "Email Templates"
-2. Click "Create New Template"
-3. Use the template from `emailjs-template-example.html` as a reference
-4. Save the template and note the **Template ID**
-
-#### Configure EmailJS Settings
-1. In EmailJS dashboard, go to "Account" → "API Keys"
-2. Note your **Public Key**
-3. Go to "Email Services" and note your **Service ID**
-
-#### Update Configuration
-Edit the `email-notifications.js` file and update the configuration:
-
-```javascript
-const EMAILJS_CONFIG = {
-    serviceId: 'YOUR_SERVICE_ID', // Replace with your EmailJS service ID
-    templateId: 'YOUR_TEMPLATE_ID', // Replace with your template ID
-    userId: 'YOUR_PUBLIC_KEY' // Replace with your EmailJS public key
-};
-```
-
-#### For Pro Users: Verify Recipients
-1. Upgrade to EmailJS Pro ($15/month)
-2. Go to "Account" → "Email Verification"
-3. Add and verify all recipient email addresses
-
-### Option 2: SendGrid (Recommended Alternative)
+### Option 1: SendGrid (Recommended)
 
 #### SendGrid Setup
 1. Go to [SendGrid](https://sendgrid.com/) and create a free account
@@ -76,18 +42,17 @@ Edit the `email-notifications.js` file and update the SendGrid configuration:
 
 ```javascript
 const ALTERNATIVE_EMAIL_CONFIG = {
-    sendGridApiKey: 'YOUR_SENDGRID_API_KEY', // Add your SendGrid API key here
     fromEmail: 'your-email@gmail.com', // Your verified sender email
     fromName: 'Come Follow Me Insights'
 };
 ```
 
-#### Switch to SendGrid
-To use SendGrid instead of EmailJS, modify the `sendInsightNotification` function to use `sendEmailWithSendGrid` instead of `emailjs.send`.
+#### Netlify Function
+The app uses a Netlify serverless function to securely send emails using SendGrid. Make sure your SendGrid API key is set as an environment variable in Netlify (`SENDGRID_API_KEY`).
 
-### Option 3: Firebase Functions (Advanced)
+### Option 2: Mailgun or Firebase Functions (Advanced)
 
-For a more robust solution, consider using Firebase Functions with a server-side email service.
+For a more robust solution, consider using Mailgun or Firebase Functions with a server-side email service.
 
 ## Usage
 
