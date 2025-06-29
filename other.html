@@ -385,10 +385,19 @@
             const doc = await db.collection(collectionName).doc(id).get();
             if (doc.exists) {
                 const data = doc.data();
-                openModal(); // Open modal and initialize TinyMCE first
+                openModal(); // This initializes TinyMCE
+                // Wait for TinyMCE to be ready before setting content
+                const setEditorContent = () => {
+                    const editor = tinymce.get('quillEditor');
+                    if (editor) {
+                        editor.setContent(data.content || "");
+                    } else {
+                        setTimeout(setEditorContent, 50);
+                    }
+                };
+                setEditorContent();
                 document.getElementById('insightId').value = id;
                 document.getElementById('insightTitle').value = data.title;
-                tinymce.get('quillEditor').setContent(data.content);
                 document.getElementById('insightSummary').value = data.summary || '';
                 document.getElementById('insightTags').value = (data.tags || []).join(', ');
                 document.getElementById('relatedToId').value = data.relatedTo || '';
