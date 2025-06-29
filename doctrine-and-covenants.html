@@ -433,6 +433,7 @@
                 // Wait for TinyMCE to be ready before setting content
                 const setEditorContent = () => {
                     const editor = tinymce.get('quillEditor');
+                    console.log('Setting editor content:', data.content, 'Editor:', editor);
                     if (editor) {
                         editor.setContent(data.content || "");
                     } else {
