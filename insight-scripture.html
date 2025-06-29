@@ -206,6 +206,7 @@
         const cancelRelatedBtn = document.getElementById('cancelRelatedModalBtn');
 
         function openRelatedModal() {
+            window.lastRelatedInsightContent = null; // Clear previous draft
             if (window.tinymce && tinymce.get('relatedQuillEditor')) {
                 tinymce.get('relatedQuillEditor').remove();
             }

@@ -211,11 +211,7 @@
                 content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
                 setup: function(editor) {
                     editor.on('init', function() {
-                        // If editing, load content
-                        const id = document.getElementById('insightId').value;
-                        if (id && window.lastInsightContent) {
-                            editor.setContent(window.lastInsightContent);
-                        }
+                        // Do not set content here for editing
                     });
                 }
             });
@@ -380,7 +376,6 @@
                 alert("Content cannot be empty.");
                 return;
             }
-            window.lastInsightContent = editorContent;
             const insightData = {
                 title: document.getElementById('insightTitle').value,
                 content: editorContent,
