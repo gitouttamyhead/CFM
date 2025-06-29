@@ -1,5 +1,9 @@
 // Email Notification System for CFM Insights
 // This file handles sending email notifications when insights are created or updated
+//
+// IMPORTANT: For emails to be delivered, recipient email addresses must be verified in your EmailJS account.
+// To verify emails: Go to EmailJS Dashboard → Account → Email Verification → Add and verify each email address.
+// Alternatively, you can use a different email service that doesn't require recipient verification.
 
 // EmailJS configuration
 const EMAILJS_CONFIG = {
@@ -62,29 +66,53 @@ async function sendInsightNotification(insightData, recipientEmails, isNewInsigh
             insightUrl = `${window.location.origin}/insight-scripture.html?id=${insightData.id}&collection=insights`;
         }
 
-        // Prepare email template parameters
-        const templateParams = {
-            to_email: recipientEmails.join(','),
-            insight_title: insightData.title,
-            insight_summary: insightData.summary || insightData.content.substring(0, 200) + '...',
-            insight_category: insightData.category,
-            insight_url: insightUrl,
-            action_type: isNewInsight ? 'created' : 'updated',
-            creator_name: insightData.creatorName || 'A team member',
-            created_date: new Date().toLocaleDateString()
-        };
+        // Send individual emails to each recipient
+        const results = [];
+        for (const email of recipientEmails) {
+            try {
+                // Prepare email template parameters for individual recipient
+                const templateParams = {
+                    to_email: email,
+                    insight_title: insightData.title,
+                    insight_summary: insightData.summary || insightData.content.substring(0, 200) + '...',
+                    insight_category: insightData.category,
+                    insight_url: insightUrl,
+                    action_type: isNewInsight ? 'created' : 'updated',
+                    creator_name: insightData.creatorName || 'A team member',
+                    created_date: new Date().toLocaleDateString()
+                };
 
-        // Send email using EmailJS
-        const response = await emailjs.send(
-            EMAILJS_CONFIG.serviceId,
-            EMAILJS_CONFIG.templateId,
-            templateParams
-        );
+                // Send email using EmailJS
+                const response = await emailjs.send(
+                    EMAILJS_CONFIG.serviceId,
+                    EMAILJS_CONFIG.templateId,
+                    templateParams
+                );
+
+                results.push({ email, success: true, messageId: response.text });
+                console.log(`Email sent successfully to ${email}`);
+            } catch (error) {
+                console.error(`Error sending email to ${email}:`, error);
+                results.push({ email, success: false, error: error.message });
+            }
+        }
 
         // Log the notification in Firestore
         await logEmailNotification(insightData.id, recipientEmails, isNewInsight);
 
-        return { success: true, messageId: response.text };
+        // Count successful sends
+        const successfulSends = results.filter(r => r.success).length;
+        const failedSends = results.filter(r => !r.success);
+
+        if (failedSends.length > 0) {
+            console.warn('Some emails failed to send:', failedSends);
+        }
+
+        return { 
+            success: successfulSends > 0, 
+            message: `Sent ${successfulSends} of ${recipientEmails.length} emails successfully`,
+            results: results
+        };
     } catch (error) {
         console.error('Error sending email notification:', error);
         return { success: false, error: error.message };
@@ -186,7 +214,25 @@ async function showEmailNotificationModal(insightData, isNewInsight = true) {
         const result = await sendInsightNotification(insightData, selectedEmails, isNewInsight);
 
         if (result.success) {
-            alert(`Email notification sent successfully to ${selectedEmails.length} user(s)!`);
+            // Show detailed results
+            let message = result.message + '\n\n';
+            
+            if (result.results) {
+                const successful = result.results.filter(r => r.success);
+                const failed = result.results.filter(r => !r.success);
+                
+                if (successful.length > 0) {
+                    message += '✅ Successfully sent to:\n';
+                    successful.forEach(r => message += `  • ${r.email}\n`);
+                }
+                
+                if (failed.length > 0) {
+                    message += '\n❌ Failed to send to:\n';
+                    failed.forEach(r => message += `  • ${r.email} (${r.error})\n`);
+                }
+            }
+            
+            alert(message);
             modal.style.display = 'none';
         } else {
             alert(`Failed to send email notification: ${result.error}`);
