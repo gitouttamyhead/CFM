@@ -5,7 +5,7 @@ exports.handler = async function(event, context) {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  console.log('SENDGRID_API_KEY loaded:', !!process.env.SENDGRID_API_KEY);
+  console.log('SENDGRID_API_KEY present:', !!process.env.SENDGRID_API_KEY);
 
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
