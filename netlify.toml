@@ -1,8 +1,21 @@
+# Come Follow Me Insights - Netlify config
+# Set SENDGRID_API_KEY in Netlify site settings (Build & deploy > Environment) for email functions.
+
 [build]
   command = "node scripts/generate-firebase-config.js"
   publish = "."
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
 
 [[redirects]]
   from = "/search"
   to = "/search.html"
   status = 200
+
+# Handle 404s: serve index so users can log in instead of seeing a blank error
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 404
