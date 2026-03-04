@@ -74,6 +74,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+    <script src="sanitize.js"></script>
     <script src="nav.js"></script>
     <script src="firebase-config.js"></script>
     <script src="auth-utils.js"></script>
@@ -187,7 +189,7 @@
             if (doc.exists) {
                 const insight = doc.data();
                 insightTitle.textContent = insight.title;
-                insightContent.innerHTML = insight.content; // Assumes content is safe HTML
+                insightContent.innerHTML = sanitize(insight.content);
             } else {
                 insightTitle.textContent = "Insight not found";
                 insightContent.innerHTML = "<p>The requested insight could not be found. It may have been moved or deleted.</p>";
