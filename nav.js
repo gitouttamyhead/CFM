@@ -77,7 +77,25 @@ function initNav() {
     });
 }
 
+function initOfflineBanner() {
+    var banner = document.getElementById('offlineBanner');
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'offlineBanner';
+        banner.textContent = 'You appear to be offline. Some features may not work until you reconnect.';
+        document.body.insertBefore(banner, document.body.firstChild);
+    }
+    function updateBanner() {
+        banner.classList.toggle('show', !navigator.onLine);
+    }
+    updateBanner();
+    window.addEventListener('online', updateBanner);
+    window.addEventListener('offline', updateBanner);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    initOfflineBanner();
+
     const wrapper = document.getElementById('navWrapper');
     if (!wrapper) return;
 

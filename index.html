@@ -3,10 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
+    <link rel="manifest" href="manifest.json">
     <title>Come Follow Me - Home</title>
     <link rel="stylesheet" href="nav.css">
     <link rel="stylesheet" href="shared.css">
-    <style>.container#mainWidget { max-width: 600px; text-align: center; } .btn { width: 100%; }</style>
+    <style>
+        .container#mainWidget { max-width: 600px; text-align: center; }
+        .btn { width: 100%; }
+        .recently-added .recent-item { display: block; padding: 10px 0; border-bottom: 1px solid #eee; text-decoration: none; color: #2c3e50; }
+        .recently-added .recent-item:last-child { border-bottom: none; }
+        .recently-added .recent-item:hover { color: #3498db; }
+        .recently-added .recent-meta { font-size: 0.85em; color: #7f8c8d; margin-top: 4px; }
+        .recently-added .recent-badge { display: inline-block; background: #ecf0f1; color: #5e239d; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; margin-right: 8px; }
+    </style>
 </head>
 <body style="opacity: 0; transition: opacity 0.3s;">
     <!-- Shared Navigation -->
@@ -19,6 +29,10 @@
             <a class="section-link" href="scripture.html">Scripture Insights</a>
             <a class="section-link" href="gospel.html">Gospel Topics</a>
             <a class="section-link" href="other.html">Other Insights</a>
+            <section id="recentlyAddedSection" class="recently-added" style="margin-top: 28px; text-align: left;">
+                <h2 style="font-size: 1.2em; color: #2c3e50; margin-bottom: 12px;">Recently Added</h2>
+                <div id="recentlyAddedList"></div>
+            </section>
         </div>
         <!-- Login Form -->
         <div class="container" id="login-section">
@@ -80,6 +94,7 @@
                 adminNavItem.style.display = 'none';
             }
 
+            loadRecentlyAdded();
         } else {
             navWrapper.style.display = 'none';
             loginSection.style.display = 'block';
@@ -87,6 +102,58 @@
             adminNavItem.style.display = 'none';
         }
     });
+
+    function getDetailPageUrl(insight) {
+        const id = insight.id;
+        if (insight.sourceCollection === 'gospelInsights') return `insight-gospel.html?id=${id}&collection=gospelInsights`;
+        if (insight.sourceCollection === 'otherInsights') return `insight-other.html?id=${id}&collection=otherInsights`;
+        return `insight-scripture.html?id=${id}&collection=insights`;
+    }
+
+    function getCategoryLabel(insight) {
+        if (insight.sourceCollection === 'gospelInsights') return 'Gospel Topics';
+        if (insight.sourceCollection === 'otherInsights') return 'Other';
+        return insight.category || 'Scripture';
+    }
+
+    async function loadRecentlyAdded() {
+        const listEl = document.getElementById('recentlyAddedList');
+        if (!listEl) return;
+        listEl.innerHTML = '<span class="loading-message">Loading…</span>';
+        try {
+            const [insightsSnap, gospelSnap, otherSnap] = await Promise.all([
+                db.collection('insights').orderBy('created', 'desc').limit(5).get(),
+                db.collection('gospelInsights').orderBy('created', 'desc').limit(5).get(),
+                db.collection('otherInsights').orderBy('created', 'desc').limit(5).get()
+            ]);
+            const items = [];
+            insightsSnap.forEach(doc => items.push({ id: doc.id, ...doc.data(), sourceCollection: 'insights' }));
+            gospelSnap.forEach(doc => items.push({ id: doc.id, ...doc.data(), sourceCollection: 'gospelInsights' }));
+            otherSnap.forEach(doc => items.push({ id: doc.id, ...doc.data(), sourceCollection: 'otherInsights' }));
+            const getCreatedTime = (item) => {
+                const c = item.created;
+                if (!c) return 0;
+                return c.toDate ? c.toDate().getTime() : new Date(c).getTime();
+            };
+            items.sort((a, b) => getCreatedTime(b) - getCreatedTime(a));
+            const recent = items.slice(0, 5);
+            if (recent.length === 0) {
+                listEl.innerHTML = '<p class="loading-message">No insights yet.</p>';
+                return;
+            }
+            listEl.innerHTML = recent.map(insight => {
+                const created = insight.created;
+                const dateStr = created ? (created.toDate ? new Date(created.toDate()).toLocaleDateString() : new Date(created).toLocaleDateString()) : '';
+                const title = (insight.title || 'Untitled').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                const category = getCategoryLabel(insight).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                const url = getDetailPageUrl(insight);
+                return `<a href="${url}" class="recent-item"><span class="recent-badge">${category}</span>${title}<div class="recent-meta">${dateStr}</div></a>`;
+            }).join('');
+        } catch (err) {
+            console.error('Error loading recently added:', err);
+            listEl.innerHTML = '<p class="error-message">Could not load recent insights.</p>';
+        }
+    }
 
     // Prevents flash of unstyled content
     document.addEventListener('DOMContentLoaded', () => {

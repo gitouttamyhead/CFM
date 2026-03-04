@@ -10,8 +10,8 @@
 .sub-insights-list li a { color: #2980b9; text-decoration:none; flex: 1; margin-right: 15px;}
 .sub-insights-list li a:hover { text-decoration:underline; }
 .sub-insight-actions { flex-shrink: 0; display: flex; align-items: center; }
-.sub-insight-actions .icon-btn { background: none; border: none; cursor: pointer; padding: 2px 5px; vertical-align: middle; }
-.sub-insight-actions .icon-btn svg { width: 16px; height: 16px; fill: #7f8c8d; }
+.sub-insight-actions .icon-btn { background: none; border: none; cursor: pointer; padding: 8px; min-width: 44px; min-height: 44px; vertical-align: middle; display: inline-flex; align-items: center; justify-content: center; }
+.sub-insight-actions .icon-btn svg { width: 20px; height: 20px; fill: #7f8c8d; }
 .sub-insight-actions .icon-btn:hover svg { fill: #34495e; }
 /* .btn, .btn:disabled, .modal, .modal-content, #login-section, #loginForm in shared.css; use .modal-content--wide for insight edit modal */
 .insight-content { margin-top: 20px; }
@@ -20,6 +20,7 @@
 @media print {
     body {
         background: #fff;
+        font-size: 12pt;
     }
     #navWrapper, .insight-actions, .hamburger, .close-nav-button {
         display: none !important;
@@ -36,6 +37,9 @@
         margin: 0 !important;
         padding: 0 !important;
         page-break-after: always;
+    }
+    .insight-content {
+        font-size: 12pt;
     }
     #notes-section {
         display: block !important;

@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
+    <link rel="manifest" href="manifest.json">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="nav.css">
     <link rel="stylesheet" href="shared.css">
@@ -45,6 +47,7 @@
                     <select id="inviteRole" style="padding: 8px;">
                         <option value="user">User</option>
                         <option value="editor">Editor</option>
+                        <option value="admin">Admin</option>
                     </select>
                     <button type="submit" class="btn">Create Invitation</button>
                 </form>
@@ -100,13 +103,14 @@
                         <td>
                             <button class="btn" onclick="changeRole('${doc.id}', 'user')">Make User</button>
                             <button class="btn" onclick="changeRole('${doc.id}', 'editor')">Make Editor</button>
+                            <button class="btn" onclick="changeRoleToAdmin('${doc.id}')" style="background: #27ae60;">Make Admin</button>
                         </td>
                     `;
                     tableBody.appendChild(row);
                 });
             } catch (error) {
                 console.error("Error loading users:", error);
-                tableBody.innerHTML = '<tr><td colspan="3">Error loading users. See console for details.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="3">Something went wrong loading users. Check your connection and try again.</td></tr>';
             }
         }
 
@@ -121,6 +125,13 @@
                 console.error(`Error changing role for ${uid}:`, error);
                 alert(`Failed to change role. See console for details.`);
             }
+        }
+
+        // Make Admin with confirmation (admins can manage all users and content)
+        async function changeRoleToAdmin(uid) {
+            if (!uid) return;
+            if (!confirm('Are you sure? Admins can manage all users and content.')) return;
+            await changeRole(uid, 'admin');
         }
 
         // Handle the invitation form submission

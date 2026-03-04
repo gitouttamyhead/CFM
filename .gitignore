@@ -6,3 +6,6 @@ node_modules/
 
 # Firebase config (contains API key) — generated at build from env
 firebase-config.js
+
+# App config (TinyMCE API key) — copy from app-config.example.js
+app-config.js

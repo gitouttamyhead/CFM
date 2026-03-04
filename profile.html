@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
+    <link rel="manifest" href="manifest.json">
     <title>User Profile</title>
     <link rel="stylesheet" href="nav.css">
     <link rel="stylesheet" href="shared.css">
@@ -97,15 +99,19 @@
 
         // Load user profile data
         async function loadUserProfile(user) {
-            document.getElementById('userEmail').textContent = user.email;
-            const creationTime = new Date(user.metadata.creationTime);
-            document.getElementById('userCreated').textContent = creationTime.toLocaleDateString();
-
-            const userDoc = await db.collection('users').doc(user.uid).get();
-            if (userDoc.exists) {
-                document.getElementById('userRole').textContent = userDoc.data().role || 'user';
-            } else {
+            document.getElementById('userEmail').textContent = user.email || '';
+            const creationTime = user.metadata && user.metadata.creationTime
+                ? new Date(user.metadata.creationTime).toLocaleDateString()
+                : '—';
+            document.getElementById('userCreated').textContent = creationTime;
+            document.getElementById('userRole').textContent = 'Loading...';
+            try {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                document.getElementById('userRole').textContent = userDoc.exists ? (userDoc.data().role || 'user') : 'user';
+            } catch (err) {
+                console.error('Error loading profile:', err);
                 document.getElementById('userRole').textContent = 'user';
+                showAlert('Could not load account details. Check your connection and refresh.', 'error');
             }
         }
 

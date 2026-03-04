@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
+    <link rel="manifest" href="manifest.json">
     <title>Other Insight</title>
     <link rel="stylesheet" href="nav.css">
     <link rel="stylesheet" href="shared.css">
     <link rel="stylesheet" href="insights.css">
-    <script src="https://cdn.tiny.cloud/1/ewx52xiayai247q9zlnoay8tigea0svtpwbigdrpuizkxj7j/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="app-config.js"></script>
+    <script src="tinymce-loader.js"></script>
 </head>
 <body>
     <!-- Shared Navigation -->
@@ -183,16 +186,23 @@
         const createRelatedBtn = document.getElementById('createRelatedBtn');
 
         async function fetchInsight(id, collection) {
-            const docRef = db.collection(collection).doc(id);
-            const doc = await docRef.get();
-
-            if (doc.exists) {
-                const insight = doc.data();
-                insightTitle.textContent = insight.title;
-                insightContent.innerHTML = sanitize(insight.content);
-            } else {
-                insightTitle.textContent = "Insight not found";
-                insightContent.innerHTML = "<p>The requested insight could not be found. It may have been moved or deleted.</p>";
+            insightTitle.textContent = '';
+            insightContent.innerHTML = '<p class="loading-message">Loading...</p>';
+            try {
+                const docRef = db.collection(collection).doc(id);
+                const doc = await docRef.get();
+                if (doc.exists) {
+                    const insight = doc.data();
+                    insightTitle.textContent = insight.title;
+                    insightContent.innerHTML = sanitize(insight.content);
+                } else {
+                    insightTitle.textContent = "Insight not found";
+                    insightContent.innerHTML = "<p>The requested insight could not be found. It may have been moved or deleted.</p>";
+                }
+            } catch (err) {
+                console.error('Error loading insight:', err);
+                insightTitle.textContent = "Something went wrong";
+                insightContent.innerHTML = '<p class="error-message">We couldn\'t load this insight. Check your connection and try again.</p>';
             }
         }
 
