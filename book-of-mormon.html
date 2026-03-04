@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book of Mormon Insights</title>
     <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="shared.css">
     <link rel="stylesheet" href="insights.css">
     <script src="https://cdn.tiny.cloud/1/ewx52xiayai247q9zlnoay8tigea0svtpwbigdrpuizkxj7j/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     <script src="email-notifications.js"></script>
@@ -24,7 +25,7 @@
 
     <!-- Add/Edit Modal -->
     <div id="insightModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content modal-content--wide">
             <h2 id="modalTitle">Add Insight</h2>
             <form id="insightForm">
                 <input type="hidden" id="insightId">
@@ -52,9 +53,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="nav.js"></script>
     <script src="firebase-config.js"></script>
+    <script src="auth-utils.js"></script>
     <script>
         const db = window.db;
-        const auth = window.auth;
         const container = document.querySelector('.container');
         const insightsList = document.getElementById('insights-list');
         const addInsightBtn = document.getElementById('addInsightBtn');
@@ -351,19 +352,13 @@
 
         // --- Auth Handling ---
         container.style.display = 'none';
-        auth.onAuthStateChanged(user => {
-            if (!user) {
-                window.location.href = 'index.html';
-                return;
-            }
+        requireAuth().then(({ user, role }) => {
             container.style.display = 'block';
-            db.collection('users').doc(user.uid).get().then(userDoc => {
-                if (userDoc.exists && (userDoc.data().role === 'admin' || userDoc.data().role === 'editor')) {
-                    currentUserRole = userDoc.data().role;
-                    addInsightBtn.style.display = 'block';
-                }
-                fetchInsights(); // Fetch insights after role is determined
-            });
+            if (isEditorOrAdmin(role)) {
+                currentUserRole = role;
+                addInsightBtn.style.display = 'block';
+            }
+            fetchInsights();
         });
     </script>
 </body>

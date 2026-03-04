@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scripture Insight</title>
     <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="shared.css">
     <link rel="stylesheet" href="insights.css">
     <script src="https://cdn.tiny.cloud/1/ewx52xiayai247q9zlnoay8tigea0svtpwbigdrpuizkxj7j/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 </head>
@@ -49,7 +50,7 @@
     
     <!-- Related Insight Modal -->
     <div id="relatedModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content modal-content--wide">
             <h2 id="relatedModalTitle">Create Related Insight</h2>
             <form id="relatedForm">
                 <input type="text" id="relatedTitle" placeholder="Title" required style="width:100%;margin-bottom:10px;">
@@ -75,9 +76,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="nav.js"></script>
     <script src="firebase-config.js"></script>
+    <script src="auth-utils.js"></script>
     <script>
         const db = window.db;
-        const auth = window.auth;
         const container = document.querySelector('.container');
         const insightTitle = document.getElementById('insightTitle');
         const insightContent = document.getElementById('insightContent');
@@ -156,18 +157,7 @@
             alert('Related insight created successfully!');
         });
 
-        // Show create related button for admins/editors
         const createRelatedBtn = document.getElementById('createRelatedBtn');
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                db.collection('users').doc(user.uid).get().then(userDoc => {
-                    if (userDoc.exists && (userDoc.data().role === 'admin' || userDoc.data().role === 'editor')) {
-                        createRelatedBtn.style.display = 'block';
-                        createRelatedBtn.onclick = openRelatedModal;
-                    }
-                });
-            }
-        });
 
         async function fetchInsight(id, collection) {
             const docRef = db.collection(collection).doc(id);
@@ -185,17 +175,15 @@
 
         container.style.display = 'none';
 
-        auth.onAuthStateChanged(user => {
-            if (!user) {
-                window.location.href = 'index.html';
-                return;
-            }
+        requireAuth().then(({ role }) => {
             container.style.display = 'block';
-            
+            if (isEditorOrAdmin(role)) {
+                createRelatedBtn.style.display = 'block';
+                createRelatedBtn.onclick = openRelatedModal;
+            }
             const urlParams = new URLSearchParams(window.location.search);
             const insightId = urlParams.get('id');
             const collectionName = urlParams.get('collection');
-
             if (insightId && collectionName) {
                 fetchInsight(insightId, collectionName);
             } else {
