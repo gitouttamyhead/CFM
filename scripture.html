@@ -187,7 +187,10 @@
         container.style.display = 'none';
 
         auth.onAuthStateChanged(user => {
-            // This page is just a menu, so we just need to make sure the container is visible.
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
             container.style.display = 'block';
         });
     </script>

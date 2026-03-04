@@ -192,15 +192,14 @@
         const notAdminMsg = document.getElementById('notAdminMsg');
 
         auth.onAuthStateChanged(async user => {
-            if (user) {
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (userDoc.exists && userDoc.data().role === 'admin') {
-                    adminSection.style.display = 'block';
-                    await loadUsers();
-                } else {
-                    notAdminMsg.style.display = 'block';
-                    setTimeout(() => { window.location.href = 'index.html'; }, 3000);
-                }
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if (userDoc.exists && userDoc.data().role === 'admin') {
+                adminSection.style.display = 'block';
+                await loadUsers();
             } else {
                 notAdminMsg.style.display = 'block';
                 setTimeout(() => { window.location.href = 'index.html'; }, 3000);
