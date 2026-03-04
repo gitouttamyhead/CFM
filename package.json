@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "email-notifications.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node scripts/smoke-test.js",
     "backup": "node scripts/export-firestore.js"
   },
   "repository": {
