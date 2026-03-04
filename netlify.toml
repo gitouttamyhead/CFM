@@ -1,4 +1,5 @@
 [build]
+  command = "node scripts/generate-firebase-config.js"
   publish = "."
 
 [[redirects]]

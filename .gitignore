@@ -3,3 +3,6 @@
 
 node_modules/
 .env
+
+# Firebase config (contains API key) — generated at build from env
+firebase-config.js

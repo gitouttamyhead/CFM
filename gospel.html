@@ -151,19 +151,10 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
+    <script src="firebase-config.js"></script>
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBXyOXGktacbjg-X2tuVsmJ7nYLCwJZ5Nw",
-            authDomain: "comefollowme-d097a.firebaseapp.com",
-            projectId: "comefollowme-d097a",
-            storageBucket: "comefollowme-d097a.firebasestorage.app",
-            messagingSenderId: "725941283112",
-            appId: "1:725941283112:web:7071276f065bb3b7dd081d",
-            measurementId: "G-Z9HKN7M5K5"
-        };
         if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+            firebase.initializeApp(window.__FIREBASE_CONFIG__);
         }
         const db = firebase.firestore();
         const auth = firebase.auth();
