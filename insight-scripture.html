@@ -157,9 +157,13 @@
                          collectionName === 'otherInsights' ? 'Other' : 'Scripture'
             };
 
-            await db.collection(collectionName).add(insightData);
+            const docRef = await db.collection(collectionName).add(insightData);
+            await db.collection(collectionName).doc(parentId).update({
+                relatedInsights: firebase.firestore.FieldValue.arrayUnion(docRef.id)
+            });
             closeRelatedModal();
             alert('Related insight created successfully!');
+            fetchInsight(parentId, collectionName);
         });
 
         const createRelatedBtn = document.getElementById('createRelatedBtn');
