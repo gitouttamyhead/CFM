@@ -248,6 +248,12 @@
                 insightData.id = insightId;
             }
 
+            if (isNewInsight && relatedToId) {
+                await db.collection(collectionName).doc(relatedToId).update({
+                    relatedInsights: firebase.firestore.FieldValue.arrayUnion(insightId)
+                });
+            }
+
             // Handle email notification for new insights
             const sendEmailNotification = document.getElementById('sendEmailNotification').checked;
             if (sendEmailNotification && isNewInsight) {
@@ -278,6 +284,7 @@
                 editorContentToSet = data.content || "";
                 openModal();
                 document.getElementById('insightId').value = id;
+                document.getElementById('relatedToId').value = data.relatedTo || "";
                 document.getElementById('insightTitle').value = data.title;
                 document.getElementById('insightSummary').value = data.summary || "";
                 document.getElementById('insightSections').value = data.sections || "";
@@ -286,10 +293,28 @@
         }
 
         window.deleteInsight = async (id) => {
-            if (confirm("Are you sure you want to delete this insight?")) {
+            const doc = await db.collection(collectionName).doc(id).get();
+            if (!doc.exists) return;
+            const data = doc.data();
+
+            if (data.relatedTo) {
+                if (!confirm("Delete this related insight?")) return;
                 await db.collection(collectionName).doc(id).delete();
-                fetchInsights();
+                await db.collection(collectionName).doc(data.relatedTo).update({
+                    relatedInsights: firebase.firestore.FieldValue.arrayRemove(id)
+                }).catch(() => {});
+            } else {
+                const children = data.relatedInsights && data.relatedInsights.length > 0 ? data.relatedInsights : [];
+                const msg = children.length > 0
+                    ? `This main insight has ${children.length} related insight(s). Delete the main insight AND all related insights?`
+                    : "Delete this main insight?";
+                if (!confirm(msg)) return;
+                for (const childId of children) {
+                    await db.collection(collectionName).doc(childId).delete().catch(() => {});
+                }
+                await db.collection(collectionName).doc(id).delete();
             }
+            fetchInsights();
         }
 
         window.resendEmailNotification = async (id) => {

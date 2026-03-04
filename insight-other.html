@@ -157,9 +157,12 @@
                          collectionName === 'otherInsights' ? 'Other' : 'Scripture'
             };
 
-            // Save the insight
+            // Save the insight and link to parent
             const docRef = await db.collection(collectionName).add(insightData);
             insightData.id = docRef.id;
+            await db.collection(collectionName).doc(parentId).update({
+                relatedInsights: firebase.firestore.FieldValue.arrayUnion(docRef.id)
+            });
 
             // Handle email notification for new related insights
             const sendEmailNotification = document.getElementById('sendEmailNotification').checked;
@@ -181,6 +184,7 @@
 
             closeRelatedModal();
             alert('Related insight created successfully!');
+            fetchInsight(parentId, collectionName);
         });
 
         const createRelatedBtn = document.getElementById('createRelatedBtn');
