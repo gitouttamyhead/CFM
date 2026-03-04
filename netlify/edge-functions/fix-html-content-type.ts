@@ -1,37 +1,29 @@
 /**
- * Force HTML responses to have Content-Type: text/html so the browser
- * renders the page instead of showing raw source.
+ * Force HTML for /search and /search.html: fetch the file and return with
+ * Content-Type: text/html so the browser renders instead of showing source.
  */
 import type { Config, Context } from "@netlify/edge-functions";
+
+const HTML_HEADERS = { "Content-Type": "text/html; charset=utf-8" };
 
 export default async (request: Request, context: Context) => {
   const url = new URL(request.url);
   const path = url.pathname;
 
-  const isHtmlPath = path === "/search" || path === "/" || path.endsWith(".html");
-  if (!isHtmlPath) {
+  if (path !== "/search" && path !== "/search.html") {
     return context.next();
   }
 
-  const response = await context.next();
-  const contentType = response.headers.get("content-type") || "";
-
-  if (response.status !== 200 || contentType.includes("text/html")) {
-    return response;
-  }
-
-  const body = await response.text();
-  const headers = new Headers(response.headers);
-  headers.set("Content-Type", "text/html; charset=utf-8");
+  const targetUrl = new URL("/search.html", url.origin);
+  const res = await fetch(targetUrl.toString());
+  const body = await res.text();
 
   return new Response(body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers,
+    status: res.status,
+    headers: HTML_HEADERS,
   });
 };
 
 export const config: Config = {
-  path: "/*",
-  excludedPath: ["/*.css", "/*.js", "/*.ico", "/*.json", "/*.png", "/*.jpg", "/*.svg", "/*.woff2"],
+  path: ["/search", "/search.html"],
 };
