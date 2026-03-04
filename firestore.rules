@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isEditorOrAdmin() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'editor'];
+    }
+
+    function isAdmin() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /insights/{docId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isEditorOrAdmin();
+    }
+    match /gospelInsights/{docId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isEditorOrAdmin();
+    }
+    match /otherInsights/{docId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isEditorOrAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow create: if request.auth != null;
+      allow update, delete: if isAdmin();
+    }
+
+    match /invitations/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /emailNotifications/{docId} {
+      allow create: if request.auth != null;
+      allow read, update, delete: if false;
+    }
+  }
+}
