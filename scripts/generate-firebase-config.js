@@ -23,6 +23,11 @@ if (!config.apiKey) {
 const out = path.join(__dirname, '..', 'firebase-config.js');
 const content = `// Generated at build time — do not commit. See firebase-config.example.js
 window.__FIREBASE_CONFIG__ = ${JSON.stringify(config, null, 2)};
+if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+  firebase.initializeApp(window.__FIREBASE_CONFIG__);
+  window.db = firebase.firestore();
+  window.auth = firebase.auth();
+}
 `;
 fs.writeFileSync(out, content, 'utf8');
 console.log('Wrote firebase-config.js');
