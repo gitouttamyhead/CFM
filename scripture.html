@@ -5,34 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scripture Insights</title>
     <link rel="stylesheet" href="nav.css">
-    <style>
-        .container { max-width: 800px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 30px; text-align: center; }
-        h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
-        
-        .main-content {
-            transition: margin-left 0.3s ease;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                margin-left: 0;
-            }
-        }
-
-        #login-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 0;
-        }
-        #loginForm {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            min-width: 250px;
-        }
-        .btn { background: #3498db; color: #fff; border: none; border-radius: 4px; padding: 8px 16px; cursor: pointer; margin-right: 8px; }
-    </style>
+    <link rel="stylesheet" href="shared.css">
 </head>
 <body>
     <!-- Shared Navigation -->
@@ -67,19 +40,11 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="nav.js"></script>
     <script src="firebase-config.js"></script>
+    <script src="auth-utils.js"></script>
     <script>
-        const auth = window.auth;
         const container = document.querySelector('.container');
-        
         container.style.display = 'none';
-
-        auth.onAuthStateChanged(user => {
-            if (!user) {
-                window.location.href = 'index.html';
-                return;
-            }
-            container.style.display = 'block';
-        });
+        requireAuth().then(() => { container.style.display = 'block'; });
     </script>
 </body>
 </html>
