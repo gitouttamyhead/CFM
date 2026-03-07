@@ -54,7 +54,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
     <script src="firebase-config.js"></script>
+    <script src="image-upload.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
     <script src="sanitize.js"></script>
     <script src="auth-utils.js"></script>
@@ -96,6 +98,8 @@
                     'bullist numlist outdent indent | link image table | removeformat | help'
                 ],
                 content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+                automatic_uploads: true,
+                images_upload_handler: window.ImageUpload.handler,
                 setup: function(editor) {
                     editor.on('init', function() {
                         if (editorContentToSet !== null) {
@@ -241,24 +245,29 @@
             let insightId = id;
             let isNewInsight = !id;
 
-            if (id) { // Editing
-                await db.collection(collectionName).doc(id).update(insightData);
-            } else { // Creating
-                const docRef = await db.collection(collectionName).add(insightData);
-                insightId = docRef.id;
-                insightData.id = insightId;
-            }
+            try {
+                if (id) { // Editing
+                    await db.collection(collectionName).doc(id).update(insightData);
+                } else { // Creating
+                    const docRef = await db.collection(collectionName).add(insightData);
+                    insightId = docRef.id;
+                    insightData.id = insightId;
+                }
 
-            if (isNewInsight && relatedToId) {
-                await db.collection(collectionName).doc(relatedToId).update({
-                    relatedInsights: firebase.firestore.FieldValue.arrayUnion(insightId)
-                });
+                if (isNewInsight && relatedToId) {
+                    await db.collection(collectionName).doc(relatedToId).update({
+                        relatedInsights: firebase.firestore.FieldValue.arrayUnion(insightId)
+                    });
+                }
+            } catch (err) {
+                console.error('Error saving insight:', err);
+                alert('Failed to save insight. ' + err.message);
+                return;
             }
 
             // Handle email notification for new insights
             const sendEmailNotification = document.getElementById('sendEmailNotification').checked;
             if (sendEmailNotification && isNewInsight) {
-                // Get current user info for the notification
                 const currentUser = auth.currentUser;
                 if (currentUser) {
                     const userDoc = await db.collection('users').doc(currentUser.uid).get();
@@ -266,8 +275,6 @@
                         insightData.creatorName = userDoc.data().name || currentUser.email.split('@')[0];
                     }
                 }
-                
-                // Show email notification modal
                 setTimeout(() => {
                     window.EmailNotifications.showEmailNotificationModal(insightData, true);
                 }, 500);
