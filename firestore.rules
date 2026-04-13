@@ -32,7 +32,8 @@ service cloud.firestore {
     }
 
     match /invitations/{docId} {
-      allow read, write: if isAdmin();
+      allow read: if isAdmin() || (request.auth != null && request.auth.token.email == docId);
+      allow write: if isAdmin();
     }
 
     match /emailNotifications/{docId} {

@@ -35,16 +35,26 @@
                 <div id="recentlyAddedList"></div>
             </section>
         </div>
-        <!-- Login Form -->
+        <!-- Login / Signup Forms -->
         <div class="container" id="login-section">
-            <h2>Login</h2>
+            <h2 id="authTitle">Login</h2>
             <form id="loginForm">
                 <input type="email" id="loginEmail" placeholder="Email" required>
                 <input type="password" id="loginPassword" placeholder="Password" required>
                 <button type="submit" class="btn">Login</button>
             </form>
-            <button id="resetPasswordBtn" class="btn" style="margin-top:10px;">Forgot Password?</button>
+            <button type="button" id="resetPasswordBtn" class="btn" style="margin-top:10px;">Forgot Password?</button>
+            <form id="signupForm" style="display:none;">
+                <input type="text" id="signupName" placeholder="Full Name" required>
+                <input type="email" id="signupEmail" placeholder="Email" required>
+                <input type="password" id="signupPassword" placeholder="Password (6+ characters)" required minlength="6">
+                <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" required minlength="6">
+                <button type="submit" class="btn">Create Account</button>
+            </form>
             <div id="loginError" style="color:red; margin-top:10px;"></div>
+            <p id="toggleAuth" style="margin-top:15px; cursor:pointer; color:#3498db; text-align:center;">
+                Don't have an account? <strong>Sign up</strong>
+            </p>
         </div>
     </div>
 
@@ -170,9 +180,11 @@
         
         try {
             errorDiv.textContent = '';
+            errorDiv.style.color = 'red';
             await auth.signInWithEmailAndPassword(email, password);
         } catch (error) {
             console.error('Login error:', error);
+            errorDiv.style.color = 'red';
             errorDiv.textContent = error.message;
         }
     });
@@ -183,23 +195,117 @@
         const errorDiv = document.getElementById('loginError');
         
         if (!email) {
+            errorDiv.style.color = 'red';
             errorDiv.textContent = 'Please enter your email address first.';
             return;
         }
         
         try {
             errorDiv.textContent = '';
-            await auth.sendPasswordResetEmail(email);
-            errorDiv.textContent = 'Password reset email sent! Check your inbox.';
+            errorDiv.style.color = 'red';
+            await auth.sendPasswordResetEmail(email, {
+                url: window.location.origin + '/index.html',
+                handleCodeInApp: false
+            });
             errorDiv.style.color = 'green';
+            errorDiv.textContent = 'Password reset email sent! Check your inbox (and spam folder).';
         } catch (error) {
             console.error('Password reset error:', error);
-            errorDiv.textContent = error.message;
+            // Retry without continue URL if the domain isn't authorized in Firebase
+            if (error.code === 'auth/unauthorized-continue-uri') {
+                try {
+                    await auth.sendPasswordResetEmail(email);
+                    errorDiv.style.color = 'green';
+                    errorDiv.textContent = 'Password reset email sent! Check your inbox (and spam folder).';
+                    return;
+                } catch (retryErr) {
+                    errorDiv.style.color = 'red';
+                    errorDiv.textContent = retryErr.message;
+                    return;
+                }
+            }
             errorDiv.style.color = 'red';
+            errorDiv.textContent = error.message;
         }
     });
 
-    // Set password form handler (for new users)
+    // Toggle between login and signup
+    let isLoginMode = true;
+    document.getElementById('toggleAuth').addEventListener('click', () => {
+        isLoginMode = !isLoginMode;
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const resetBtn = document.getElementById('resetPasswordBtn');
+        const authTitle = document.getElementById('authTitle');
+        const toggleAuth = document.getElementById('toggleAuth');
+        const errorDiv = document.getElementById('loginError');
+        
+        errorDiv.textContent = '';
+        errorDiv.style.color = 'red';
+        
+        if (isLoginMode) {
+            loginForm.style.display = 'block';
+            signupForm.style.display = 'none';
+            resetBtn.style.display = 'block';
+            authTitle.textContent = 'Login';
+            toggleAuth.innerHTML = "Don't have an account? <strong>Sign up</strong>";
+        } else {
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'block';
+            resetBtn.style.display = 'none';
+            authTitle.textContent = 'Create Account';
+            toggleAuth.innerHTML = "Already have an account? <strong>Log in</strong>";
+        }
+    });
+
+    // Signup form handler — checks invitations to auto-assign role
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('signupName').value.trim();
+        const email = document.getElementById('signupEmail').value.trim();
+        const password = document.getElementById('signupPassword').value;
+        const confirmPassword = document.getElementById('signupConfirmPassword').value;
+        const errorDiv = document.getElementById('loginError');
+        
+        errorDiv.textContent = '';
+        errorDiv.style.color = 'red';
+        
+        if (password !== confirmPassword) {
+            errorDiv.textContent = 'Passwords do not match.';
+            return;
+        }
+        
+        try {
+            const cred = await auth.createUserWithEmailAndPassword(email, password);
+            const user = cred.user;
+            
+            // Check for a pending invitation to determine role
+            let role = 'user';
+            try {
+                const inviteDoc = await db.collection('invitations').doc(email).get();
+                if (inviteDoc.exists) {
+                    role = inviteDoc.data().role || 'user';
+                }
+            } catch (inviteErr) {
+                console.warn('Could not check invitation:', inviteErr);
+            }
+            
+            // Create user profile in Firestore
+            await db.collection('users').doc(user.uid).set({
+                email: email,
+                name: name,
+                role: role,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            // onAuthStateChanged handles showing the main content
+        } catch (error) {
+            console.error('Signup error:', error);
+            errorDiv.textContent = error.message;
+        }
+    });
+
+    // Set password form handler (for existing users)
     document.getElementById('setPasswordForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const newPassword = document.getElementById('newPassword').value;
