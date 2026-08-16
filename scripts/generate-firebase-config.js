@@ -27,6 +27,9 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
   firebase.initializeApp(window.__FIREBASE_CONFIG__);
   window.db = firebase.firestore();
   window.auth = firebase.auth();
+  if (typeof firebase.analytics === 'function') {
+    window.analytics = firebase.analytics();
+  }
 }
 `;
 fs.writeFileSync(out, content, 'utf8');

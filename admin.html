@@ -17,6 +17,14 @@
         .role-admin { color: #27ae60; font-weight: bold; }
         .role-editor { color: #e67e22; font-weight: bold; }
         .role-user { color: #888; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 16px 0 24px; }
+        .stat-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 14px; text-align: center; }
+        .stat-card .stat-value { font-size: 1.6em; font-weight: bold; color: #2c3e50; }
+        .stat-card .stat-label { font-size: 0.85em; color: #7f8c8d; margin-top: 4px; }
+        .usage-table { margin-top: 12px; }
+        .usage-table td, .usage-table th { font-size: 0.95em; }
+        .usage-meta { color: #7f8c8d; font-size: 0.9em; margin-bottom: 8px; }
+        .recent-badge { display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; margin-left: 6px; }
     </style>
 </head>
 <body>
@@ -27,12 +35,39 @@
     <div class="main-content" id="mainContent">
         <div class="container" id="admin-section" style="display:none;">
             <h1>Admin Dashboard</h1>
-            <h2>User Management</h2>
+
+            <h2>Usage Overview</h2>
+            <p class="usage-meta">Aggregate counts only — no per-user reading history. Helps prioritize features and content.</p>
+            <div class="stats-grid" id="usageStatsGrid">
+                <div class="stat-card"><div class="stat-value">—</div><div class="stat-label">Total users</div></div>
+                <div class="stat-card"><div class="stat-value">—</div><div class="stat-label">Active (30 days)</div></div>
+                <div class="stat-card"><div class="stat-value">—</div><div class="stat-label">Total views</div></div>
+                <div class="stat-card"><div class="stat-value">—</div><div class="stat-label">Views on recent insights</div></div>
+            </div>
+
+            <h3>Most viewed insights</h3>
+            <table class="usage-table" id="topInsightsTable">
+                <thead>
+                    <tr><th>Title</th><th>Category</th><th>Views</th><th>Last viewed</th></tr>
+                </thead>
+                <tbody><tr><td colspan="4">Loading…</td></tr></tbody>
+            </table>
+
+            <h3 style="margin-top: 32px;">Recently viewed</h3>
+            <table class="usage-table" id="recentlyViewedTable">
+                <thead>
+                    <tr><th>Title</th><th>Category</th><th>Views</th><th>Last viewed</th></tr>
+                </thead>
+                <tbody><tr><td colspan="4">Loading…</td></tr></tbody>
+            </table>
+
+            <h2 style="margin-top: 40px;">User Management</h2>
             <table id="usersTable">
                 <thead>
                     <tr>
                         <th>Email</th>
                         <th>Role</th>
+                        <th>Last login</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -63,19 +98,160 @@
 
     <!-- Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="nav.js"></script>
     <script src="firebase-config.js"></script>
+    <script src="analytics.js"></script>
     <script src="auth-utils.js"></script>
     <script>
         const db = window.db;
         const adminSection = document.getElementById('admin-section');
         const notAdminMsg = document.getElementById('notAdminMsg');
 
+        const INSIGHT_COLLECTIONS = [
+            { name: 'insights', label: 'Scripture' },
+            { name: 'gospelInsights', label: 'Gospel Topics' },
+            { name: 'otherInsights', label: 'Other' }
+        ];
+
+        function formatDate(value) {
+            if (!value) return '—';
+            const d = value.toDate ? value.toDate() : new Date(value);
+            if (Number.isNaN(d.getTime())) return '—';
+            return d.toLocaleDateString();
+        }
+
+        function escapeHtml(text) {
+            return String(text || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function getDetailPageUrl(item) {
+            if (item.collection === 'gospelInsights') {
+                return `insight-gospel.html?id=${item.id}&collection=gospelInsights`;
+            }
+            if (item.collection === 'otherInsights') {
+                return `insight-other.html?id=${item.id}&collection=otherInsights`;
+            }
+            return `insight-scripture.html?id=${item.id}&collection=insights`;
+        }
+
+        function getCategoryLabel(item) {
+            if (item.collection === 'gospelInsights') return 'Gospel Topics';
+            if (item.collection === 'otherInsights') return 'Other';
+            return item.category || 'Scripture';
+        }
+
+        function isRecentInsight(created) {
+            if (!created) return false;
+            const d = created.toDate ? created.toDate() : new Date(created);
+            const cutoff = new Date();
+            cutoff.setDate(cutoff.getDate() - 30);
+            return d >= cutoff;
+        }
+
+        async function loadUsageStats() {
+            const statsGrid = document.getElementById('usageStatsGrid');
+            const topBody = document.querySelector('#topInsightsTable tbody');
+            const recentBody = document.querySelector('#recentlyViewedTable tbody');
+
+            try {
+                const [usersSnap, ...collectionSnaps] = await Promise.all([
+                    db.collection('users').get(),
+                    ...INSIGHT_COLLECTIONS.map(c => db.collection(c.name).get())
+                ]);
+
+                const now = new Date();
+                const thirtyDaysAgo = new Date(now);
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+                let activeUsers = 0;
+                usersSnap.forEach(doc => {
+                    const lastLogin = doc.data().lastLoginAt;
+                    if (!lastLogin) return;
+                    const d = lastLogin.toDate ? lastLogin.toDate() : new Date(lastLogin);
+                    if (d >= thirtyDaysAgo) activeUsers += 1;
+                });
+
+                const insights = [];
+                collectionSnaps.forEach((snap, i) => {
+                    const collection = INSIGHT_COLLECTIONS[i].name;
+                    snap.forEach(doc => {
+                        const data = doc.data();
+                        insights.push({
+                            id: doc.id,
+                            collection: collection,
+                            title: data.title || 'Untitled',
+                            category: data.category,
+                            created: data.created,
+                            viewCount: data.viewCount || 0,
+                            lastViewedAt: data.lastViewedAt || null
+                        });
+                    });
+                });
+
+                const totalViews = insights.reduce((sum, item) => sum + item.viewCount, 0);
+                const recentInsights = insights.filter(item => isRecentInsight(item.created));
+                const recentViews = recentInsights.reduce((sum, item) => sum + item.viewCount, 0);
+                const recentPct = totalViews > 0 ? Math.round((recentViews / totalViews) * 100) : 0;
+
+                const statCards = statsGrid.querySelectorAll('.stat-card');
+                statCards[0].querySelector('.stat-value').textContent = usersSnap.size;
+                statCards[1].querySelector('.stat-value').textContent = activeUsers;
+                statCards[2].querySelector('.stat-value').textContent = totalViews;
+                statCards[3].querySelector('.stat-value').textContent = totalViews > 0
+                    ? `${recentPct}%`
+                    : '—';
+                statCards[3].querySelector('.stat-label').textContent = 'Views on insights added in last 30 days';
+
+                const viewed = insights.filter(item => item.viewCount > 0);
+                const topViewed = viewed.slice().sort((a, b) => b.viewCount - a.viewCount).slice(0, 10);
+                const recentlyViewed = viewed
+                    .filter(item => item.lastViewedAt)
+                    .slice()
+                    .sort((a, b) => {
+                        const aTime = a.lastViewedAt.toDate ? a.lastViewedAt.toDate().getTime() : new Date(a.lastViewedAt).getTime();
+                        const bTime = b.lastViewedAt.toDate ? b.lastViewedAt.toDate().getTime() : new Date(b.lastViewedAt).getTime();
+                        return bTime - aTime;
+                    })
+                    .slice(0, 10);
+
+                function renderInsightRows(items) {
+                    if (items.length === 0) {
+                        return '<tr><td colspan="4">No views recorded yet. Counters start after you deploy analytics.</td></tr>';
+                    }
+                    return items.map(item => {
+                        const recentBadge = isRecentInsight(item.created)
+                            ? '<span class="recent-badge">New</span>'
+                            : '';
+                        const url = getDetailPageUrl(item);
+                        return `<tr>
+                            <td><a href="${url}">${escapeHtml(item.title)}</a>${recentBadge}</td>
+                            <td>${escapeHtml(getCategoryLabel(item))}</td>
+                            <td>${item.viewCount}</td>
+                            <td>${formatDate(item.lastViewedAt)}</td>
+                        </tr>`;
+                    }).join('');
+                }
+
+                topBody.innerHTML = renderInsightRows(topViewed);
+                recentBody.innerHTML = renderInsightRows(recentlyViewed);
+            } catch (error) {
+                console.error('Error loading usage stats:', error);
+                topBody.innerHTML = '<tr><td colspan="4">Could not load usage stats.</td></tr>';
+                recentBody.innerHTML = '<tr><td colspan="4">Could not load usage stats.</td></tr>';
+            }
+        }
+
         requireAuth().then(({ user, role }) => {
             if (role === 'admin') {
                 adminSection.style.display = 'block';
+                loadUsageStats();
                 loadUsers();
             } else {
                 notAdminMsg.style.display = 'block';
@@ -86,21 +262,22 @@
         // Function to fetch and display users in the management table
         async function loadUsers() {
             const tableBody = document.querySelector('#usersTable tbody');
-            tableBody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
             
             try {
                 const snapshot = await db.collection('users').get();
-                tableBody.innerHTML = ''; // Clear loading message
+                tableBody.innerHTML = '';
                 if (snapshot.empty) {
-                    tableBody.innerHTML = '<tr><td colspan="3">No users found.</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="4">No users found.</td></tr>';
                     return;
                 }
                 snapshot.forEach(doc => {
                     const user = doc.data();
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${user.email}</td>
-                        <td>${user.role}</td>
+                        <td>${escapeHtml(user.email)}</td>
+                        <td>${escapeHtml(user.role)}</td>
+                        <td>${formatDate(user.lastLoginAt)}</td>
                         <td>
                             <button class="btn" onclick="changeRole('${doc.id}', 'user')">Make User</button>
                             <button class="btn" onclick="changeRole('${doc.id}', 'editor')">Make Editor</button>
@@ -111,7 +288,7 @@
                 });
             } catch (error) {
                 console.error("Error loading users:", error);
-                tableBody.innerHTML = '<tr><td colspan="3">Something went wrong loading users. Check your connection and try again.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="4">Something went wrong loading users. Check your connection and try again.</td></tr>';
             }
         }
 

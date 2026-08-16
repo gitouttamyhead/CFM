@@ -29,6 +29,9 @@ function requireAuth() {
                     console.warn('Auth: could not fetch user role', e);
                 }
             }
+            if (window.CFMAnalytics) {
+                window.CFMAnalytics.recordLogin(user);
+            }
             resolve({ user, role });
         });
     });

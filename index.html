@@ -74,11 +74,13 @@
 
     <!-- Firebase Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <!-- Our Nav Script -->
     <script src="nav.js"></script>
     <script src="firebase-config.js"></script>
+    <script src="analytics.js"></script>
     <!-- Firebase Auth and Page Logic -->
     <script>
     const db = window.db;
@@ -95,6 +97,10 @@
             navWrapper.style.display = 'block';
             loginSection.style.display = 'none';
             mainWidget.style.display = 'block';
+
+            if (window.CFMAnalytics) {
+                window.CFMAnalytics.recordLogin(user);
+            }
 
             const userDocRef = db.collection('users').doc(user.uid);
             const userDoc = await userDocRef.get();
@@ -297,6 +303,10 @@
                 role: role,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
+
+            if (window.CFMAnalytics) {
+                window.CFMAnalytics.recordSignUp();
+            }
             
             // onAuthStateChanged handles showing the main content
         } catch (error) {
