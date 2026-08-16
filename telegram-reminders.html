@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
+    <link rel="manifest" href="manifest.json">
+    <title>Telegram Reminders - Come Follow Me</title>
+    <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="profile.css">
+    <style>
+        .page-intro { color: #5d6d7e; line-height: 1.55; margin: 0; }
+        .steps { margin: 0; padding-left: 1.25rem; line-height: 1.6; color: #2c3e50; }
+        .steps li { margin-bottom: 12px; }
+        .steps li:last-child { margin-bottom: 0; }
+        .store-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+        .store-links a {
+            display: inline-block;
+            padding: 10px 14px;
+            background: #3498db;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+        .store-links a:hover { background: #2980b9; }
+        .bot-link {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 12px 18px;
+            background: #27ae60;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .bot-link:hover { background: #229954; }
+        .bot-username {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 6px 10px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 0.95em;
+            color: #2c3e50;
+        }
+        .note { font-size: 0.9em; color: #7f8c8d; margin-top: 14px; line-height: 1.5; }
+        code { background: #ecf0f1; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div id="navWrapper"></div>
+
+    <div class="main-content" id="mainContent" style="display:none;">
+        <div class="profile-container">
+            <div class="profile-header">
+                <h1>Telegram Reminders</h1>
+                <p class="page-intro">Optional study reminders between Sundays — when new material is ready and gentle nudges during the week. One-way only; no need to reply.</p>
+            </div>
+
+            <div class="profile-section">
+                <h3>Step 1 — Get Telegram</h3>
+                <p class="page-intro">Telegram is a free messaging app (separate from this website). Install it on your phone or computer:</p>
+                <div class="store-links">
+                    <a href="https://apps.apple.com/app/telegram-messenger/id686449807" target="_blank" rel="noopener noreferrer">iPhone / iPad</a>
+                    <a href="https://play.google.com/store/apps/details?id=org.telegram.messenger" target="_blank" rel="noopener noreferrer">Android</a>
+                    <a href="https://desktop.telegram.org/" target="_blank" rel="noopener noreferrer">Desktop</a>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h3>Step 2 — Open our bot</h3>
+                <p class="page-intro">Search for this bot in Telegram, or tap the link below on the device where Telegram is installed:</p>
+                <span class="bot-username">@Come_follow_me_helper_bot</span>
+                <br>
+                <a class="bot-link" href="https://t.me/Come_follow_me_helper_bot" target="_blank" rel="noopener noreferrer">Open Come Follow Me Helper</a>
+                <p class="note">The bot display name is <strong>Come Follow Me Helper</strong>. Make sure the username matches exactly.</p>
+            </div>
+
+            <div class="profile-section">
+                <h3>Step 3 — Subscribe</h3>
+                <ol class="steps">
+                    <li>Open the bot chat and tap <strong>Start</strong> (or send <code>/start</code>).</li>
+                    <li>You’ll get a short welcome message — you’re enrolled.</li>
+                    <li>Reminders will appear in Telegram when new study material is posted.</li>
+                </ol>
+                <p class="note">To stop reminders anytime, send <code>/stop</code> to the bot. Send <code>/start</code> again to rejoin.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="nav.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="analytics.js"></script>
+    <script src="auth-utils.js"></script>
+    <script>
+        requireAuth().then(function () {
+            document.getElementById('mainContent').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
