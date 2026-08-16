@@ -28,8 +28,7 @@
         <div class="container" id="mainWidget" style="display:none;">
             <h1>Come Follow Me</h1>
             <a class="section-link" href="scripture.html">Scripture Insights</a>
-            <a class="section-link" href="gospel.html">Gospel Topics</a>
-            <a class="section-link" href="other.html">Other Insights</a>
+            <a class="section-link" id="gospelHomeLink" href="gospel.html" style="display:none;">Gospel Topics</a>
             <section id="recentlyAddedSection" class="recently-added" style="margin-top: 28px; text-align: left;">
                 <h2 style="font-size: 1.2em; color: #2c3e50; margin-bottom: 12px;">Recently Added</h2>
                 <div id="recentlyAddedList"></div>
@@ -91,6 +90,7 @@
         const loginSection = document.getElementById('login-section');
         const mainWidget = document.getElementById('mainWidget');
         const adminNavItem = document.querySelector('#adminNavItem');
+        const gospelHomeLink = document.getElementById('gospelHomeLink');
         const navWrapper = document.getElementById('navWrapper');
 
         if (user) {
@@ -105,18 +105,17 @@
             const userDocRef = db.collection('users').doc(user.uid);
             const userDoc = await userDocRef.get();
             
-            if (userDoc.exists && userDoc.data().role === 'admin') {
-                adminNavItem.style.display = 'block';
-            } else {
-                adminNavItem.style.display = 'none';
-            }
+            const isAdmin = userDoc.exists && userDoc.data().role === 'admin';
+            if (adminNavItem) adminNavItem.style.display = isAdmin ? 'block' : 'none';
+            if (gospelHomeLink) gospelHomeLink.style.display = isAdmin ? 'block' : 'none';
 
             loadRecentlyAdded();
         } else {
             navWrapper.style.display = 'none';
             loginSection.style.display = 'block';
             mainWidget.style.display = 'none';
-            adminNavItem.style.display = 'none';
+            if (adminNavItem) adminNavItem.style.display = 'none';
+            if (gospelHomeLink) gospelHomeLink.style.display = 'none';
         }
     });
 

@@ -7,22 +7,22 @@ function initNav() {
         auth.onAuthStateChanged(user => {
             const navWrapper = document.getElementById('navWrapper');
             const adminNavItem = document.getElementById('adminNavItem');
+            const gospelNavItem = document.getElementById('gospelNavItem');
 
             if (user) {
                 if (navWrapper) navWrapper.style.display = 'block';
                 if (db) {
                     const userDocRef = db.collection('users').doc(user.uid);
                     userDocRef.get().then(doc => {
-                        if (doc.exists && doc.data().role === 'admin') {
-                            if (adminNavItem) adminNavItem.style.display = 'block';
-                        } else {
-                            if (adminNavItem) adminNavItem.style.display = 'none';
-                        }
+                        const isAdmin = doc.exists && doc.data().role === 'admin';
+                        if (adminNavItem) adminNavItem.style.display = isAdmin ? 'block' : 'none';
+                        if (gospelNavItem) gospelNavItem.style.display = isAdmin ? 'block' : 'none';
                     });
                 }
             } else {
                 if (navWrapper) navWrapper.style.display = 'none';
                 if (adminNavItem) adminNavItem.style.display = 'none';
+                if (gospelNavItem) gospelNavItem.style.display = 'none';
             }
         });
     }
