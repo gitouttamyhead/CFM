@@ -73,6 +73,10 @@
         logEvent('sign_up');
     }
 
+    function recordFeedback(type) {
+        logEvent('feedback', { feedback_type: type || 'other' });
+    }
+
     init();
 
     window.CFMAnalytics = {
@@ -80,6 +84,7 @@
         recordLogin: recordLogin,
         recordInsightView: recordInsightView,
         recordSearch: recordSearch,
-        recordSignUp: recordSignUp
+        recordSignUp: recordSignUp,
+        recordFeedback: recordFeedback
     };
 })();

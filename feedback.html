@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
+    <link rel="manifest" href="manifest.json">
+    <title>Feedback - Come Follow Me</title>
+    <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="profile.css">
+    <style>
+        .feedback-intro { color: #5d6d7e; line-height: 1.5; margin-bottom: 0; }
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        .form-group textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        .char-count { font-size: 0.85em; color: #7f8c8d; margin-top: 6px; }
+    </style>
+</head>
+<body>
+    <div id="navWrapper"></div>
+
+    <div class="main-content" id="mainContent" style="display:none;">
+        <div class="profile-container">
+            <div class="profile-header">
+                <h1>Feedback & Ideas</h1>
+                <p class="feedback-intro">Help improve the app for Sunday School and home study. Share feature ideas, things that confused you, or bugs you noticed.</p>
+            </div>
+
+            <div id="alertMessage" class="alert"></div>
+
+            <div class="profile-section">
+                <form id="feedbackForm">
+                    <div class="form-group">
+                        <label for="feedbackType">What kind of feedback is this?</label>
+                        <select id="feedbackType" required>
+                            <option value="suggestion">Feature suggestion</option>
+                            <option value="bug">Something broken</option>
+                            <option value="content">Content idea</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="feedbackMessage">Your message</label>
+                        <textarea id="feedbackMessage" required minlength="10" maxlength="2000" placeholder="Example: It would help if search showed which book of scripture each result is from…"></textarea>
+                        <div class="char-count"><span id="charCount">0</span> / 2000</div>
+                    </div>
+                    <button type="submit" class="btn btn-success" id="submitBtn">Send feedback</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="nav.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="analytics.js"></script>
+    <script src="auth-utils.js"></script>
+    <script>
+        const db = window.db;
+        const mainContent = document.getElementById('mainContent');
+        const alertMessage = document.getElementById('alertMessage');
+        const feedbackForm = document.getElementById('feedbackForm');
+        const feedbackMessage = document.getElementById('feedbackMessage');
+        const charCount = document.getElementById('charCount');
+        const submitBtn = document.getElementById('submitBtn');
+
+        function showAlert(message, type) {
+            alertMessage.textContent = message;
+            alertMessage.className = 'alert alert-' + type;
+            alertMessage.style.display = 'block';
+            setTimeout(function () { alertMessage.style.display = 'none'; }, 6000);
+        }
+
+        feedbackMessage.addEventListener('input', function () {
+            charCount.textContent = feedbackMessage.value.length;
+        });
+
+        requireAuth().then(function ({ user }) {
+            mainContent.style.display = 'block';
+
+            feedbackForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const type = document.getElementById('feedbackType').value;
+                const message = feedbackMessage.value.trim();
+
+                if (message.length < 10) {
+                    showAlert('Please write at least 10 characters so we know what you mean.', 'error');
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Sending…';
+
+                let userName = user.email.split('@')[0];
+                try {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (userDoc.exists && userDoc.data().name) {
+                        userName = userDoc.data().name;
+                    }
+                } catch (err) {
+                    console.warn('Could not load user name for feedback', err);
+                }
+
+                try {
+                    await db.collection('feedback').add({
+                        userId: user.uid,
+                        userEmail: user.email,
+                        userName: userName,
+                        type: type,
+                        message: message,
+                        pageUrl: document.referrer || '',
+                        status: 'new',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    if (window.CFMAnalytics) {
+                        window.CFMAnalytics.recordFeedback(type);
+                    }
+
+                    feedbackForm.reset();
+                    charCount.textContent = '0';
+                    showAlert('Thank you — your feedback was sent. We read every suggestion.', 'success');
+                } catch (error) {
+                    console.error('Feedback submit error:', error);
+                    showAlert('Could not send feedback. Please try again in a moment.', 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Send feedback';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

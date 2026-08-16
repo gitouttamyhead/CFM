@@ -25,6 +25,11 @@
         .usage-table td, .usage-table th { font-size: 0.95em; }
         .usage-meta { color: #7f8c8d; font-size: 0.9em; margin-bottom: 8px; }
         .recent-badge { display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; margin-left: 6px; }
+        .feedback-row-new td { background: #f0f8ff; }
+        .feedback-message { max-width: 360px; white-space: pre-wrap; word-break: break-word; }
+        .feedback-type { text-transform: capitalize; }
+        .status-new { color: #2980b9; font-weight: 600; }
+        .status-read { color: #95a5a6; }
     </style>
 </head>
 <body>
@@ -59,6 +64,22 @@
                     <tr><th>Title</th><th>Category</th><th>Views</th><th>Last viewed</th></tr>
                 </thead>
                 <tbody><tr><td colspan="4">Loading…</td></tr></tbody>
+            </table>
+
+            <h2 style="margin-top: 40px;">User Feedback</h2>
+            <p class="usage-meta">Suggestions and bug reports from users. Mark as read when you've reviewed.</p>
+            <table class="usage-table" id="feedbackTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>From</th>
+                        <th>Type</th>
+                        <th>Message</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody><tr><td colspan="6">Loading…</td></tr></tbody>
             </table>
 
             <h2 style="margin-top: 40px;">User Management</h2>
@@ -248,10 +269,67 @@
             }
         }
 
+        function formatFeedbackType(type) {
+            const labels = {
+                suggestion: 'Feature suggestion',
+                bug: 'Something broken',
+                content: 'Content idea',
+                other: 'Other'
+            };
+            return labels[type] || type || 'Other';
+        }
+
+        async function loadFeedback() {
+            const tableBody = document.querySelector('#feedbackTable tbody');
+            try {
+                const snapshot = await db.collection('feedback')
+                    .orderBy('createdAt', 'desc')
+                    .limit(50)
+                    .get();
+
+                if (snapshot.empty) {
+                    tableBody.innerHTML = '<tr><td colspan="6">No feedback yet.</td></tr>';
+                    return;
+                }
+
+                tableBody.innerHTML = '';
+                snapshot.forEach(function (doc) {
+                    const item = doc.data();
+                    const isNew = item.status !== 'read';
+                    const row = document.createElement('tr');
+                    if (isNew) row.className = 'feedback-row-new';
+                    row.innerHTML = `
+                        <td>${formatDate(item.createdAt)}</td>
+                        <td>${escapeHtml(item.userName || item.userEmail || '—')}<br><span style="color:#7f8c8d;font-size:0.85em">${escapeHtml(item.userEmail || '')}</span></td>
+                        <td class="feedback-type">${escapeHtml(formatFeedbackType(item.type))}</td>
+                        <td class="feedback-message">${escapeHtml(item.message)}</td>
+                        <td class="${isNew ? 'status-new' : 'status-read'}">${isNew ? 'New' : 'Read'}</td>
+                        <td>${isNew ? `<button class="btn" onclick="markFeedbackRead('${doc.id}')">Mark read</button>` : ''}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading feedback:', error);
+                tableBody.innerHTML = '<tr><td colspan="6">Could not load feedback.</td></tr>';
+            }
+        }
+
+        async function markFeedbackRead(id) {
+            if (!id) return;
+            try {
+                await db.collection('feedback').doc(id).update({ status: 'read' });
+                loadFeedback();
+            } catch (error) {
+                console.error('Error marking feedback read:', error);
+                alert('Could not update feedback status.');
+            }
+        }
+
         requireAuth().then(({ user, role }) => {
             if (role === 'admin') {
                 adminSection.style.display = 'block';
                 loadUsageStats();
+                loadFeedback();
                 loadUsers();
             } else {
                 notAdminMsg.style.display = 'block';
