@@ -6,9 +6,9 @@
 
 ## 1. Where to find current rules
 
-1. Open [Firebase Console](https://console.firebase.google.com/) → your project → **Firestore Database** → **Rules**.
+1. Open [Firebase Console](https://console.firebase.google.com/) → your project → **Firestore Database** → **Rules** (or **Storage** → **Rules** for `storage.rules`).
 2. Copy the contents and paste them below under **Current rules (as of audit)** for version control.
-3. To deploy the recommended rules: either paste the contents of `firestore.rules` (in this folder) into the Firebase Console and publish, or from this directory run `firebase deploy --only firestore:rules` (requires `firebase.json` with `firestore.rules` path).
+3. To deploy: paste `firestore.rules` or `storage.rules` into the Firebase Console and publish, or run `firebase deploy --only firestore:rules,storage` (requires `firebase.json`).
 
 ---
 
@@ -24,6 +24,12 @@
 | **feedback**         | Admin | Authenticated **create** (own uid/email); admin read/update |
 | **telegramSubscribers** | — | Admin SDK only (no client access) |
 
+### Firebase Storage (`storage.rules`)
+
+| Path | Read | Write |
+|------|------|-------|
+| **insights/images/** | Authenticated users | **Editor/admin** only; images ≤ 10 MB |
+
 ---
 
 ## 3. Audit checklist
@@ -32,6 +38,7 @@
 - [ ] **insights, gospelInsights, otherInsights:** Read if authenticated. Create/update/delete only if `users/{uid}.role` is `admin` or `editor`.
 - [ ] **users:** Read own document (`request.auth.uid == userId`) for profile/nav; admin can read all. **Create** only own doc on signup with validated fields and role from invitation (or `user`). **Update** role only if admin; own doc may update `lastLoginAt` only.
 - [ ] **invitations:** Admin write; signup user may read own invitation doc (email doc id).
+- [ ] **Storage `insights/images/`:** Authenticated read; create/update/delete only if `users/{uid}.role` is `admin` or `editor`.
 
 After changing rules in the console, use **Rules Playground** or test with a non-admin account to confirm writes are denied.
 
