@@ -283,21 +283,25 @@
         try {
             const cred = await auth.createUserWithEmailAndPassword(email, password);
             const user = cred.user;
-            
-            // Check for a pending invitation to determine role
+            const authEmail = user.email;
+
+            // Check for a pending invitation to determine role (must match auth email for rules)
             let role = 'user';
             try {
-                const inviteDoc = await db.collection('invitations').doc(email).get();
+                const inviteDoc = await db.collection('invitations').doc(authEmail).get();
                 if (inviteDoc.exists) {
-                    role = inviteDoc.data().role || 'user';
+                    const invitedRole = inviteDoc.data().role;
+                    if (['user', 'editor', 'admin'].includes(invitedRole)) {
+                        role = invitedRole;
+                    }
                 }
             } catch (inviteErr) {
                 console.warn('Could not check invitation:', inviteErr);
             }
-            
+
             // Create user profile in Firestore
             await db.collection('users').doc(user.uid).set({
-                email: email,
+                email: authEmail,
                 name: name,
                 role: role,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()

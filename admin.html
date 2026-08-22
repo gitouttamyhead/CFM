@@ -394,7 +394,7 @@
         const inviteForm = document.getElementById('inviteForm');
         inviteForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const inviteEmail = document.getElementById('inviteEmail').value;
+            const inviteEmail = document.getElementById('inviteEmail').value.trim().toLowerCase();
             const inviteRole = document.getElementById('inviteRole').value;
             const inviteStatus = document.getElementById('inviteStatus');
 

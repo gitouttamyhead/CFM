@@ -86,6 +86,46 @@ service cloud.firestore {
 
 
 
+    // Role assigned on signup: invitation role if valid, otherwise 'user' only.
+
+    function signupRole() {
+
+      let inviteRef = /databases/$(database)/documents/invitations/$(request.auth.token.email);
+
+      return exists(inviteRef) && get(inviteRef).data.role in ['admin', 'editor', 'user']
+
+        ? get(inviteRef).data.role
+
+        : 'user';
+
+    }
+
+
+
+    function isValidUserCreate() {
+
+      return request.auth != null
+
+        && request.auth.uid == userId
+
+        && request.auth.token.email != null
+
+        && request.resource.data.email == request.auth.token.email
+
+        && request.resource.data.role == signupRole()
+
+        && request.resource.data.name is string
+
+        && request.resource.data.name.size() >= 1
+
+        && request.resource.data.name.size() <= 100
+
+        && request.resource.data.keys().hasOnly(['email', 'name', 'role', 'createdAt']);
+
+    }
+
+
+
     match /insights/{docId} {
 
       allow read: if request.auth != null;
@@ -122,7 +162,7 @@ service cloud.firestore {
 
       allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
 
-      allow create: if request.auth != null;
+      allow create: if isValidUserCreate();
 
       allow update: if isAdmin() || isOwnLastLoginUpdate();
 

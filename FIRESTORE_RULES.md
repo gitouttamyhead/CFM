@@ -19,9 +19,10 @@
 | **insights**         | ✓    | ✓     | All authenticated read; **admin/editor** only create/update/delete |
 | **gospelInsights**   | ✓    | ✓     | Same as above |
 | **otherInsights**    | ✓    | ✓     | Same as above |
-| **users**            | Own doc + (admin: all) | **Admin** only (role updates) | Each user reads own doc; admin reads all and updates roles |
-| **invitations**      | —    | ✓     | **Admin** only create/update/delete |
-| **emailNotifications** | —  | ✓     | Authenticated **create** only (log sent emails); no client read needed |
+| **users**            | Own doc + (admin: all) | **Create:** own doc on signup only (role from invitation or `user`; no self-admin). **Update:** admin (roles) or own `lastLoginAt` |
+| **invitations**      | Own invite (by email) or admin | **Write:** admin only |
+| **feedback**         | Admin | Authenticated **create** (own uid/email); admin read/update |
+| **telegramSubscribers** | — | Admin SDK only (no client access) |
 
 ---
 
@@ -29,9 +30,8 @@
 
 - [ ] **Unauthenticated:** No read or write to any collection. (`request.auth != null` for any allowed operation.)
 - [ ] **insights, gospelInsights, otherInsights:** Read if authenticated. Create/update/delete only if `users/{uid}.role` is `admin` or `editor`.
-- [ ] **users:** Read own document (`request.auth.uid == userId`) for profile/nav; admin can read all. Write (e.g. role change) only if `users/{request.auth.uid}.role == 'admin'`.
-- [ ] **invitations:** Only admin can read/write (or at least write). If unauthenticated or non-admin can write, **tighten**.
-- [ ] **emailNotifications:** Only allow **create** by authenticated users (editors/admins send notifications). Optionally deny client read.
+- [ ] **users:** Read own document (`request.auth.uid == userId`) for profile/nav; admin can read all. **Create** only own doc on signup with validated fields and role from invitation (or `user`). **Update** role only if admin; own doc may update `lastLoginAt` only.
+- [ ] **invitations:** Admin write; signup user may read own invitation doc (email doc id).
 
 After changing rules in the console, use **Rules Playground** or test with a non-admin account to confirm writes are denied.
 
