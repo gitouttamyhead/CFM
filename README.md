@@ -1,19 +1,18 @@
 # Come Follow Me Insights
 
-A simple web app for ward members and teachers to browse, search, and contribute scripture and gospel insights for Come Follow Me study. Content is organized by Scripture (Old Testament, New Testament, Book of Mormon, Doctrine & Covenants, Pearl of Great Price), Gospel Topics, and Other. Editors and admins manage insights and can send email notifications when new content is added.
+A simple web app for ward members and teachers to browse, search, and contribute scripture and gospel insights for Come Follow Me study. Content is organized by Scripture (Old Testament, New Testament, Book of Mormon, Doctrine & Covenants), Gospel Topics, and Other. Editors and admins manage insights; ward reminders go through the Telegram bot (see **Telegram Reminders** in the app).
 
 ## Who it's for
 
-- **Ward members** — Read and search insights; use on mobile or desktop (including Add to Home Screen).
-- **Editors / admins** — Create and edit insights, add related sub-insights, manage users (admin), send email notifications.
+- **Ward members** — Read and search insights; use on mobile or desktop (including Add to Home Screen). Optional Telegram reminders for study nudges.
+- **Editors / admins** — Create and edit insights, add related sub-insights, manage users (admin).
 
 ## Tech stack
 
 - **Frontend:** Vanilla HTML/CSS/JS, no framework. Shared nav and styles loaded from `nav.html`, `nav.css`, `shared.css`.
 - **Auth & database:** Firebase Authentication (email/password), Firestore.
 - **Rich text:** TinyMCE (CDN) for insight content.
-- **Email:** SendGrid via a Netlify serverless function (`netlify/functions/send-email.js`).
-- **Hosting:** Netlify (static site + functions). Build runs a script to generate `firebase-config.js` from env vars.
+- **Hosting:** Netlify (static site). Build runs a script to generate `firebase-config.js` from env vars.
 
 ## Setup
 
@@ -25,7 +24,7 @@ cd CFM
 npm install
 ```
 
-Dependencies are mainly for the Netlify email function (`@sendgrid/mail`) and optional scripts (e.g. Firestore backup).
+Dependencies are mainly for optional scripts (e.g. Firestore backup).
 
 ### 2. Firebase
 
@@ -44,17 +43,10 @@ Dependencies are mainly for the Netlify email function (`@sendgrid/mail`) and op
 
 The app loads TinyMCE from the Tiny Cloud CDN. The API key is in `tinymce-loader.js` (domain-restricted in Tiny Cloud). To use your own key, set `window.TINYMCE_API_KEY` before the loader runs (e.g. in an `app-config.js` that loads first).
 
-### 5. Email (SendGrid)
+### 5. Deploy to Netlify
 
-For “Send email notification” and resend to work in production:
-
-1. Set **SENDGRID_API_KEY** in Netlify (Site settings → Environment variables).
-2. See **[EMAIL_SETUP_GUIDE.md](EMAIL_SETUP_GUIDE.md)** for SendGrid setup, sender verification, and the Netlify function.
-
-### 6. Deploy to Netlify
-
-- Connect the repo to Netlify; the repo’s `netlify.toml` defines build command, publish directory, and functions.
-- Set **FIREBASE_*** and **SENDGRID_API_KEY** in Netlify environment variables.
+- Connect the repo to Netlify; the repo’s `netlify.toml` defines build command and publish directory.
+- Set **FIREBASE_*** in Netlify environment variables.
 - Optional: see [NETLIFY_AUTODEPLOY.md](NETLIFY_AUTODEPLOY.md) for linking GitHub and auto-deploys.
 
 ## Firestore collections
@@ -65,8 +57,9 @@ For “Send email notification” and resend to work in production:
 | **gospelInsights** | Gospel Topics insights. Same shape: title, content, tags, created, relatedTo, relatedInsights. |
 | **otherInsights**  | Other insights. Same shape. |
 | **users**          | One doc per uid: `role` (`admin` \| `editor` \| `user`), optional `name`. |
-| **invitations**    | Used by admin to invite users (if that flow is enabled). |
-| **emailNotifications** | Log of sent notification emails (create-only from client). |
+| **invitations**    | Used by admin to pre-assign role when someone signs up with that email. |
+| **feedback**       | User suggestions and bug reports (admin read in dashboard). |
+| **telegramSubscribers** | Telegram reminder subscribers (Admin SDK / bot only; no client access). |
 
 **Insight document shape (insights / gospelInsights / otherInsights):**
 
@@ -86,7 +79,6 @@ For local scripts that need secrets, use a `.env` in the project root (do not co
 
 ## Docs in this repo
 
-- **[EMAIL_SETUP_GUIDE.md](EMAIL_SETUP_GUIDE.md)** — SendGrid and email notification setup.
 - **[FIRESTORE_RULES.md](FIRESTORE_RULES.md)** — Firestore security rules and audit.
 - **[scripts/README-firebase-config.md](scripts/README-firebase-config.md)** — Firebase config and API key handling.
 - **[NETLIFY_AUTODEPLOY.md](NETLIFY_AUTODEPLOY.md)** — Optional automatic deploys from GitHub.

@@ -1,7 +1,6 @@
 {
   "name": "cfm",
   "version": "1.0.0",
-  "main": "email-notifications.js",
   "scripts": {
     "test": "node scripts/smoke-test.js",
     "backup": "node scripts/export-firestore.js"
@@ -19,7 +18,6 @@
   "homepage": "https://github.com/gitouttamyhead/CFM#readme",
   "description": "",
   "dependencies": {
-    "@sendgrid/mail": "^8.1.5",
     "firebase-admin": "^12.0.0"
   }
 }

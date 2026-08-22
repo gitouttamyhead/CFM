@@ -59,21 +59,12 @@
                 <input type="text" id="relatedTitle" placeholder="Title" required style="width:100%;margin-bottom:10px;">
                 <div id="relatedQuillEditor" style="height:400px;margin-bottom:20px;"></div>
                 <input type="text" id="relatedTags" placeholder="Tags (comma separated)" style="width:100%;margin-bottom:10px;">
-                <div style="margin-bottom: 15px;">
-                    <label style="display: flex; align-items: center; cursor: pointer;">
-                        <input type="checkbox" id="sendEmailNotification" style="margin-right: 8px;">
-                        Send email notification to users about this related insight
-                    </label>
-                </div>
-                <button type="submit" class="btn">Save Related Insight</button>
+<button type="submit" class="btn">Save Related Insight</button>
                 <button type="button" class="btn" id="cancelRelatedModalBtn" style="background:#aaa;">Cancel</button>
             </form>
         </div>
     </div>
-    
-    <script src="email-notifications.js"></script>
-
-    <!-- Scripts -->
+<!-- Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -174,22 +165,6 @@
                 alert('Failed to save related insight. ' + err.message);
                 return;
             }
-
-            // Handle email notification for new related insights
-            const sendEmailNotification = document.getElementById('sendEmailNotification').checked;
-            if (sendEmailNotification) {
-                const currentUser = window.auth.currentUser;
-                if (currentUser) {
-                    const userDoc = await db.collection('users').doc(currentUser.uid).get();
-                    if (userDoc.exists) {
-                        insightData.creatorName = userDoc.data().name || currentUser.email.split('@')[0];
-                    }
-                }
-                setTimeout(() => {
-                    window.EmailNotifications.showEmailNotificationModal(insightData, true);
-                }, 500);
-            }
-
             closeRelatedModal();
             alert('Related insight created successfully!');
             fetchInsight(parentId, collectionName);

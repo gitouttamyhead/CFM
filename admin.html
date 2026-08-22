@@ -98,7 +98,7 @@
             </table>
             <div style="margin-top: 40px;">
                 <h2>Invite New User</h2>
-                <p>Create an invitation for a new user. They'll receive an email with a link to create their account and will be automatically assigned their role.</p>
+                <p>Pre-assign a role for someone who signs up with this email. They create their own account at the app login page — no email is sent; tell them the URL or share the QR code.</p>
                 <form id="inviteForm" style="display: flex; gap: 10px; align-items: center;">
                     <input type="email" id="inviteEmail" placeholder="User's Email" required style="flex-grow: 1; padding: 8px;">
                     <select id="inviteRole" style="padding: 8px;">
@@ -411,50 +411,7 @@
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                // Send invitation email via Netlify/SendGrid
-                let emailSent = false;
-                try {
-                    const siteUrl = window.location.origin;
-                    const emailHtml = `
-                        <html>
-                        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                            <div style="background: #3498db; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0;">
-                                <h1>You're Invited!</h1>
-                            </div>
-                            <div style="background: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px;">
-                                <p>Hello!</p>
-                                <p>You've been invited to join <strong>Come Follow Me Insights</strong> as a <strong>${inviteRole}</strong>.</p>
-                                <p>To get started:</p>
-                                <ol>
-                                    <li>Visit the link below</li>
-                                    <li>Click <em>"Sign up"</em> to create your account</li>
-                                    <li>Use this email address: <strong>${inviteEmail}</strong></li>
-                                </ol>
-                                <p style="text-align: center; margin: 25px 0;">
-                                    <a href="${siteUrl}" style="display: inline-block; background: #27ae60; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Join Now</a>
-                                </p>
-                                <p style="font-size: 12px; color: #666; margin-top: 20px;">If you weren't expecting this invitation, you can safely ignore this email.</p>
-                            </div>
-                        </body>
-                        </html>`;
-                    const resp = await fetch('/.netlify/functions/send-email', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            to: inviteEmail,
-                            subject: "You're invited to Come Follow Me Insights",
-                            html: emailHtml
-                        })
-                    });
-                    const data = await resp.json();
-                    emailSent = data.success;
-                } catch (emailErr) {
-                    console.warn('Could not send invitation email:', emailErr);
-                }
-
-                inviteStatus.textContent = emailSent
-                    ? `Invitation created and email sent to ${inviteEmail} with role ${inviteRole}.`
-                    : `Invitation created for ${inviteEmail} with role ${inviteRole}. (Email could not be sent — ask them to visit the site directly.)`;
+                inviteStatus.textContent = `Invitation saved for ${inviteEmail} (${inviteRole}). When they sign up with that email, they'll get that role automatically.`;
                 inviteStatus.style.color = 'green';
                 inviteForm.reset();
             } catch (error) {
