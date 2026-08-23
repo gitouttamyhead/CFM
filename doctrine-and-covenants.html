@@ -331,6 +331,7 @@
                 await db.collection(collectionName).doc(id).delete();
             }
             fetchInsights();
+        };
         // --- Auth Handling ---
         container.style.display = 'none';
         requireAuth().then(({ user, role }) => {
