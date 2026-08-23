@@ -1,11 +1,77 @@
 /**
- * Shared auth guard for protected CFM pages.
+ * Shared auth helpers for CFM pages.
  * Depends on window.auth and window.db (from firebase-config.js).
  */
 
 /**
+ * Role from invitations/{authEmail}, default user.
+ * @param {string} authEmail
+ * @returns {Promise<string>}
+ */
+async function resolveSignupRole(authEmail) {
+    let role = 'user';
+    const db = window.db;
+    if (!authEmail || !db) return role;
+    try {
+        const inviteDoc = await db.collection('invitations').doc(authEmail).get();
+        if (inviteDoc.exists) {
+            const invitedRole = inviteDoc.data().role;
+            if (['user', 'editor', 'admin'].includes(invitedRole)) {
+                role = invitedRole;
+            }
+        }
+    } catch (e) {
+        console.warn('Could not check invitation:', e);
+    }
+    return role;
+}
+
+/**
+ * Ensure Firestore users/{uid} exists (Firebase Auth does not create this automatically).
+ * Heals "Auth-only" accounts on login. Safe to call when the profile already exists.
+ *
+ * @param {firebase.User} user
+ * @param {{ name?: string }} [options]
+ * @returns {Promise<{ role: string|null, created: boolean }>}
+ */
+async function ensureUserProfile(user, options) {
+    const db = window.db;
+    if (!user || !db) {
+        return { role: null, created: false };
+    }
+
+    const ref = db.collection('users').doc(user.uid);
+    const existing = await ref.get();
+    if (existing.exists) {
+        return { role: existing.data().role || 'user', created: false };
+    }
+
+    const authEmail = user.email;
+    if (!authEmail) {
+        throw new Error('Your account has no email on file. Contact your administrator.');
+    }
+
+    const name = (options && options.name
+        ? options.name
+        : (user.displayName || authEmail.split('@')[0] || 'User')).trim();
+    if (!name) {
+        throw new Error('Name is required.');
+    }
+
+    const role = await resolveSignupRole(authEmail);
+    await ref.set({
+        email: authEmail,
+        name: name.slice(0, 100),
+        role: role,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    return { role: role, created: true };
+}
+
+/**
  * Ensures the user is logged in. If not, redirects to index.html.
- * @returns {Promise<{user: firebase.User, role: string|null}>} Resolves with user and role when logged in; never resolves if redirecting
+ * @returns {Promise<{user: firebase.User, role: string|null}>}
  */
 function requireAuth() {
     return new Promise((resolve) => {
@@ -19,15 +85,12 @@ function requireAuth() {
                 window.location.href = 'index.html';
                 return;
             }
-            const db = window.db;
             let role = null;
-            if (db) {
-                try {
-                    const doc = await db.collection('users').doc(user.uid).get();
-                    if (doc.exists) role = doc.data().role || null;
-                } catch (e) {
-                    console.warn('Auth: could not fetch user role', e);
-                }
+            try {
+                const profile = await ensureUserProfile(user);
+                role = profile.role;
+            } catch (e) {
+                console.warn('Auth: could not ensure user profile', e);
             }
             if (window.CFMAnalytics) {
                 window.CFMAnalytics.recordLogin(user);
@@ -44,3 +107,10 @@ function requireAuth() {
 function isEditorOrAdmin(role) {
     return role === 'admin' || role === 'editor';
 }
+
+window.CFMAuth = {
+    resolveSignupRole: resolveSignupRole,
+    ensureUserProfile: ensureUserProfile,
+    requireAuth: requireAuth,
+    isEditorOrAdmin: isEditorOrAdmin
+};

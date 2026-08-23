@@ -80,6 +80,7 @@
     <script src="nav.js"></script>
     <script src="firebase-config.js"></script>
     <script src="analytics.js"></script>
+    <script src="auth-utils.js"></script>
     <!-- Firebase Auth and Page Logic -->
     <script>
     const db = window.db;
@@ -102,10 +103,13 @@
                 window.CFMAnalytics.recordLogin(user);
             }
 
-            const userDocRef = db.collection('users').doc(user.uid);
-            const userDoc = await userDocRef.get();
-            
-            const isAdmin = userDoc.exists && userDoc.data().role === 'admin';
+            let isAdmin = false;
+            try {
+                const profile = await window.CFMAuth.ensureUserProfile(user);
+                isAdmin = profile.role === 'admin';
+            } catch (profileErr) {
+                console.warn('Could not ensure user profile:', profileErr);
+            }
             if (adminNavItem) adminNavItem.style.display = isAdmin ? 'block' : 'none';
             if (gospelHomeLink) gospelHomeLink.style.display = isAdmin ? 'block' : 'none';
 
@@ -275,6 +279,11 @@
         errorDiv.textContent = '';
         errorDiv.style.color = 'red';
         
+        if (!name) {
+            errorDiv.textContent = 'Please enter your name.';
+            return;
+        }
+
         if (password !== confirmPassword) {
             errorDiv.textContent = 'Passwords do not match.';
             return;
@@ -282,35 +291,15 @@
         
         try {
             const cred = await auth.createUserWithEmailAndPassword(email, password);
-            const user = cred.user;
-            const authEmail = user.email;
-
-            // Check for a pending invitation to determine role (must match auth email for rules)
-            let role = 'user';
             try {
-                const inviteDoc = await db.collection('invitations').doc(authEmail).get();
-                if (inviteDoc.exists) {
-                    const invitedRole = inviteDoc.data().role;
-                    if (['user', 'editor', 'admin'].includes(invitedRole)) {
-                        role = invitedRole;
-                    }
+                await window.CFMAuth.ensureUserProfile(cred.user, { name: name });
+                if (window.CFMAnalytics) {
+                    window.CFMAnalytics.recordSignUp();
                 }
-            } catch (inviteErr) {
-                console.warn('Could not check invitation:', inviteErr);
+            } catch (profileErr) {
+                await auth.signOut();
+                throw profileErr;
             }
-
-            // Create user profile in Firestore
-            await db.collection('users').doc(user.uid).set({
-                email: authEmail,
-                name: name,
-                role: role,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            if (window.CFMAnalytics) {
-                window.CFMAnalytics.recordSignUp();
-            }
-            
             // onAuthStateChanged handles showing the main content
         } catch (error) {
             console.error('Signup error:', error);
