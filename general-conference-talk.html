@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
+    <link rel="manifest" href="manifest.json">
+    <title>General Conference Talk Outline</title>
+    <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="insights.css">
+    <link rel="stylesheet" href="general-conference.css">
+</head>
+<body>
+    <div id="navWrapper"></div>
+
+    <div class="main-content" id="mainContent">
+        <div class="container" id="mainWidget" style="display:none;">
+            <div class="top-actions" style="margin-bottom: 16px;">
+                <a class="btn btn-secondary" id="backLink" href="general-conference.html">&larr; Back</a>
+            </div>
+            <h1 id="talkHeading">Talk outline</h1>
+            <p id="talkMeta" class="gc-meta-muted"></p>
+            <div id="gcAttribution"></div>
+            <div id="outlineContent" class="insight-content gc-outline-content"></div>
+            <div id="outlineMissing" class="gc-empty-state" style="display:none;">
+                Outline not ready yet — sync again in about 15–30 minutes after the session ends.
+            </div>
+            <div class="bottom-actions" style="margin-top: 24px;">
+                <a class="btn btn-secondary" id="backLinkBottom" href="general-conference.html">&larr; Back</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="sanitize.js"></script>
+    <script src="nav.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="analytics.js"></script>
+    <script src="auth-utils.js"></script>
+    <script src="gc-attribution.js"></script>
+    <script src="gc-markdown.js"></script>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const confId = params.get('conf') || '2026-10';
+        const talkId = params.get('talkId');
+        const container = document.getElementById('mainWidget');
+        const talkHeading = document.getElementById('talkHeading');
+        const talkMeta = document.getElementById('talkMeta');
+        const outlineContent = document.getElementById('outlineContent');
+        const outlineMissing = document.getElementById('outlineMissing');
+
+        const backHref = 'general-conference-conference.html?conf=' + encodeURIComponent(confId);
+        document.getElementById('backLink').href = backHref;
+        document.getElementById('backLinkBottom').href = backHref;
+
+        container.style.display = 'none';
+        requireAuth().then(function () {
+            container.style.display = 'block';
+            GcAttribution.render('gcAttribution');
+            if (!talkId) {
+                talkHeading.textContent = 'Talk not found';
+                outlineMissing.style.display = 'block';
+                return;
+            }
+            loadTalk();
+        });
+
+        function loadTalk() {
+            window.db.collection('generalConferenceSessions').doc(confId)
+                .collection('talks').doc(talkId)
+                .get()
+                .then(function (snap) {
+                    if (!snap.exists) {
+                        talkHeading.textContent = 'Talk not found';
+                        outlineMissing.style.display = 'block';
+                        return;
+                    }
+                    const t = snap.data();
+                    const speaker = formatSpeakerName(t.speaker);
+                    const title = cleanTalkTitle(t.title);
+                    talkHeading.textContent = title || speaker;
+                    let meta = speaker;
+                    if (t.sessionKey) {
+                        meta += ' · ' + GcAttribution.sessionLabel(t.sessionKey);
+                    }
+                    talkMeta.textContent = meta;
+
+                    const md = t.outlineMarkdown;
+                    if (!md || !String(md).trim()) {
+                        outlineMissing.style.display = 'block';
+                        outlineContent.innerHTML = '';
+                        return;
+                    }
+                    outlineContent.innerHTML = renderOutlineMarkdown(md);
+                })
+                .catch(function (err) {
+                    console.error(err);
+                    outlineMissing.style.display = 'block';
+                });
+        }
+    </script>
+</body>
+</html>

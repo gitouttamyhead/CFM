@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
+    <link rel="manifest" href="manifest.json">
+    <title>General Conference — Session Outlines</title>
+    <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="insights.css">
+    <link rel="stylesheet" href="general-conference.css">
+</head>
+<body>
+    <div id="navWrapper"></div>
+
+    <div class="main-content" id="mainContent">
+        <div class="container" id="mainWidget" style="display:none;">
+            <div class="top-actions" style="margin-bottom: 16px;">
+                <a class="btn btn-secondary" href="general-conference.html">&larr; All conferences</a>
+            </div>
+            <h1 id="conferenceTitle">General Conference</h1>
+            <p id="syncMeta" class="gc-meta-muted"></p>
+            <div id="gcAttribution"></div>
+            <div id="sessionsContainer"></div>
+            <div id="emptyState" class="gc-empty-state" style="display:none;">
+                No talk outlines imported yet for this conference. After a session ends, run the outline sync; then check back in about 15–30 minutes.
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="nav.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="analytics.js"></script>
+    <script src="auth-utils.js"></script>
+    <script src="gc-attribution.js"></script>
+    <script src="gc-markdown.js"></script>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const confId = params.get('conf') || '2026-10';
+        const container = document.getElementById('mainWidget');
+        const sessionsContainer = document.getElementById('sessionsContainer');
+        const emptyState = document.getElementById('emptyState');
+        const conferenceTitle = document.getElementById('conferenceTitle');
+        const syncMeta = document.getElementById('syncMeta');
+
+        container.style.display = 'none';
+        requireAuth().then(function () {
+            container.style.display = 'block';
+            GcAttribution.render('gcAttribution');
+            loadConference();
+        });
+
+        function loadConference() {
+            const sessionRef = window.db.collection('generalConferenceSessions').doc(confId);
+            sessionRef.get().then(function (snap) {
+                if (snap.exists) {
+                    const data = snap.data();
+                    conferenceTitle.textContent = data.label || confId;
+                    if (data.lastSyncedAt && data.lastSyncedAt.toDate) {
+                        syncMeta.textContent = 'Last synced: ' + data.lastSyncedAt.toDate().toLocaleString();
+                    }
+                } else {
+                    conferenceTitle.textContent = confId === '2026-10' ? 'October 2026' : confId;
+                }
+            });
+
+            sessionRef.collection('talks').orderBy('start', 'asc').get()
+                .then(function (querySnap) {
+                    if (querySnap.empty) {
+                        emptyState.style.display = 'block';
+                        return;
+                    }
+                    emptyState.style.display = 'none';
+                    const bySession = {};
+                    GcAttribution.sessionOrder.forEach(function (k) { bySession[k] = []; });
+                    querySnap.forEach(function (doc) {
+                        const t = doc.data();
+                        const key = t.sessionKey || 'other';
+                        if (!bySession[key]) bySession[key] = [];
+                        bySession[key].push(t);
+                    });
+
+                    let html = '';
+                    GcAttribution.sessionOrder.forEach(function (sessionKey) {
+                        const talks = bySession[sessionKey] || [];
+                        html += '<section class="gc-session-block">';
+                        html += '<h2>' + GcAttribution.sessionLabel(sessionKey) + '</h2>';
+                        if (!talks.length) {
+                            html += '<p class="gc-meta-muted">No talks imported for this session yet.</p>';
+                        } else {
+                            html += '<ul class="gc-talk-list">';
+                            talks.forEach(function (t) {
+                                const speaker = formatSpeakerName(t.speaker);
+                                const title = cleanTalkTitle(t.title);
+                                const talkId = t.talkId;
+                                const href = 'general-conference-talk.html?conf=' + encodeURIComponent(confId) +
+                                    '&talkId=' + encodeURIComponent(talkId);
+                                html += '<li><a href="' + href + '">';
+                                html += '<span class="gc-talk-speaker">' + escapeHtml(speaker) + '</span>';
+                                if (title) {
+                                    html += '<span class="gc-talk-title">' + escapeHtml(title) + '</span>';
+                                }
+                                html += '</a></li>';
+                            });
+                            html += '</ul>';
+                        }
+                        html += '</section>';
+                    });
+                    sessionsContainer.innerHTML = html;
+                })
+                .catch(function (err) {
+                    console.error(err);
+                    emptyState.style.display = 'block';
+                    emptyState.textContent = 'Could not load talks. If this is the first import, run the outline sync after the session ends.';
+                });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

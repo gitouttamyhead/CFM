@@ -1,0 +1,42 @@
+{
+  "conferenceId": "2026-10",
+  "label": "October 2026",
+  "timezone": "America/Denver",
+  "timezoneNote": "Session windows use America/Denver (Mountain Time). October general conference uses MDT (UTC−6). Talk timestamps from Conference Companion are UTC; the import script converts when assigning sessions.",
+  "conferenceWindow": {
+    "start": "2026-10-03T00:00:00-06:00",
+    "end": "2026-10-05T00:00:00-06:00"
+  },
+  "sessions": [
+    {
+      "key": "sat-am",
+      "label": "Saturday Morning Session",
+      "start": "2026-10-03T09:00:00-06:00",
+      "end": "2026-10-03T14:00:00-06:00"
+    },
+    {
+      "key": "sat-pm",
+      "label": "Saturday Afternoon Session",
+      "start": "2026-10-03T14:00:00-06:00",
+      "end": "2026-10-03T20:00:00-06:00"
+    },
+    {
+      "key": "sun-am",
+      "label": "Sunday Morning Session",
+      "start": "2026-10-04T09:00:00-06:00",
+      "end": "2026-10-04T14:00:00-06:00"
+    },
+    {
+      "key": "sun-pm",
+      "label": "Sunday Afternoon Session",
+      "start": "2026-10-04T14:00:00-06:00",
+      "end": "2026-10-05T02:00:00-06:00"
+    }
+  ],
+  "filterHeuristics": {
+    "minDurationSeconds": 120,
+    "excludeIdSubstrings": ["-unknown"],
+    "excludeSpeakerSubstrings": ["pre-conference"],
+    "excludeTitleSubstrings": ["sustaining church leadership"]
+  }
+}
