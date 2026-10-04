@@ -1,6 +1,7 @@
 {
   "conferenceId": "2026-10",
   "label": "October 2026",
+  "churchStudyPath": "2026/10",
   "timezone": "America/Denver",
   "timezoneNote": "Session windows use America/Denver (Mountain Time). October general conference uses MDT (UTC−6). Talk timestamps from Conference Companion are UTC; the import script converts when assigning sessions.",
   "conferenceWindow": {

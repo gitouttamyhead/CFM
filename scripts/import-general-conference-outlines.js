@@ -6,25 +6,52 @@
  * Usage:
  *   node scripts/import-general-conference-outlines.js --session 2026-10
  *   node scripts/import-general-conference-outlines.js --session 2026-10 --dry-run
+ *   node scripts/import-general-conference-outlines.js --session 2026-10 --skip-questions
+ *
+ * After each talk outline sync, optionally:
+ * - Resolves official Gospel Library URL from church index (when published)
+ * - Generates 5 discussion questions (Gemini; outline only unless CFM_GC_QUESTIONS_USE_TRANSCRIPT=1)
  *
  * Requires CFM_SERVICE_ACCOUNT_PATH or GOOGLE_APPLICATION_CREDENTIALS (Firebase Admin).
+ * Questions require GEMINI_API_KEY (CFM or parent .env).
  */
 
 const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
+const { loadEnvFiles } = require('./load-env');
+const { fetchChurchConferenceCatalog, matchTalkToOfficialUrl } = require('./gc-church-official-links');
+const {
+  outlineContentHash,
+  generateDiscussionQuestions,
+  shouldGenerateQuestions
+} = require('./gc-discussion-questions');
+
+loadEnvFiles();
 
 const PROJECT_ID = 'comefollowme-d097a';
 const TALKS_LIST_URL = 'https://conferencecompanion.net/talks';
 const TALK_DETAIL_URL = 'https://conferencecompanion.net/talks/';
 
 function parseArgs(argv) {
-  const args = { session: null, dryRun: false };
+  const args = {
+    session: null,
+    dryRun: false,
+    skipQuestions: false,
+    skipOfficialLinks: false,
+    regenerateQuestions: false
+  };
   for (let i = 2; i < argv.length; i++) {
     if (argv[i] === '--session' && argv[i + 1]) {
       args.session = argv[++i];
     } else if (argv[i] === '--dry-run') {
       args.dryRun = true;
+    } else if (argv[i] === '--skip-questions') {
+      args.skipQuestions = true;
+    } else if (argv[i] === '--skip-official-links') {
+      args.skipOfficialLinks = true;
+    } else if (argv[i] === '--regenerate-questions') {
+      args.regenerateQuestions = true;
     } else if (argv[i] === '--help' || argv[i] === '-h') {
       console.log('Usage: node scripts/import-general-conference-outlines.js --session 2026-10 [--dry-run]');
       process.exit(0);
@@ -129,8 +156,13 @@ function initAdmin() {
   return admin.firestore();
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function main() {
-  const { session: conferenceId, dryRun } = parseArgs(process.argv);
+  const { session: conferenceId, dryRun, skipQuestions, skipOfficialLinks, regenerateQuestions } =
+    parseArgs(process.argv);
   const config = loadConfig(conferenceId);
 
   if (config.conferenceId !== conferenceId) {
@@ -155,6 +187,22 @@ async function main() {
   let upserted = 0;
   let skipped = 0;
   let noOutline = 0;
+  let questionsGenerated = 0;
+  let officialLinksResolved = 0;
+
+  let churchCatalog = null;
+  if (!skipOfficialLinks && config.churchStudyPath) {
+    try {
+      churchCatalog = await fetchChurchConferenceCatalog(config.churchStudyPath);
+      if (churchCatalog) {
+        console.log(`Church catalog: ${churchCatalog.length} talks at ${config.churchStudyPath}`);
+      } else {
+        console.log(`Church catalog not available yet for ${config.churchStudyPath} (retry on later sync)`);
+      }
+    } catch (err) {
+      console.warn('Church catalog fetch failed:', err.message);
+    }
+  }
 
   if (!dryRun) {
     await sessionRef.set(
@@ -200,31 +248,83 @@ async function main() {
       continue;
     }
 
+    const talkRef = sessionRef ? sessionRef.collection('talks').doc(talk.id) : null;
+    let existing = null;
+    if (talkRef && !dryRun) {
+      const snap = await talkRef.get();
+      existing = snap.exists ? snap.data() : null;
+    }
+
+    const speaker = talk.speaker || detail.speaker || '';
+    const title = talk.title || detail.title || '';
+    const outlineHash = outlineContentHash(outline);
+
     const doc = {
       talkId: talk.id,
-      speaker: talk.speaker || detail.speaker || '',
-      title: talk.title || detail.title || '',
+      speaker,
+      title,
       start: talk.start,
       end: talk.end,
       sessionKey,
       outlineMarkdown: outline,
       outlineSyncedAt: now,
+      outlineContentHash: outlineHash,
       sourceTalkUrl: TALK_DETAIL_URL + talk.id
     };
 
+    if (!skipOfficialLinks && churchCatalog) {
+      const currentUrl = existing?.officialTalkUrl || null;
+      if (!currentUrl) {
+        const matched = matchTalkToOfficialUrl({ title, speaker }, churchCatalog);
+        if (matched) {
+          doc.officialTalkUrl = matched;
+          doc.officialTalkUrlSyncedAt = now;
+          officialLinksResolved++;
+        }
+      }
+    }
+
+    if (!skipQuestions && !dryRun) {
+      if (shouldGenerateQuestions(existing, outlineHash, regenerateQuestions)) {
+        try {
+          const transcriptForPrompt =
+            process.env.CFM_GC_QUESTIONS_USE_TRANSCRIPT === '1'
+              ? detail.formatted_transcript || detail.raw_transcript
+              : undefined;
+          const questions = await generateDiscussionQuestions({
+            speaker,
+            title,
+            outlineMarkdown: outline,
+            transcriptForPrompt
+          });
+          doc.discussionQuestions = questions;
+          doc.discussionQuestionsOutlineHash = outlineHash;
+          doc.discussionQuestionsGeneratedAt = now;
+          questionsGenerated++;
+          await sleep(400);
+        } catch (err) {
+          console.error(`  WARN questions ${talk.id}:`, err.message);
+        }
+      }
+    } else if (!skipQuestions && dryRun) {
+      console.log(`  WOULD CHECK questions for ${talk.id}`);
+    }
+
     if (dryRun) {
-      console.log(`  WOULD UPSERT ${talk.id} [${sessionKey}] ${doc.speaker}`);
+      console.log(`  WOULD UPSERT ${talk.id} [${sessionKey}] ${speaker}`);
       upserted++;
       continue;
     }
 
-    await sessionRef.collection('talks').doc(talk.id).set(doc, { merge: true });
+    await talkRef.set(doc, { merge: true });
     console.log(`  UPSERT ${talk.id} [${sessionKey}]`);
     upserted++;
   }
 
   console.log('');
-  console.log(`Done. Upserted: ${upserted}, skipped: ${skipped}, missing outline: ${noOutline}`);
+  console.log(
+    `Done. Upserted: ${upserted}, skipped: ${skipped}, missing outline: ${noOutline}, questions generated: ${questionsGenerated}, official links new: ${officialLinksResolved}`
+  );
   if (!dryRun) {
     console.log(`Session doc generalConferenceSessions/${conferenceId} updated (lastSyncedAt).`);
   }

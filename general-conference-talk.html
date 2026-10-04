@@ -24,6 +24,22 @@
             <p id="talkMeta" class="gc-meta-muted"></p>
             <div id="gcAttribution"></div>
             <div id="outlineContent" class="insight-content gc-outline-content"></div>
+            <div id="talkSupplement" class="gc-talk-supplement" style="display:none;">
+                <div id="officialTalkSection" class="gc-official-talk">
+                    <p id="officialTalkBlock" class="gc-official-link" style="display:none;">
+                        <a id="officialTalkAnchor" href="#" target="_blank" rel="noopener noreferrer">Read the official talk on ChurchofJesusChrist.org</a>
+                    </p>
+                    <p id="officialTalkPending" class="gc-official-pending" style="display:none;">
+                        <strong>Official talk not published yet.</strong>
+                        Gospel Library usually posts the full talk on ChurchofJesusChrist.org within about a week after conference. We&rsquo;ll add a link here on the next sync once it&rsquo;s available.
+                    </p>
+                </div>
+                <section id="discussionBlock" class="gc-discussion" style="display:none;">
+                    <h2>Discussion questions</h2>
+                    <p class="gc-meta-muted">Open-ended prompts for personal study or class discussion.</p>
+                    <ol id="discussionQuestionsList"></ol>
+                </section>
+            </div>
             <div id="outlineMissing" class="gc-empty-state" style="display:none;">
                 Outline not ready yet — sync again in about 15–30 minutes after the session ends.
             </div>
@@ -55,6 +71,12 @@
         const talkMeta = document.getElementById('talkMeta');
         const outlineContent = document.getElementById('outlineContent');
         const outlineMissing = document.getElementById('outlineMissing');
+        const talkSupplement = document.getElementById('talkSupplement');
+        const officialTalkBlock = document.getElementById('officialTalkBlock');
+        const officialTalkPending = document.getElementById('officialTalkPending');
+        const officialTalkAnchor = document.getElementById('officialTalkAnchor');
+        const discussionBlock = document.getElementById('discussionBlock');
+        const discussionQuestionsList = document.getElementById('discussionQuestionsList');
 
         const backHref = 'general-conference-conference.html?conf=' + encodeURIComponent(confId);
         document.getElementById('backLink').href = backHref;
@@ -99,11 +121,40 @@
                         return;
                     }
                     outlineContent.innerHTML = renderOutlineMarkdown(md);
+                    renderSupplement(t);
                 })
                 .catch(function (err) {
                     console.error(err);
                     outlineMissing.style.display = 'block';
                 });
+        }
+
+        function renderSupplement(t) {
+            if (t.officialTalkUrl) {
+                officialTalkAnchor.href = t.officialTalkUrl;
+                officialTalkBlock.style.display = 'block';
+                officialTalkPending.style.display = 'none';
+            } else {
+                officialTalkBlock.style.display = 'none';
+                officialTalkPending.style.display = 'block';
+            }
+
+            const questions = Array.isArray(t.discussionQuestions) ? t.discussionQuestions : [];
+            if (questions.length) {
+                discussionQuestionsList.innerHTML = questions.map(function (q) {
+                    return '<li>' + escapeHtml(String(q)) + '</li>';
+                }).join('');
+                discussionBlock.style.display = 'block';
+            } else {
+                discussionBlock.style.display = 'none';
+                discussionQuestionsList.innerHTML = '';
+            }
+
+            talkSupplement.style.display = 'block';
+        }
+
+        function escapeHtml(s) {
+            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
     </script>
 </body>
