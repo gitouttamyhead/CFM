@@ -1,0 +1,120 @@
+.gc-attribution {
+  background: #f4f6f8;
+  border-left: 4px solid #5e239d;
+  padding: 16px 18px;
+  margin: 0 0 24px 0;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.gc-attribution p {
+  margin: 0 0 10px 0;
+}
+
+.gc-attribution p:last-child {
+  margin-bottom: 0;
+}
+
+.gc-attribution__cfm {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.gc-live-btn {
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.gc-session-block {
+  margin-bottom: 28px;
+}
+
+.gc-session-block h2 {
+  font-size: 1.25rem;
+  color: #2c3e50;
+  border-bottom: 2px solid #ecf0f1;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.gc-talk-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.gc-talk-list li {
+  margin-bottom: 10px;
+}
+
+.gc-talk-list a {
+  color: #2980b9;
+  text-decoration: none;
+  display: block;
+  padding: 10px 12px;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.gc-talk-list a:hover {
+  text-decoration: underline;
+  background: #fafbfc;
+}
+
+.gc-talk-speaker {
+  font-weight: 600;
+  color: #5e239d;
+}
+
+.gc-talk-title {
+  display: block;
+  font-size: 0.95rem;
+  color: #444;
+  margin-top: 2px;
+}
+
+.gc-conference-card {
+  display: block;
+  padding: 18px 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  color: #2c3e50;
+  text-decoration: none;
+  margin-bottom: 16px;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.gc-conference-card:hover {
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+}
+
+.gc-outline-content.insight-content h1,
+.gc-outline-content.insight-content h2,
+.gc-outline-content.insight-content h3 {
+  color: #2c3e50;
+}
+
+.gc-empty-state {
+  padding: 16px;
+  background: #fff8e6;
+  border-radius: 8px;
+  border: 1px solid #f0d78c;
+  margin-top: 16px;
+}
+
+.gc-meta-muted {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 600px) {
+  .gc-attribution {
+    padding: 14px;
+    font-size: 0.9rem;
+  }
+}

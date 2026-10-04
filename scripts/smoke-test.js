@@ -20,6 +20,9 @@ const PAGES = [
   '/search.html',
   '/gospel.html',
   '/other.html',
+  '/general-conference.html',
+  '/general-conference-conference.html',
+  '/general-conference-talk.html',
 ];
 
 async function run() {

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
+    <link rel="manifest" href="manifest.json">
+    <title>General Conference Outlines</title>
+    <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="general-conference.css">
+</head>
+<body>
+    <div id="navWrapper"></div>
+
+    <div class="main-content" id="mainContent">
+        <div class="container" id="mainWidget" style="display:none;">
+            <h1>General Conference</h1>
+            <p class="gc-meta-muted">Session outlines for study (imported after each broadcast session).</p>
+            <div id="gcAttribution"></div>
+            <div id="conference-list"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="nav.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="analytics.js"></script>
+    <script src="auth-utils.js"></script>
+    <script src="gc-attribution.js"></script>
+    <script>
+        const container = document.getElementById('mainWidget');
+        const listEl = document.getElementById('conference-list');
+
+        /** v1: known conferences; also merged with Firestore session docs when present */
+        const KNOWN_CONFERENCES = [
+            { id: '2026-10', label: 'October 2026', href: 'general-conference-conference.html?conf=2026-10' }
+        ];
+
+        container.style.display = 'none';
+        requireAuth().then(function () {
+            container.style.display = 'block';
+            GcAttribution.render('gcAttribution');
+            renderList();
+        });
+
+        function renderList() {
+            listEl.innerHTML = KNOWN_CONFERENCES.map(function (c) {
+                return '<a class="gc-conference-card" href="' + c.href + '">' + c.label + '</a>';
+            }).join('');
+
+            if (!window.db) return;
+            window.db.collection('generalConferenceSessions').doc('2026-10').get()
+                .then(function (snap) {
+                    if (!snap.exists) return;
+                    const data = snap.data();
+                    const card = listEl.querySelector('.gc-conference-card');
+                    if (card && data.lastSyncedAt) {
+                        const synced = data.lastSyncedAt.toDate ? data.lastSyncedAt.toDate().toLocaleString() : '';
+                        if (synced) {
+                            card.innerHTML = (data.label || 'October 2026') +
+                                '<span class="gc-meta-muted" style="display:block;font-weight:normal;font-size:0.85rem;margin-top:6px;">Last synced: ' + synced + '</span>';
+                        }
+                    }
+                })
+                .catch(function () { /* optional metadata */ });
+        }
+    </script>
+</body>
+</html>

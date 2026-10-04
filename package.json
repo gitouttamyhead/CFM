@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "test": "node scripts/smoke-test.js",
-    "backup": "node scripts/export-firestore.js"
+    "backup": "node scripts/export-firestore.js",
+    "import-gc-outlines": "node scripts/import-general-conference-outlines.js"
   },
   "repository": {
     "type": "git",
