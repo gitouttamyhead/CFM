@@ -38,5 +38,10 @@
     "excludeIdSubstrings": ["-unknown"],
     "excludeSpeakerSubstrings": ["pre-conference"],
     "excludeTitleSubstrings": ["sustaining church leadership"]
+  },
+  "security": {
+    "maxOutlineMarkdownChars": 262144,
+    "maxHttpResponseBytes": 524288,
+    "comment": "Limits mirror scripts/gc-import-constants.js and firestore.rules"
   }
 }

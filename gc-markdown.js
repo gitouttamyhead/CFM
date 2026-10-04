@@ -9,7 +9,10 @@ function renderOutlineMarkdown(markdown) {
   if (typeof marked !== 'undefined') {
     marked.setOptions({ gfm: true, breaks: false });
     const html = marked.parse(markdown);
-    return sanitize(html);
+    return sanitize(html, {
+      ADD_ATTR: ['target'],
+      ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i
+    });
   }
   return sanitize('<pre>' + markdown.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre>');
 }

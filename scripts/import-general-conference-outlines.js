@@ -6,6 +6,8 @@
  * Usage:
  *   node scripts/import-general-conference-outlines.js --session 2026-10
  *   node scripts/import-general-conference-outlines.js --session 2026-10 --dry-run
+ *   node scripts/import-general-conference-outlines.js --session 2026-10 --freeze
+ *   node scripts/import-general-conference-outlines.js --session 2026-10 --force  (override importFrozen)
  *
  * Requires CFM_SERVICE_ACCOUNT_PATH or GOOGLE_APPLICATION_CREDENTIALS (Firebase Admin).
  */
@@ -13,20 +15,25 @@
 const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
+const GC_LIMITS = require('./gc-import-constants');
 
 const PROJECT_ID = 'comefollowme-d097a';
 const TALKS_LIST_URL = 'https://conferencecompanion.net/talks';
 const TALK_DETAIL_URL = 'https://conferencecompanion.net/talks/';
 
 function parseArgs(argv) {
-  const args = { session: null, dryRun: false };
+  const args = { session: null, dryRun: false, freeze: false, force: false };
   for (let i = 2; i < argv.length; i++) {
     if (argv[i] === '--session' && argv[i + 1]) {
       args.session = argv[++i];
     } else if (argv[i] === '--dry-run') {
       args.dryRun = true;
+    } else if (argv[i] === '--freeze') {
+      args.freeze = true;
+    } else if (argv[i] === '--force') {
+      args.force = true;
     } else if (argv[i] === '--help' || argv[i] === '-h') {
-      console.log('Usage: node scripts/import-general-conference-outlines.js --session 2026-10 [--dry-run]');
+      console.log('Usage: node scripts/import-general-conference-outlines.js --session 2026-10 [--dry-run] [--freeze] [--force]');
       process.exit(0);
     }
   }
@@ -108,12 +115,41 @@ function inConferenceWindow(talkStartIso, window) {
   return t >= parseIso(window.start) && t < parseIso(window.end);
 }
 
-async function fetchJson(url) {
+function maxResponseBytes(config) {
+  return config.security?.maxHttpResponseBytes ?? GC_LIMITS.MAX_HTTP_RESPONSE_BYTES;
+}
+
+function maxOutlineChars(config) {
+  return config.security?.maxOutlineMarkdownChars ?? GC_LIMITS.MAX_OUTLINE_MARKDOWN_CHARS;
+}
+
+async function fetchJson(url, byteLimit) {
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`HTTP ${res.status} for ${url}`);
   }
-  return res.json();
+  const buf = Buffer.from(await res.arrayBuffer());
+  if (buf.length > byteLimit) {
+    throw new Error(`Response too large (${buf.length} bytes > ${byteLimit})`);
+  }
+  return JSON.parse(buf.toString('utf8'));
+}
+
+function buildTalkDoc(talk, detail, sessionKey, now, outline) {
+  const speaker = String(talk.speaker || detail.speaker || '').slice(0, GC_LIMITS.MAX_SPEAKER_CHARS);
+  const title = String(talk.title || detail.title || '').slice(0, GC_LIMITS.MAX_TITLE_CHARS);
+  const talkId = String(talk.id).slice(0, GC_LIMITS.MAX_TALK_ID_CHARS);
+  return {
+    talkId,
+    speaker,
+    title,
+    start: talk.start,
+    end: talk.end,
+    sessionKey,
+    outlineMarkdown: outline,
+    outlineSyncedAt: now,
+    sourceTalkUrl: TALK_DETAIL_URL + talk.id
+  };
 }
 
 function initAdmin() {
@@ -130,8 +166,10 @@ function initAdmin() {
 }
 
 async function main() {
-  const { session: conferenceId, dryRun } = parseArgs(process.argv);
+  const { session: conferenceId, dryRun, freeze, force } = parseArgs(process.argv);
   const config = loadConfig(conferenceId);
+  const responseLimit = maxResponseBytes(config);
+  const outlineLimit = maxOutlineChars(config);
 
   if (config.conferenceId !== conferenceId) {
     console.warn(`Config conferenceId ${config.conferenceId} differs from --session ${conferenceId}`);
@@ -140,16 +178,26 @@ async function main() {
   console.log(`Import General Conference outlines: ${config.label} (${conferenceId})`);
   console.log(`Timezone: ${config.timezone} — ${config.timezoneNote || ''}`);
   if (dryRun) console.log('DRY RUN — no Firestore writes');
+  if (freeze) console.log('Will set importFrozen on session after successful import');
 
-  const listData = await fetchJson(TALKS_LIST_URL);
+  const db = dryRun ? null : initAdmin();
+  const sessionRef = db ? db.collection('generalConferenceSessions').doc(conferenceId) : null;
+
+  if (!dryRun && sessionRef && !force) {
+    const existing = await sessionRef.get();
+    if (existing.exists && existing.data().importFrozen === true) {
+      console.error('Session import is frozen (importFrozen=true). Use --force to override or clear importFrozen in Firestore.');
+      process.exit(1);
+    }
+  }
+
+  const listData = await fetchJson(TALKS_LIST_URL, responseLimit);
   const talks = listData.talks || [];
   console.log(`Fetched ${talks.length} talks from Conference Companion`);
 
   const candidates = talks.filter((t) => inConferenceWindow(t.start, config.conferenceWindow));
   console.log(`${candidates.length} talks within conference window`);
 
-  const db = dryRun ? null : initAdmin();
-  const sessionRef = db ? db.collection('generalConferenceSessions').doc(conferenceId) : null;
   const now = admin.firestore.FieldValue.serverTimestamp();
 
   let upserted = 0;
@@ -186,7 +234,7 @@ async function main() {
 
     let detail;
     try {
-      detail = await fetchJson(TALK_DETAIL_URL + encodeURIComponent(talk.id));
+      detail = await fetchJson(TALK_DETAIL_URL + encodeURIComponent(talk.id), responseLimit);
     } catch (err) {
       console.error(`  ERROR fetching ${talk.id}:`, err.message);
       skipped++;
@@ -200,17 +248,13 @@ async function main() {
       continue;
     }
 
-    const doc = {
-      talkId: talk.id,
-      speaker: talk.speaker || detail.speaker || '',
-      title: talk.title || detail.title || '',
-      start: talk.start,
-      end: talk.end,
-      sessionKey,
-      outlineMarkdown: outline,
-      outlineSyncedAt: now,
-      sourceTalkUrl: TALK_DETAIL_URL + talk.id
-    };
+    if (outline.length > outlineLimit) {
+      console.log(`  SKIP ${talk.id}: outline too large (${outline.length} > ${outlineLimit} chars)`);
+      skipped++;
+      continue;
+    }
+
+    const doc = buildTalkDoc(talk, detail, sessionKey, now, outline);
 
     if (dryRun) {
       console.log(`  WOULD UPSERT ${talk.id} [${sessionKey}] ${doc.speaker}`);
@@ -218,9 +262,20 @@ async function main() {
       continue;
     }
 
-    await sessionRef.collection('talks').doc(talk.id).set(doc, { merge: true });
+    await sessionRef.collection('talks').doc(talk.id).set(doc);
     console.log(`  UPSERT ${talk.id} [${sessionKey}]`);
     upserted++;
+  }
+
+  if (!dryRun && sessionRef && freeze) {
+    await sessionRef.set(
+      {
+        importFrozen: true,
+        importFrozenAt: now
+      },
+      { merge: true }
+    );
+    console.log('Session marked importFrozen=true (future imports blocked until --force).');
   }
 
   console.log('');

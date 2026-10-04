@@ -37,7 +37,7 @@
 
 - [ ] **Unauthenticated:** No read or write to any collection. (`request.auth != null` for any allowed operation.)
 - [ ] **insights, gospelInsights, otherInsights:** Read if authenticated. Create/update/delete only if `users/{uid}.role` is `admin` or `editor`.
-- [ ] **generalConferenceSessions** (and **talks** subcollection): Read if authenticated. Write only if `users/{uid}.role` is `admin`.
+- [ ] **generalConferenceSessions** (and **talks** subcollection): Read if authenticated. Write only if `users/{uid}.role` is `admin`. Talk docs must use whitelisted fields only (`outlineMarkdown` ≤ 262144 chars; no transcript fields). Optional `importFrozen` blocks CLI import until `--force`.
 - [ ] **users:** Read own document (`request.auth.uid == userId`) for profile/nav; admin can read all. **Create** only own doc on signup with validated fields and role from invitation (or `user`). **Update** role only if admin; own doc may update `lastLoginAt` only.
 - [ ] **invitations:** Admin write; signup user may read own invitation doc (email doc id).
 - [ ] **Storage `insights/images/`:** Authenticated read; create/update/delete only if `users/{uid}.role` is `admin` or `editor`.

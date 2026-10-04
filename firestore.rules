@@ -86,6 +86,66 @@ service cloud.firestore {
 
 
 
+    // General Conference talk docs — whitelist fields; block transcript-like keys (262144 = gc-import-constants.js)
+
+    function isValidGcTalkData() {
+
+      return request.resource.data.keys().hasOnly([
+
+          'talkId', 'speaker', 'title', 'start', 'end', 'sessionKey',
+
+          'outlineMarkdown', 'outlineSyncedAt', 'sourceTalkUrl'
+
+        ])
+
+        && request.resource.data.talkId is string
+
+        && request.resource.data.talkId.size() <= 128
+
+        && request.resource.data.speaker is string
+
+        && request.resource.data.speaker.size() <= 500
+
+        && request.resource.data.title is string
+
+        && request.resource.data.title.size() <= 1000
+
+        && request.resource.data.sessionKey in ['sat-am', 'sat-pm', 'sun-am', 'sun-pm']
+
+        && request.resource.data.outlineMarkdown is string
+
+        && request.resource.data.outlineMarkdown.size() <= 262144
+
+        && request.resource.data.sourceTalkUrl is string
+
+        && request.resource.data.sourceTalkUrl.size() <= 512;
+
+    }
+
+
+
+    function isValidGcSessionData() {
+
+      return request.resource.data.keys().hasOnly([
+
+          'label', 'source', 'timezone', 'sessionWindows', 'lastSyncedAt',
+
+          'importFrozen', 'importFrozenAt'
+
+        ])
+
+        && (!('label' in request.resource.data) || (
+
+          request.resource.data.label is string && request.resource.data.label.size() <= 200
+
+        ))
+
+        && (!('importFrozen' in request.resource.data) || request.resource.data.importFrozen is bool);
+
+    }
+
+
+
     // Role assigned on signup: invitation role if valid, otherwise 'user' only.
 
     function signupRole() {
@@ -164,13 +224,17 @@ service cloud.firestore {
 
       allow read: if request.auth != null;
 
-      allow write: if isAdmin();
+      allow create, update: if isAdmin() && isValidGcSessionData();
+
+      allow delete: if isAdmin();
 
       match /talks/{talkId} {
 
         allow read: if request.auth != null;
 
-        allow write: if isAdmin();
+        allow create, update: if isAdmin() && isValidGcTalkData();
+
+        allow delete: if isAdmin();
 
       }
 
