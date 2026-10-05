@@ -26,6 +26,7 @@ const {
   generateDiscussionQuestions,
   shouldGenerateQuestions
 } = require('./gc-discussion-questions');
+const { shouldExcludeTalk, shouldExcludeOutline } = require('./gc-talk-filters');
 
 loadEnvFiles();
 
@@ -39,7 +40,8 @@ function parseArgs(argv) {
     dryRun: false,
     skipQuestions: false,
     skipOfficialLinks: false,
-    regenerateQuestions: false
+    regenerateQuestions: false,
+    pruneExcluded: false
   };
   for (let i = 2; i < argv.length; i++) {
     if (argv[i] === '--session' && argv[i + 1]) {
@@ -52,6 +54,8 @@ function parseArgs(argv) {
       args.skipOfficialLinks = true;
     } else if (argv[i] === '--regenerate-questions') {
       args.regenerateQuestions = true;
+    } else if (argv[i] === '--prune-excluded') {
+      args.pruneExcluded = true;
     } else if (argv[i] === '--help' || argv[i] === '-h') {
       console.log('Usage: node scripts/import-general-conference-outlines.js --session 2026-10 [--dry-run]');
       process.exit(0);
@@ -77,45 +81,10 @@ function parseIso(iso) {
   return new Date(iso).getTime();
 }
 
-function talkDurationSeconds(talk) {
-  const start = parseIso(talk.start);
-  const end = parseIso(talk.end);
-  if (!Number.isFinite(start) || !Number.isFinite(end)) return 0;
-  return Math.max(0, (end - start) / 1000);
-}
-
-function shouldExcludeTalk(talk, heuristics) {
-  const id = (talk.id || '').toLowerCase();
-  const speaker = (talk.speaker || '').toLowerCase();
-  const title = (talk.title || '').toLowerCase();
-
-  for (const sub of heuristics.excludeIdSubstrings || []) {
-    if (id.includes(sub.toLowerCase())) {
-      return { reason: `id contains "${sub}"` };
-    }
-  }
-  for (const sub of heuristics.excludeSpeakerSubstrings || []) {
-    if (speaker.includes(sub.toLowerCase())) {
-      return { reason: `speaker contains "${sub}"` };
-    }
-  }
-  for (const sub of heuristics.excludeTitleSubstrings || []) {
-    if (title.includes(sub.toLowerCase())) {
-      return { reason: `title contains "${sub}"` };
-    }
-  }
-
-  const minDur = heuristics.minDurationSeconds ?? 120;
-  const dur = talkDurationSeconds(talk);
-  if (dur < minDur) {
-    return { reason: `duration ${Math.round(dur)}s < ${minDur}s` };
-  }
-
-  if (/^(\*\*\s*)?conducting/.test(title.trim()) && dur < 240) {
-    return { reason: 'short conducting segment' };
-  }
-
-  return null;
+async function maybePruneTalk(talkRef, pruneExcluded, dryRun) {
+  if (!pruneExcluded || !talkRef || dryRun) return false;
+  await talkRef.delete();
+  return true;
 }
 
 function assignSessionKey(talkStartIso, sessions) {
@@ -161,8 +130,14 @@ function sleep(ms) {
 }
 
 async function main() {
-  const { session: conferenceId, dryRun, skipQuestions, skipOfficialLinks, regenerateQuestions } =
-    parseArgs(process.argv);
+  const {
+    session: conferenceId,
+    dryRun,
+    skipQuestions,
+    skipOfficialLinks,
+    regenerateQuestions,
+    pruneExcluded
+  } = parseArgs(process.argv);
   const config = loadConfig(conferenceId);
 
   if (config.conferenceId !== conferenceId) {
@@ -189,6 +164,8 @@ async function main() {
   let noOutline = 0;
   let questionsGenerated = 0;
   let officialLinksResolved = 0;
+  let pruned = 0;
+  const heuristics = config.filterHeuristics || {};
 
   let churchCatalog = null;
   if (!skipOfficialLinks && config.churchStudyPath) {
@@ -218,9 +195,14 @@ async function main() {
   }
 
   for (const talk of candidates) {
-    const exclude = shouldExcludeTalk(talk, config.filterHeuristics || {});
+    const talkRefEarly = sessionRef ? sessionRef.collection('talks').doc(talk.id) : null;
+    const exclude = shouldExcludeTalk(talk, heuristics);
     if (exclude) {
       console.log(`  SKIP ${talk.id}: ${exclude.reason}`);
+      if (await maybePruneTalk(talkRefEarly, pruneExcluded, dryRun)) {
+        console.log(`  PRUNE ${talk.id}`);
+        pruned++;
+      }
       skipped++;
       continue;
     }
@@ -248,6 +230,20 @@ async function main() {
       continue;
     }
 
+    const speaker = talk.speaker || detail.speaker || '';
+    const title = talk.title || detail.title || '';
+    const outlineExclude = shouldExcludeOutline(outline, { speaker, title, ...talk }, heuristics);
+    if (outlineExclude) {
+      console.log(`  SKIP ${talk.id}: ${outlineExclude.reason}`);
+      const talkRefOutline = sessionRef ? sessionRef.collection('talks').doc(talk.id) : null;
+      if (await maybePruneTalk(talkRefOutline, pruneExcluded, dryRun)) {
+        console.log(`  PRUNE ${talk.id}`);
+        pruned++;
+      }
+      skipped++;
+      continue;
+    }
+
     const talkRef = sessionRef ? sessionRef.collection('talks').doc(talk.id) : null;
     let existing = null;
     if (talkRef && !dryRun) {
@@ -255,8 +251,6 @@ async function main() {
       existing = snap.exists ? snap.data() : null;
     }
 
-    const speaker = talk.speaker || detail.speaker || '';
-    const title = talk.title || detail.title || '';
     const outlineHash = outlineContentHash(outline);
 
     const doc = {
@@ -323,7 +317,7 @@ async function main() {
 
   console.log('');
   console.log(
-    `Done. Upserted: ${upserted}, skipped: ${skipped}, missing outline: ${noOutline}, questions generated: ${questionsGenerated}, official links new: ${officialLinksResolved}`
+    `Done. Upserted: ${upserted}, skipped: ${skipped}, missing outline: ${noOutline}, questions generated: ${questionsGenerated}, official links new: ${officialLinksResolved}, pruned: ${pruned}`
   );
   if (!dryRun) {
     console.log(`Session doc generalConferenceSessions/${conferenceId} updated (lastSyncedAt).`);

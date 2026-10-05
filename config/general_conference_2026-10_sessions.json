@@ -38,6 +38,14 @@
     "minDurationSeconds": 120,
     "excludeIdSubstrings": ["-unknown"],
     "excludeSpeakerSubstrings": ["pre-conference"],
-    "excludeTitleSubstrings": ["sustaining church leadership"]
+    "excludeTitleSubstrings": [
+      "sustaining church leadership",
+      "concluding remarks",
+      "conducting"
+    ],
+    "excludeOutlineSubstrings": [
+      "adjournment of the conference",
+      "introduction of the concluding speaker"
+    ]
   }
 }
