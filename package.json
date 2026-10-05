@@ -4,7 +4,8 @@
   "scripts": {
     "test": "node scripts/smoke-test.js",
     "backup": "node scripts/export-firestore.js",
-    "import-gc-outlines": "node scripts/import-general-conference-outlines.js"
+    "import-gc-outlines": "node scripts/import-general-conference-outlines.js",
+    "sync-gc-official-urls": "node scripts/sync-gc-official-talk-urls.js"
   },
   "repository": {
     "type": "git",
