@@ -162,6 +162,38 @@
   margin-bottom: 10px;
 }
 
+.gc-official-enrichment {
+  margin: 28px 0 24px 0;
+  padding-top: 20px;
+  border-top: 1px solid #e0e4e8;
+}
+
+.gc-official-enrichment h2 {
+  font-size: 1.2rem;
+  color: #2c3e50;
+  margin: 0 0 6px 0;
+}
+
+.gc-enrich-section {
+  margin-top: 18px;
+}
+
+.gc-enrich-section h3 {
+  font-size: 1.05rem;
+  color: #5e239d;
+  margin: 0 0 8px 0;
+}
+
+.gc-enrich-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  line-height: 1.55;
+}
+
+.gc-enrich-list li {
+  margin-bottom: 8px;
+}
+
 @media (max-width: 600px) {
   .gc-attribution {
     padding: 14px;

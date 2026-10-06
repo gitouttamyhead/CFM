@@ -34,6 +34,23 @@
                         Gospel Library usually posts the full talk on ChurchofJesusChrist.org within about a week after conference. We&rsquo;ll add a link here on the next sync once it&rsquo;s available.
                     </p>
                 </div>
+                <section id="officialEnrichmentBlock" class="gc-official-enrichment" style="display:none;">
+                    <h2>From the official talk (Gospel Library)</h2>
+                    <p class="gc-meta-muted">Scriptures, stories, and footnote context — supplemented from published footnotes, not the live outline alone.</p>
+                    <div id="scripturesCitedSection" class="gc-enrich-section" style="display:none;">
+                        <h3>Scriptures cited</h3>
+                        <ul id="scripturesCitedList" class="gc-enrich-list"></ul>
+                    </div>
+                    <div id="storiesToldSection" class="gc-enrich-section" style="display:none;">
+                        <h3>Stories &amp; examples</h3>
+                        <ul id="storiesToldList" class="gc-enrich-list"></ul>
+                    </div>
+                    <div id="footnoteHighlightsSection" class="gc-enrich-section" style="display:none;">
+                        <h3>Interesting footnotes</h3>
+                        <p class="gc-meta-muted">Extra context from Gospel Library notes that the session outline may not highlight.</p>
+                        <ul id="footnoteHighlightsList" class="gc-enrich-list"></ul>
+                    </div>
+                </section>
                 <section id="discussionBlock" class="gc-discussion" style="display:none;">
                     <h2>Discussion questions</h2>
                     <p class="gc-meta-muted">Open-ended prompts for personal study or class discussion.</p>
@@ -77,6 +94,13 @@
         const officialTalkAnchor = document.getElementById('officialTalkAnchor');
         const discussionBlock = document.getElementById('discussionBlock');
         const discussionQuestionsList = document.getElementById('discussionQuestionsList');
+        const officialEnrichmentBlock = document.getElementById('officialEnrichmentBlock');
+        const scripturesCitedSection = document.getElementById('scripturesCitedSection');
+        const scripturesCitedList = document.getElementById('scripturesCitedList');
+        const storiesToldSection = document.getElementById('storiesToldSection');
+        const storiesToldList = document.getElementById('storiesToldList');
+        const footnoteHighlightsSection = document.getElementById('footnoteHighlightsSection');
+        const footnoteHighlightsList = document.getElementById('footnoteHighlightsList');
 
         const backHref = 'general-conference-conference.html?conf=' + encodeURIComponent(confId);
         document.getElementById('backLink').href = backHref;
@@ -130,14 +154,40 @@
         }
 
         function renderSupplement(t) {
+            let showSupplement = false;
+
             if (t.officialTalkUrl) {
                 officialTalkAnchor.href = t.officialTalkUrl;
                 officialTalkBlock.style.display = 'block';
                 officialTalkPending.style.display = 'none';
+                showSupplement = true;
             } else {
                 officialTalkBlock.style.display = 'none';
                 officialTalkPending.style.display = 'block';
+                showSupplement = true;
             }
+
+            showSupplement = renderListSection(
+                Array.isArray(t.scripturesCited) ? t.scripturesCited : [],
+                scripturesCitedSection,
+                scripturesCitedList
+            ) || showSupplement;
+            showSupplement = renderListSection(
+                Array.isArray(t.storiesTold) ? t.storiesTold : [],
+                storiesToldSection,
+                storiesToldList
+            ) || showSupplement;
+            showSupplement = renderListSection(
+                Array.isArray(t.footnoteHighlights) ? t.footnoteHighlights : [],
+                footnoteHighlightsSection,
+                footnoteHighlightsList
+            ) || showSupplement;
+
+            const hasEnrichment =
+                (t.scripturesCited && t.scripturesCited.length) ||
+                (t.storiesTold && t.storiesTold.length) ||
+                (t.footnoteHighlights && t.footnoteHighlights.length);
+            officialEnrichmentBlock.style.display = hasEnrichment ? 'block' : 'none';
 
             const questions = Array.isArray(t.discussionQuestions) ? t.discussionQuestions : [];
             if (questions.length) {
@@ -145,12 +195,26 @@
                     return '<li>' + escapeHtml(String(q)) + '</li>';
                 }).join('');
                 discussionBlock.style.display = 'block';
+                showSupplement = true;
             } else {
                 discussionBlock.style.display = 'none';
                 discussionQuestionsList.innerHTML = '';
             }
 
-            talkSupplement.style.display = 'block';
+            talkSupplement.style.display = showSupplement ? 'block' : 'none';
+        }
+
+        function renderListSection(items, sectionEl, listEl) {
+            if (!items.length) {
+                sectionEl.style.display = 'none';
+                listEl.innerHTML = '';
+                return false;
+            }
+            listEl.innerHTML = items.map(function (item) {
+                return '<li>' + escapeHtml(String(item)) + '</li>';
+            }).join('');
+            sectionEl.style.display = 'block';
+            return true;
         }
 
         function escapeHtml(s) {

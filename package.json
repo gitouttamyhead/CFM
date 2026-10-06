@@ -5,7 +5,8 @@
     "test": "node scripts/smoke-test.js",
     "backup": "node scripts/export-firestore.js",
     "import-gc-outlines": "node scripts/import-general-conference-outlines.js",
-    "sync-gc-official-urls": "node scripts/sync-gc-official-talk-urls.js"
+    "sync-gc-official-urls": "node scripts/sync-gc-official-talk-urls.js",
+    "enrich-gc-official-pilot": "node scripts/enrich-gc-official-pilot.js"
   },
   "repository": {
     "type": "git",
