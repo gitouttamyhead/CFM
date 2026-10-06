@@ -5,9 +5,11 @@
  * Usage:
  *   node scripts/enrich-gc-official-pilot.js --session 2026-10
  *   node scripts/enrich-gc-official-pilot.js --session 2026-10 --talkIds id1,id2,id3
+ *   node scripts/enrich-gc-official-pilot.js --session 2026-10 --all
  *   node scripts/enrich-gc-official-pilot.js --session 2026-10 --dry-run
  *
  * Default talkIds (pilot): Bednar, Gong, Rasband — must have officialTalkUrl.
+ * --all: every talk in the session with officialTalkUrl (ordered by start).
  */
 
 const admin = require('firebase-admin');
@@ -28,13 +30,16 @@ const DEFAULT_PILOT_IDS = [
 ];
 
 function parseArgs(argv) {
-  const args = { session: null, talkIds: null, dryRun: false };
+  const args = { session: null, talkIds: null, dryRun: false, all: false };
   for (let i = 2; i < argv.length; i++) {
     if (argv[i] === '--session' && argv[i + 1]) args.session = argv[++i];
     else if (argv[i] === '--talkIds' && argv[i + 1]) args.talkIds = argv[++i].split(',').map((s) => s.trim());
     else if (argv[i] === '--dry-run') args.dryRun = true;
+    else if (argv[i] === '--all') args.all = true;
     else if (argv[i] === '--help' || argv[i] === '-h') {
-      console.log('Usage: node scripts/enrich-gc-official-pilot.js --session 2026-10 [--talkIds a,b,c] [--dry-run]');
+      console.log(
+        'Usage: node scripts/enrich-gc-official-pilot.js --session 2026-10 [--all | --talkIds a,b,c] [--dry-run]'
+      );
       process.exit(0);
     }
   }
@@ -42,7 +47,7 @@ function parseArgs(argv) {
     console.error('Missing --session');
     process.exit(1);
   }
-  if (!args.talkIds) args.talkIds = DEFAULT_PILOT_IDS;
+  if (!args.all && !args.talkIds) args.talkIds = DEFAULT_PILOT_IDS;
   return args;
 }
 
@@ -64,12 +69,21 @@ function sleep(ms) {
 }
 
 async function main() {
-  const { session: conferenceId, talkIds, dryRun } = parseArgs(process.argv);
+  const { session: conferenceId, talkIds: talkIdsArg, dryRun, all } = parseArgs(process.argv);
   const db = initAdmin();
   const sessionRef = db.collection('generalConferenceSessions').doc(conferenceId);
   const now = admin.firestore.FieldValue.serverTimestamp();
 
-  console.log(`Official enrichment pilot: ${conferenceId}, ${talkIds.length} talk(s)`);
+  let talkIds = talkIdsArg;
+  if (all) {
+    const snap = await sessionRef.collection('talks').orderBy('start', 'asc').get();
+    talkIds = snap.docs
+      .filter((d) => d.data().officialTalkUrl)
+      .map((d) => d.id);
+    console.log(`--all: ${talkIds.length} talks with officialTalkUrl`);
+  }
+
+  console.log(`Official enrichment: ${conferenceId}, ${talkIds.length} talk(s)`);
   if (dryRun) console.log('DRY RUN');
 
   for (const talkId of talkIds) {
