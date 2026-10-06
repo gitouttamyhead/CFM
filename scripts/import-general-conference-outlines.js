@@ -269,7 +269,10 @@ async function main() {
     if (!skipOfficialLinks && churchCatalog) {
       const currentUrl = existing?.officialTalkUrl || null;
       if (!currentUrl) {
-        const matched = matchTalkToOfficialUrl({ title, speaker }, churchCatalog);
+        const matched = matchTalkToOfficialUrl(
+          { title, speaker, sessionKey },
+          churchCatalog
+        );
         if (matched) {
           doc.officialTalkUrl = matched;
           doc.officialTalkUrlSyncedAt = now;

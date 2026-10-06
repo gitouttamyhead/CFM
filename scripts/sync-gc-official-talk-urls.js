@@ -21,12 +21,14 @@ loadEnvFiles();
 const PROJECT_ID = 'comefollowme-d097a';
 
 function parseArgs(argv) {
-  const args = { session: null, dryRun: false };
+  const args = { session: null, dryRun: false, refresh: false };
   for (let i = 2; i < argv.length; i++) {
     if (argv[i] === '--session' && argv[i + 1]) {
       args.session = argv[++i];
     } else if (argv[i] === '--dry-run') {
       args.dryRun = true;
+    } else if (argv[i] === '--refresh') {
+      args.refresh = true;
     } else if (argv[i] === '--help' || argv[i] === '-h') {
       console.log('Usage: node scripts/sync-gc-official-talk-urls.js --session 2026-10 [--dry-run]');
       process.exit(0);
@@ -62,7 +64,7 @@ function initAdmin() {
 }
 
 async function main() {
-  const { session: conferenceId, dryRun } = parseArgs(process.argv);
+  const { session: conferenceId, dryRun, refresh } = parseArgs(process.argv);
   const config = loadConfig(conferenceId);
   const studyPath = config.churchStudyPath;
 
@@ -91,18 +93,22 @@ async function main() {
   let newlySet = 0;
   let stillMissing = 0;
 
-  const snap = await sessionRef.collection('talks').get();
+  const snap = await sessionRef.collection('talks').orderBy('start', 'asc').get();
+  const usedUrls = new Set();
   for (const doc of snap.docs) {
     const data = doc.data();
-    if (data.officialTalkUrl) {
+    if (data.officialTalkUrl && !refresh) {
       alreadySet++;
+      usedUrls.add(data.officialTalkUrl);
       continue;
     }
     const matched = matchTalkToOfficialUrl(
-      { title: data.title, speaker: data.speaker },
-      catalog
+      { title: data.title, speaker: data.speaker, sessionKey: data.sessionKey },
+      catalog,
+      usedUrls
     );
     if (matched) {
+      usedUrls.add(matched);
       if (dryRun) {
         console.log(`  WOULD SET ${doc.id} → ${matched}`);
       } else {
@@ -115,6 +121,12 @@ async function main() {
       newlySet++;
     } else {
       console.log(`  MISS ${doc.id} — ${data.speaker} / ${(data.title || '').slice(0, 50)}`);
+      if (refresh && !dryRun && data.officialTalkUrl) {
+        await doc.ref.set(
+          { officialTalkUrl: admin.firestore.FieldValue.delete(), officialTalkUrlSyncedAt: admin.firestore.FieldValue.delete() },
+          { merge: true }
+        );
+      }
       stillMissing++;
     }
   }
