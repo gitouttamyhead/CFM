@@ -5,11 +5,14 @@
 /**
  * Sanitize HTML for safe display (e.g. insight content). Allows safe tags; strips script and dangerous attributes.
  * @param {string} html
+ * @param {object} [purifyConfig] Optional DOMPurify config (e.g. stricter URI allowlist).
  * @returns {string}
  */
-function sanitize(html) {
+function sanitize(html, purifyConfig) {
     if (typeof html !== 'string') return '';
-    if (typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(html);
+    if (typeof DOMPurify !== 'undefined') {
+        return purifyConfig ? DOMPurify.sanitize(html, purifyConfig) : DOMPurify.sanitize(html);
+    }
     return html.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 

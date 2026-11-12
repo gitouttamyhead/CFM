@@ -6,7 +6,8 @@
     "backup": "node scripts/export-firestore.js",
     "import-gc-outlines": "node scripts/import-general-conference-outlines.js",
     "sync-gc-official-urls": "node scripts/sync-gc-official-talk-urls.js",
-    "enrich-gc-official-pilot": "node scripts/enrich-gc-official-pilot.js"
+    "enrich-gc-official-pilot": "node scripts/enrich-gc-official-pilot.js",
+    "generate-rs-discussion": "node scripts/generate-rs-discussion-guides.js"
   },
   "repository": {
     "type": "git",

@@ -19,7 +19,7 @@
 | **insights**         | ✓    | ✓     | All authenticated read; **admin/editor** only create/update/delete |
 | **gospelInsights**   | ✓    | ✓     | Same as above |
 | **otherInsights**    | ✓    | ✓     | Same as above |
-| **generalConferenceSessions** | ✓ | **Admin only** | Conference session metadata; subcollection **talks** holds outline markdown (no transcripts) |
+| **generalConferenceSessions** | ✓ | **Admin only** | Conference session metadata; subcollection **talks** holds outline markdown (no transcripts). Optional `rsDiscussionMarkdown` (CFM Relief Society questions, 6–8 per talk). |
 | **users**            | Own doc + (admin: all) | **Create:** own doc on signup only (role from invitation or `user`; no self-admin). **Update:** admin (roles) or own `lastLoginAt` |
 | **invitations**      | Own invite (by email) or admin | **Write:** admin only |
 | **feedback**         | Admin | Authenticated **create** (own uid/email); admin read/update |

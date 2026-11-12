@@ -1,0 +1,45 @@
+{
+  "description": "Lehi-ward-style Relief Society personas. Used only by the generation CLI — never shown in the app.",
+  "personas": [
+    {
+      "id": "young-mother",
+      "label": "Young mother with small children",
+      "notes": "Little margin for extra homework; needs hope, one realistic step, and feeling seen—not guilt."
+    },
+    {
+      "id": "teen-parent",
+      "label": "Parent of teenagers",
+      "notes": "Negotiating influence vs. control; needs principles for tension at home and faith when kids pull away."
+    },
+    {
+      "id": "empty-nester",
+      "label": "Empty nester",
+      "notes": "Rethinking purpose and service; less survival mode, more meaning, marriage, and mentoring."
+    },
+    {
+      "id": "new-or-returning",
+      "label": "Newer or returning member",
+      "notes": "Gentle vocabulary; safe to ask basic questions; avoid insider jargon and assumed history."
+    },
+    {
+      "id": "lifelong-deep",
+      "label": "Lifelong disciple who loves depth",
+      "notes": "Bored by plot summary; wants synthesis, scripture patterns, and ‘so what’ beyond the talk title."
+    },
+    {
+      "id": "quiet-struggle",
+      "label": "Quiet struggler or tired believer",
+      "notes": "Room for honesty and fatigue; questions must not feel like debate traps or testimony pressure."
+    },
+    {
+      "id": "scripture-first",
+      "label": "Scripture- and doctrine-oriented learner",
+      "notes": "Wants ties to Christ, covenants, and verses—not feelings-only prompts."
+    },
+    {
+      "id": "overwhelmed-caregiver",
+      "label": "Overwhelmed caregiver or stretched single adult",
+      "notes": "Capacity is thin; small, Christ-centered application; no pile-on commitments."
+    }
+  ]
+}

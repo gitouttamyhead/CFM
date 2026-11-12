@@ -53,7 +53,8 @@
                 </section>
                 <section id="discussionBlock" class="gc-discussion" style="display:none;">
                     <h2>Discussion questions</h2>
-                    <p class="gc-meta-muted">Open-ended prompts for personal study or class discussion.</p>
+                    <p class="gc-meta-muted">Open-ended prompts for Relief Society, family study, or class discussion.</p>
+                    <div id="discussionQuestionsMarkdown" class="insight-content gc-outline-content" style="display:none;"></div>
                     <ol id="discussionQuestionsList"></ol>
                 </section>
             </div>
@@ -94,6 +95,7 @@
         const officialTalkAnchor = document.getElementById('officialTalkAnchor');
         const discussionBlock = document.getElementById('discussionBlock');
         const discussionQuestionsList = document.getElementById('discussionQuestionsList');
+        const discussionQuestionsMarkdown = document.getElementById('discussionQuestionsMarkdown');
         const officialEnrichmentBlock = document.getElementById('officialEnrichmentBlock');
         const scripturesCitedSection = document.getElementById('scripturesCitedSection');
         const scripturesCitedList = document.getElementById('scripturesCitedList');
@@ -144,7 +146,8 @@
                         outlineContent.innerHTML = '';
                         return;
                     }
-                    outlineContent.innerHTML = renderOutlineMarkdown(md);
+                    const bodyMd = outlineBodyWithoutCcDiscussion(md);
+                    outlineContent.innerHTML = renderOutlineMarkdown(bodyMd);
                     renderSupplement(t);
                 })
                 .catch(function (err) {
@@ -189,16 +192,30 @@
                 (t.footnoteHighlights && t.footnoteHighlights.length);
             officialEnrichmentBlock.style.display = hasEnrichment ? 'block' : 'none';
 
-            const questions = Array.isArray(t.discussionQuestions) ? t.discussionQuestions : [];
-            if (questions.length) {
-                discussionQuestionsList.innerHTML = questions.map(function (q) {
-                    return '<li>' + escapeHtml(String(q)) + '</li>';
-                }).join('');
+            const rsMd = t.rsDiscussionMarkdown;
+            if (rsMd && String(rsMd).trim()) {
+                discussionQuestionsMarkdown.innerHTML = renderOutlineMarkdown(rsMd);
+                discussionQuestionsMarkdown.style.display = 'block';
+                discussionQuestionsList.style.display = 'none';
+                discussionQuestionsList.innerHTML = '';
                 discussionBlock.style.display = 'block';
                 showSupplement = true;
             } else {
-                discussionBlock.style.display = 'none';
-                discussionQuestionsList.innerHTML = '';
+                discussionQuestionsMarkdown.style.display = 'none';
+                discussionQuestionsMarkdown.innerHTML = '';
+                const questions = Array.isArray(t.discussionQuestions) ? t.discussionQuestions : [];
+                if (questions.length) {
+                    discussionQuestionsList.style.display = 'block';
+                    discussionQuestionsList.innerHTML = questions.map(function (q) {
+                        return '<li>' + escapeHtml(String(q)) + '</li>';
+                    }).join('');
+                    discussionBlock.style.display = 'block';
+                    showSupplement = true;
+                } else {
+                    discussionBlock.style.display = 'none';
+                    discussionQuestionsList.innerHTML = '';
+                    discussionQuestionsList.style.display = 'block';
+                }
             }
 
             talkSupplement.style.display = showSupplement ? 'block' : 'none';

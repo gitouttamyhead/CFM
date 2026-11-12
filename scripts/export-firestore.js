@@ -8,7 +8,7 @@ const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
 
-const COLLECTIONS = ['insights', 'gospelInsights', 'otherInsights', 'users', 'invitations', 'emailNotifications'];
+const COLLECTIONS = ['insights', 'gospelInsights', 'otherInsights', 'users', 'invitations', 'emailNotifications', 'generalConferenceSessions'];
 const PROJECT_ID = 'comefollowme-d097a';
 
 // Backup directory: parent project's backups/cfm/ (outside CFM repo)
@@ -29,6 +29,20 @@ function serializeDoc(doc) {
 async function exportCollection(db, name) {
   const snapshot = await db.collection(name).get();
   const docs = snapshot.docs.map(serializeDoc);
+  return docs;
+}
+
+/** generalConferenceSessions/{id} with nested talks subcollection */
+async function exportGeneralConferenceSessions(db) {
+  const snapshot = await db.collection('generalConferenceSessions').get();
+  const docs = [];
+  for (const doc of snapshot.docs) {
+    const talksSnap = await doc.ref.collection('talks').get();
+    docs.push({
+      ...serializeDoc(doc),
+      talks: talksSnap.docs.map(serializeDoc)
+    });
+  }
   return docs;
 }
 
@@ -53,10 +67,20 @@ async function main() {
   console.log('Exporting to', runDir);
   for (const name of COLLECTIONS) {
     try {
-      const docs = await exportCollection(db, name);
+      const docs =
+        name === 'generalConferenceSessions'
+          ? await exportGeneralConferenceSessions(db)
+          : await exportCollection(db, name);
       const filePath = path.join(runDir, `${name}.json`);
       fs.writeFileSync(filePath, JSON.stringify(docs, null, 2), 'utf8');
-      console.log(`  ${name}: ${docs.length} documents`);
+      const talkCount =
+        name === 'generalConferenceSessions'
+          ? docs.reduce((n, d) => n + (d.talks ? d.talks.length : 0), 0)
+          : 0;
+      console.log(
+        `  ${name}: ${docs.length} documents` +
+          (name === 'generalConferenceSessions' ? ` (${talkCount} talks nested)` : '')
+      );
     } catch (err) {
       if (err.code === 5 || err.message?.includes('NOT_FOUND')) {
         console.log(`  ${name}: (collection missing or empty) — skipped`);
