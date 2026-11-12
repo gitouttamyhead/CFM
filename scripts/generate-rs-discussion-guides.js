@@ -3,19 +3,23 @@
  * Generate Relief Society–oriented discussion questions (6–8) from imported talk outlines.
  * Personas (config/rs-personas-lehi.json) inform generation only — never stored or shown.
  *
+ * Uses Gemini (same as gc-discussion-questions.js / import-gc-outlines), not OpenAI.
+ *
  * Usage:
- *   OPENAI_API_KEY=... npm run generate-rs-discussion -- --session 2026-10
+ *   npm run generate-rs-discussion -- --session 2026-10
  *   ... --talkId 20261003161236-elder-gerrit-w-gong
  *   ... --dry-run
  *   ... --force   (regenerate even if rsDiscussionMarkdown exists)
  *
- * Requires CFM_SERVICE_ACCOUNT_PATH (or GOOGLE_APPLICATION_CREDENTIALS) and OPENAI_API_KEY.
+ * Requires CFM_SERVICE_ACCOUNT_PATH (or GOOGLE_APPLICATION_CREDENTIALS) and GEMINI_API_KEY
+ * (CFM .env or parent Build AI Product Sense .env).
  */
 
 const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
 const { splitOutlineAndDiscussion, formatDiscussionMarkdown } = require('./gc-outline-sections');
+const { loadGeminiConfig } = require('./gc-discussion-questions');
 
 const PROJECT_ID = 'comefollowme-d097a';
 const MAX_RS_MARKDOWN_CHARS = 16384;
@@ -29,7 +33,7 @@ function parseArgs(argv) {
     else if (argv[i] === '--force') args.force = true;
     else if (argv[i] === '--help' || argv[i] === '-h') {
       console.log(
-        'Usage: OPENAI_API_KEY=... node scripts/generate-rs-discussion-guides.js --session 2026-10 [--talkId ID] [--dry-run] [--force]'
+        'Usage: node scripts/generate-rs-discussion-guides.js --session 2026-10 [--talkId ID] [--dry-run] [--force]'
       );
       process.exit(0);
     }
@@ -90,36 +94,56 @@ ${outlineBody}
   };
 }
 
-async function callOpenAi(messages, model) {
-  const apiKey = process.env.OPENAI_API_KEY;
+async function callGemini(promptText, model) {
+  const { apiKey, model: defaultModel } = loadGeminiConfig();
   if (!apiKey) {
-    throw new Error('Missing OPENAI_API_KEY');
+    throw new Error('GEMINI_API_KEY not set (CFM .env or parent Build AI Product Sense .env)');
   }
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+  const useModel = model || defaultModel || 'gemini-2.5-flash-lite';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${useModel}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const res = await fetch(url, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: model || 'gpt-4o-mini',
-      temperature: 0.6,
-      response_format: { type: 'json_object' },
-      messages
+      contents: [{ parts: [{ text: promptText }] }],
+      generationConfig: {
+        temperature: 0.6,
+        maxOutputTokens: 2048,
+        responseMimeType: 'application/json'
+      }
     })
   });
   if (!res.ok) {
     const errText = await res.text();
-    throw new Error(`OpenAI HTTP ${res.status}: ${errText.slice(0, 500)}`);
+    throw new Error(`Gemini HTTP ${res.status}: ${errText.slice(0, 500)}`);
   }
   const data = await res.json();
-  const content = data.choices?.[0]?.message?.content;
-  if (!content) throw new Error('Empty OpenAI response');
-  const parsed = JSON.parse(content);
-  if (!Array.isArray(parsed.questions)) {
-    throw new Error('Expected JSON { "questions": string[] }');
+  const content =
+    data.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') ||
+    data.candidates?.[0]?.content?.parts?.[0]?.text ||
+    '';
+  if (!content) throw new Error('Empty Gemini response');
+
+  let parsed;
+  try {
+    parsed = JSON.parse(content.trim());
+  } catch {
+    const objMatch = content.match(/\{[\s\S]*\}/);
+    const arrMatch = content.match(/\[[\s\S]*\]/);
+    if (objMatch) parsed = JSON.parse(objMatch[0]);
+    else if (arrMatch) parsed = { questions: JSON.parse(arrMatch[0]) };
+    else throw new Error('Gemini did not return JSON');
   }
-  return parsed.questions.map((q) => String(q).trim()).filter(Boolean);
+
+  const questions = Array.isArray(parsed)
+    ? parsed
+    : Array.isArray(parsed?.questions)
+      ? parsed.questions
+      : null;
+  if (!questions) {
+    throw new Error('Expected JSON { "questions": string[] } or a string array');
+  }
+  return questions.map((q) => String(q).trim()).filter(Boolean);
 }
 
 function validateQuestions(questions, genConfig) {
@@ -134,30 +158,23 @@ async function main() {
   const args = parseArgs(process.argv);
   const genConfig = loadJson('config/rs-discussion-generation.json');
   const personasConfig = loadJson('config/rs-personas-lehi.json');
-  const model = process.env.OPENAI_MODEL || genConfig.model;
+  const { model: geminiDefault } = loadGeminiConfig();
+  const model = process.env.GEMINI_MODEL || genConfig.model || geminiDefault;
 
   if (args.dryRun) console.log('DRY RUN — no Firestore writes');
 
-  const db = args.dryRun ? null : initAdmin();
-  const sessionRef = db
-    ? db.collection('generalConferenceSessions').doc(args.session)
-    : null;
+  const db = initAdmin();
+  const sessionRef = db.collection('generalConferenceSessions').doc(args.session);
 
   let talkDocs = [];
   if (args.talkId) {
-    if (!db && !args.dryRun) throw new Error('unexpected');
-    if (db) {
-      const snap = await sessionRef.collection('talks').doc(args.talkId).get();
-      if (!snap.exists) {
-        console.error('Talk not found:', args.talkId);
-        process.exit(1);
-      }
-      talkDocs = [snap];
-    } else {
-      console.log('DRY RUN with --talkId requires Firestore for fetch; use without --talkId or live run.');
+    const snap = await sessionRef.collection('talks').doc(args.talkId).get();
+    if (!snap.exists) {
+      console.error('Talk not found:', args.talkId);
       process.exit(1);
     }
-  } else if (db) {
+    talkDocs = [snap];
+  } else {
     const snap = await sessionRef.collection('talks').get();
     talkDocs = snap.docs;
   }
@@ -185,26 +202,17 @@ async function main() {
       genConfig,
       personasConfig
     );
+    const basePrompt = `${system}\n\n${user}\n\nReturn ONLY valid JSON: {"questions":["..."]}`;
 
     let questions;
     try {
-      const messages = [
-        { role: 'system', content: system },
-        { role: 'user', content: user }
-      ];
-      questions = await callOpenAi(messages, model);
+      questions = await callGemini(basePrompt, model);
       try {
         validateQuestions(questions, genConfig);
       } catch (countErr) {
         console.warn(`  RETRY ${talkId}: ${countErr.message}`);
-        questions = await callOpenAi(
-          [
-            ...messages,
-            {
-              role: 'user',
-              content: `You returned ${questions.length} questions. Return JSON with exactly ${genConfig.targetCount} questions (min ${genConfig.minCount}, max ${genConfig.maxCount}), still distinct and persona-aware internally.`
-            }
-          ],
+        questions = await callGemini(
+          `${basePrompt}\n\nCorrection: you previously returned ${questions.length} questions. Return JSON with exactly ${genConfig.targetCount} questions (min ${genConfig.minCount}, max ${genConfig.maxCount}), still distinct and persona-aware internally.`,
           model
         );
         validateQuestions(questions, genConfig);

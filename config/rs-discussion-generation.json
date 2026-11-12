@@ -2,7 +2,7 @@
   "targetCount": 7,
   "minCount": 6,
   "maxCount": 8,
-  "model": "gpt-4o-mini",
+  "model": "gemini-2.5-flash-lite",
   "sectionHeading": "Discussion questions",
   "uiNote": "Open-ended prompts for Relief Society, family study, or class discussion. Generated for a typical ward Relief Society mix; not a recap of the talk."
 }
