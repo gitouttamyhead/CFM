@@ -10,10 +10,12 @@
  *
  * After each talk outline sync, optionally:
  * - Resolves official Gospel Library URL from church index (when published)
- * - Generates 5 discussion questions (Gemini; outline only unless CFM_GC_QUESTIONS_USE_TRANSCRIPT=1)
+ * - Generates persona-backed RS discussion guides (Gemini; 6–8 questions → rsDiscussionMarkdown)
  *
  * Requires CFM_SERVICE_ACCOUNT_PATH or GOOGLE_APPLICATION_CREDENTIALS (Firebase Admin).
  * Questions require GEMINI_API_KEY (CFM or parent .env).
+ *
+ * Flags: --skip-questions | --regenerate-questions | --skip-official-links | --prune-excluded | --dry-run
  */
 
 const admin = require('firebase-admin');
@@ -21,11 +23,11 @@ const fs = require('fs');
 const path = require('path');
 const { loadEnvFiles } = require('./load-env');
 const { fetchChurchConferenceCatalog, matchTalkToOfficialUrl } = require('./gc-church-official-links');
+const { outlineContentHash } = require('./gc-discussion-questions');
 const {
-  outlineContentHash,
-  generateDiscussionQuestions,
-  shouldGenerateQuestions
-} = require('./gc-discussion-questions');
+  shouldGenerateRsDiscussion,
+  generateRsDiscussionForTalk
+} = require('./generate-rs-discussion-guides');
 const { shouldExcludeTalk, shouldExcludeOutline } = require('./gc-talk-filters');
 
 loadEnvFiles();
@@ -282,29 +284,28 @@ async function main() {
     }
 
     if (!skipQuestions && !dryRun) {
-      if (shouldGenerateQuestions(existing, outlineHash, regenerateQuestions)) {
+      if (shouldGenerateRsDiscussion(existing, outlineHash, regenerateQuestions)) {
         try {
-          const transcriptForPrompt =
-            process.env.CFM_GC_QUESTIONS_USE_TRANSCRIPT === '1'
-              ? detail.formatted_transcript || detail.raw_transcript
-              : undefined;
-          const questions = await generateDiscussionQuestions({
+          const rs = await generateRsDiscussionForTalk({
             speaker,
             title,
             outlineMarkdown: outline,
-            transcriptForPrompt
+            outlineHash
           });
-          doc.discussionQuestions = questions;
-          doc.discussionQuestionsOutlineHash = outlineHash;
-          doc.discussionQuestionsGeneratedAt = now;
+          doc.rsDiscussionMarkdown = rs.rsDiscussionMarkdown;
+          doc.rsDiscussionQuestionCount = rs.rsDiscussionQuestionCount;
+          doc.rsDiscussionOutlineHash = rs.rsDiscussionOutlineHash;
+          doc.rsDiscussionGeneratedAt = now;
           questionsGenerated++;
           await sleep(400);
         } catch (err) {
-          console.error(`  WARN questions ${talk.id}:`, err.message);
+          console.error(`  WARN RS discussion ${talk.id}:`, err.message);
         }
       }
     } else if (!skipQuestions && dryRun) {
-      console.log(`  WOULD CHECK questions for ${talk.id}`);
+      if (shouldGenerateRsDiscussion(existing, outlineHash, regenerateQuestions)) {
+        console.log(`  WOULD GENERATE RS discussion for ${talk.id}`);
+      }
     }
 
     if (dryRun) {
@@ -320,7 +321,7 @@ async function main() {
 
   console.log('');
   console.log(
-    `Done. Upserted: ${upserted}, skipped: ${skipped}, missing outline: ${noOutline}, questions generated: ${questionsGenerated}, official links new: ${officialLinksResolved}, pruned: ${pruned}`
+    `Done. Upserted: ${upserted}, skipped: ${skipped}, missing outline: ${noOutline}, RS discussions generated: ${questionsGenerated}, official links new: ${officialLinksResolved}, pruned: ${pruned}`
   );
   if (!dryRun) {
     console.log(`Session doc generalConferenceSessions/${conferenceId} updated (lastSyncedAt).`);

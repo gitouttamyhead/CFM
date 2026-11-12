@@ -3,13 +3,15 @@
  * Generate Relief Society–oriented discussion questions (6–8) from imported talk outlines.
  * Personas (config/rs-personas-lehi.json) inform generation only — never stored or shown.
  *
- * Uses Gemini (same as gc-discussion-questions.js / import-gc-outlines), not OpenAI.
+ * Uses Gemini (same as gc-discussion-questions.js / import-gc-outlines).
  *
- * Usage:
- *   npm run generate-rs-discussion -- --session 2026-10
+ * CLI:
+ *   npm run generate-rs-discussion -- --session 2027-04
  *   ... --talkId 20261003161236-elder-gerrit-w-gong
  *   ... --dry-run
  *   ... --force   (regenerate even if rsDiscussionMarkdown exists)
+ *
+ * Also used by import-general-conference-outlines.js (default path for discussion questions).
  *
  * Requires CFM_SERVICE_ACCOUNT_PATH (or GOOGLE_APPLICATION_CREDENTIALS) and GEMINI_API_KEY
  * (CFM .env or parent Build AI Product Sense .env).
@@ -20,9 +22,9 @@ const fs = require('fs');
 const path = require('path');
 const { splitOutlineAndDiscussion, formatDiscussionMarkdown } = require('./gc-outline-sections');
 const { loadGeminiConfig } = require('./gc-discussion-questions');
+const { MAX_RS_DISCUSSION_MARKDOWN_CHARS } = require('./gc-import-constants');
 
 const PROJECT_ID = 'comefollowme-d097a';
-const MAX_RS_MARKDOWN_CHARS = 16384;
 
 function parseArgs(argv) {
   const args = { session: null, talkId: null, dryRun: false, force: false };
@@ -33,13 +35,13 @@ function parseArgs(argv) {
     else if (argv[i] === '--force') args.force = true;
     else if (argv[i] === '--help' || argv[i] === '-h') {
       console.log(
-        'Usage: node scripts/generate-rs-discussion-guides.js --session 2026-10 [--talkId ID] [--dry-run] [--force]'
+        'Usage: node scripts/generate-rs-discussion-guides.js --session 2027-04 [--talkId ID] [--dry-run] [--force]'
       );
       process.exit(0);
     }
   }
   if (!args.session) {
-    console.error('Missing --session (e.g. 2026-10)');
+    console.error('Missing --session (e.g. 2027-04)');
     process.exit(1);
   }
   return args;
@@ -61,6 +63,21 @@ function initAdmin() {
     admin.initializeApp({ credential: admin.credential.cert(key), projectId: PROJECT_ID });
   }
   return admin.firestore();
+}
+
+function shouldGenerateRsDiscussion(existing, outlineHash, force) {
+  if (force) return true;
+  if (!existing?.rsDiscussionMarkdown || !String(existing.rsDiscussionMarkdown).trim()) return true;
+  // Only treat as stale when we previously stored a hash and the outline changed.
+  // Talks generated before rsDiscussionOutlineHash existed keep their guides until --force.
+  if (
+    outlineHash &&
+    existing.rsDiscussionOutlineHash &&
+    existing.rsDiscussionOutlineHash !== outlineHash
+  ) {
+    return true;
+  }
+  return false;
 }
 
 function buildPrompt({ title, speaker, outlineBody }, genConfig, personasConfig) {
@@ -154,12 +171,60 @@ function validateQuestions(questions, genConfig) {
   }
 }
 
+/**
+ * Generate RS discussion fields for one talk (no Firestore writes).
+ * @returns {Promise<{ rsDiscussionMarkdown: string, rsDiscussionQuestionCount: number, rsDiscussionOutlineHash: string|null, questions: string[] }>}
+ */
+async function generateRsDiscussionForTalk(
+  { title, speaker, outlineMarkdown, outlineHash },
+  options = {}
+) {
+  const genConfig = options.genConfig || loadJson('config/rs-discussion-generation.json');
+  const personasConfig = options.personasConfig || loadJson('config/rs-personas-lehi.json');
+  const { model: geminiDefault } = loadGeminiConfig();
+  const model = options.model || process.env.GEMINI_MODEL || genConfig.model || geminiDefault;
+
+  const outline = outlineMarkdown;
+  if (!outline || !String(outline).trim()) {
+    throw new Error('no outlineMarkdown');
+  }
+
+  const { body } = splitOutlineAndDiscussion(outline);
+  const { system, user } = buildPrompt(
+    { title: title || '', speaker: speaker || '', outlineBody: body },
+    genConfig,
+    personasConfig
+  );
+  const basePrompt = `${system}\n\n${user}\n\nReturn ONLY valid JSON: {"questions":["..."]}`;
+
+  let questions = await callGemini(basePrompt, model);
+  try {
+    validateQuestions(questions, genConfig);
+  } catch (countErr) {
+    questions = await callGemini(
+      `${basePrompt}\n\nCorrection: you previously returned ${questions.length} questions. Return JSON with exactly ${genConfig.targetCount} questions (min ${genConfig.minCount}, max ${genConfig.maxCount}), still distinct and persona-aware internally.`,
+      model
+    );
+    validateQuestions(questions, genConfig);
+  }
+
+  const rsDiscussionMarkdown = formatDiscussionMarkdown(questions, genConfig.sectionHeading);
+  if (rsDiscussionMarkdown.length > MAX_RS_DISCUSSION_MARKDOWN_CHARS) {
+    throw new Error('generated markdown too large');
+  }
+
+  return {
+    rsDiscussionMarkdown,
+    rsDiscussionQuestionCount: questions.length,
+    rsDiscussionOutlineHash: outlineHash || null,
+    questions
+  };
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   const genConfig = loadJson('config/rs-discussion-generation.json');
   const personasConfig = loadJson('config/rs-personas-lehi.json');
-  const { model: geminiDefault } = loadGeminiConfig();
-  const model = process.env.GEMINI_MODEL || genConfig.model || geminiDefault;
 
   if (args.dryRun) console.log('DRY RUN — no Firestore writes');
 
@@ -185,74 +250,58 @@ async function main() {
   for (const doc of talkDocs) {
     const t = doc.data();
     const talkId = doc.id;
-    if (!args.force && t.rsDiscussionMarkdown) {
+    const outlineHash = t.outlineContentHash || null;
+    if (!shouldGenerateRsDiscussion(t, outlineHash, args.force)) {
       console.log(`  SKIP ${talkId}: already has rsDiscussionMarkdown (use --force)`);
       skipped++;
       continue;
     }
-    const outline = t.outlineMarkdown;
-    if (!outline || !String(outline).trim()) {
-      console.log(`  SKIP ${talkId}: no outlineMarkdown`);
-      skipped++;
-      continue;
-    }
-    const { body } = splitOutlineAndDiscussion(outline);
-    const { system, user } = buildPrompt(
-      { title: t.title || '', speaker: t.speaker || '', outlineBody: body },
-      genConfig,
-      personasConfig
-    );
-    const basePrompt = `${system}\n\n${user}\n\nReturn ONLY valid JSON: {"questions":["..."]}`;
-
-    let questions;
     try {
-      questions = await callGemini(basePrompt, model);
-      try {
-        validateQuestions(questions, genConfig);
-      } catch (countErr) {
-        console.warn(`  RETRY ${talkId}: ${countErr.message}`);
-        questions = await callGemini(
-          `${basePrompt}\n\nCorrection: you previously returned ${questions.length} questions. Return JSON with exactly ${genConfig.targetCount} questions (min ${genConfig.minCount}, max ${genConfig.maxCount}), still distinct and persona-aware internally.`,
-          model
+      const result = await generateRsDiscussionForTalk(
+        {
+          title: t.title,
+          speaker: t.speaker,
+          outlineMarkdown: t.outlineMarkdown,
+          outlineHash
+        },
+        { genConfig, personasConfig }
+      );
+      if (args.dryRun) {
+        console.log(`  WOULD WRITE ${talkId} (${result.questions.length} questions)`);
+        result.questions.forEach((q, i) =>
+          console.log(`    ${i + 1}. ${q.slice(0, 100)}${q.length > 100 ? '…' : ''}`)
         );
-        validateQuestions(questions, genConfig);
+        generated++;
+        continue;
       }
+      await sessionRef.collection('talks').doc(talkId).set(
+        {
+          rsDiscussionMarkdown: result.rsDiscussionMarkdown,
+          rsDiscussionGeneratedAt: admin.firestore.FieldValue.serverTimestamp(),
+          rsDiscussionQuestionCount: result.rsDiscussionQuestionCount,
+          rsDiscussionOutlineHash: result.rsDiscussionOutlineHash
+        },
+        { merge: true }
+      );
+      console.log(`  OK ${talkId} (${result.questions.length} questions)`);
+      generated++;
     } catch (err) {
       console.error(`  ERROR ${talkId}:`, err.message);
       skipped++;
-      continue;
     }
-
-    const rsDiscussionMarkdown = formatDiscussionMarkdown(questions, genConfig.sectionHeading);
-    if (rsDiscussionMarkdown.length > MAX_RS_MARKDOWN_CHARS) {
-      console.error(`  ERROR ${talkId}: generated markdown too large`);
-      skipped++;
-      continue;
-    }
-
-    if (args.dryRun) {
-      console.log(`  WOULD WRITE ${talkId} (${questions.length} questions)`);
-      questions.forEach((q, i) => console.log(`    ${i + 1}. ${q.slice(0, 100)}${q.length > 100 ? '…' : ''}`));
-      generated++;
-      continue;
-    }
-
-    await sessionRef.collection('talks').doc(talkId).set(
-      {
-        rsDiscussionMarkdown,
-        rsDiscussionGeneratedAt: admin.firestore.FieldValue.serverTimestamp(),
-        rsDiscussionQuestionCount: questions.length
-      },
-      { merge: true }
-    );
-    console.log(`  OK ${talkId} (${questions.length} questions)`);
-    generated++;
   }
 
   console.log(`\nDone. Generated: ${generated}, skipped: ${skipped}`);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+module.exports = {
+  shouldGenerateRsDiscussion,
+  generateRsDiscussionForTalk
+};
+
+if (require.main === module) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

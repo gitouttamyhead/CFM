@@ -36,6 +36,7 @@ module.exports = {
     'footnoteHighlights',
     'rsDiscussionMarkdown',
     'rsDiscussionGeneratedAt',
-    'rsDiscussionQuestionCount'
+    'rsDiscussionQuestionCount',
+    'rsDiscussionOutlineHash'
   ]
 };
