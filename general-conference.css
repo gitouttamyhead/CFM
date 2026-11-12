@@ -112,6 +112,22 @@
   margin-bottom: 16px;
 }
 
+.gc-rs-discussion {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 2px solid #ecf0f1;
+}
+
+.gc-rs-discussion__title {
+  font-size: 1.25rem;
+  color: #5e239d;
+  margin: 0 0 8px 0;
+}
+
+.gc-rs-discussion__note {
+  margin-bottom: 16px;
+}
+
 @media (max-width: 600px) {
   .gc-attribution {
     padding: 14px;

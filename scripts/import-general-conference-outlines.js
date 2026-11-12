@@ -262,7 +262,7 @@ async function main() {
       continue;
     }
 
-    await sessionRef.collection('talks').doc(talk.id).set(doc);
+    await sessionRef.collection('talks').doc(talk.id).set(doc, { merge: true });
     console.log(`  UPSERT ${talk.id} [${sessionKey}]`);
     upserted++;
   }

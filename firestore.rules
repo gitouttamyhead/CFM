@@ -94,7 +94,9 @@ service cloud.firestore {
 
           'talkId', 'speaker', 'title', 'start', 'end', 'sessionKey',
 
-          'outlineMarkdown', 'outlineSyncedAt', 'sourceTalkUrl'
+          'outlineMarkdown', 'outlineSyncedAt', 'sourceTalkUrl',
+
+          'rsDiscussionMarkdown', 'rsDiscussionGeneratedAt', 'rsDiscussionQuestionCount'
 
         ])
 
@@ -118,7 +120,25 @@ service cloud.firestore {
 
         && request.resource.data.sourceTalkUrl is string
 
-        && request.resource.data.sourceTalkUrl.size() <= 512;
+        && request.resource.data.sourceTalkUrl.size() <= 512
+
+        && (!('rsDiscussionMarkdown' in request.resource.data) || (
+
+          request.resource.data.rsDiscussionMarkdown is string
+
+          && request.resource.data.rsDiscussionMarkdown.size() <= 16384
+
+        ))
+
+        && (!('rsDiscussionQuestionCount' in request.resource.data) || (
+
+          request.resource.data.rsDiscussionQuestionCount is int
+
+          && request.resource.data.rsDiscussionQuestionCount >= 6
+
+          && request.resource.data.rsDiscussionQuestionCount <= 8
+
+        ));
 
     }
 

@@ -15,6 +15,7 @@ module.exports = {
     'formattedTranscript',
     'rawTranscript'
   ],
+  MAX_RS_DISCUSSION_MARKDOWN_CHARS: 16384,
   ALLOWED_TALK_FIELDS: [
     'talkId',
     'speaker',
@@ -24,6 +25,9 @@ module.exports = {
     'sessionKey',
     'outlineMarkdown',
     'outlineSyncedAt',
-    'sourceTalkUrl'
+    'sourceTalkUrl',
+    'rsDiscussionMarkdown',
+    'rsDiscussionGeneratedAt',
+    'rsDiscussionQuestionCount'
   ]
 };

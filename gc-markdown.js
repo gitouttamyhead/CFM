@@ -35,3 +35,18 @@ function cleanTalkTitle(title) {
   if (!title || typeof title !== 'string') return '';
   return title.replace(/\*\*/g, '').replace(/^[\s"']+|[\s"']+$/g, '').trim();
 }
+
+var GC_DISCUSSION_HEADING =
+  /^#{1,3}\s*(?:\d+\.\s*)?(?:discussion\s*questions?|questions\s+for\s+discussion|personal\s+study|for\s+discussion|reflection\s+questions?)\s*$/im;
+
+/**
+ * Remove Conference Companion's trailing discussion block (RS guide is stored separately).
+ * @param {string} markdown
+ * @returns {string}
+ */
+function outlineBodyWithoutCcDiscussion(markdown) {
+  if (typeof markdown !== 'string' || !markdown.trim()) return '';
+  var match = markdown.match(GC_DISCUSSION_HEADING);
+  if (!match || match.index == null) return markdown.trim();
+  return markdown.slice(0, match.index).trim();
+}

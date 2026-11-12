@@ -24,6 +24,11 @@
             <p id="talkMeta" class="gc-meta-muted"></p>
             <div id="gcAttribution"></div>
             <div id="outlineContent" class="insight-content gc-outline-content"></div>
+            <section id="rsDiscussionSection" class="gc-rs-discussion" style="display:none;">
+                <h2 class="gc-rs-discussion__title">Discussion questions</h2>
+                <p class="gc-meta-muted gc-rs-discussion__note">Open-ended prompts for Relief Society, family study, or class discussion.</p>
+                <div id="rsDiscussionContent" class="insight-content gc-outline-content"></div>
+            </section>
             <div id="outlineMissing" class="gc-empty-state" style="display:none;">
                 Outline not ready yet — sync again in about 15–30 minutes after the session ends.
             </div>
@@ -55,6 +60,8 @@
         const talkMeta = document.getElementById('talkMeta');
         const outlineContent = document.getElementById('outlineContent');
         const outlineMissing = document.getElementById('outlineMissing');
+        const rsDiscussionSection = document.getElementById('rsDiscussionSection');
+        const rsDiscussionContent = document.getElementById('rsDiscussionContent');
 
         const backHref = 'general-conference-conference.html?conf=' + encodeURIComponent(confId);
         document.getElementById('backLink').href = backHref;
@@ -98,7 +105,16 @@
                         outlineContent.innerHTML = '';
                         return;
                     }
-                    outlineContent.innerHTML = renderOutlineMarkdown(md);
+                    const bodyMd = outlineBodyWithoutCcDiscussion(md);
+                    outlineContent.innerHTML = renderOutlineMarkdown(bodyMd);
+
+                    const rsMd = t.rsDiscussionMarkdown;
+                    if (rsMd && String(rsMd).trim()) {
+                        rsDiscussionSection.style.display = 'block';
+                        rsDiscussionContent.innerHTML = renderOutlineMarkdown(rsMd);
+                    } else {
+                        rsDiscussionSection.style.display = 'none';
+                    }
                 })
                 .catch(function (err) {
                     console.error(err);
