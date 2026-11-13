@@ -27,6 +27,9 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
   firebase.initializeApp(window.__FIREBASE_CONFIG__);
   window.db = firebase.firestore();
   window.auth = firebase.auth();
+  if (typeof firebase.storage === 'function') {
+    window.storage = firebase.storage();
+  }
   if (typeof firebase.analytics === 'function') {
     window.analytics = firebase.analytics();
   }
