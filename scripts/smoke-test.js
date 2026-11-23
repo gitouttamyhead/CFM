@@ -29,6 +29,7 @@ const PAGES = [
   '/data/bible-context-meta.json',
   '/data/bible-context-ot.json',
   '/data/bible-context-nt.json',
+  '/data/bible-context-nt-apocrypha.json',
 ];
 
 async function run() {

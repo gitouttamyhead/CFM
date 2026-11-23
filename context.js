@@ -7,19 +7,21 @@
     meta: null,
     ot: null,
     nt: null,
+    ntApocrypha: null,
     testament: 'ot',
     lens: 'traditional',
     selectedId: null,
     focusEra: null,
-    includeDeuterocanon: false
+    includeNtApocrypha: false
   };
 
   var LEDE_OT =
     'Orient yourself in about ten seconds: when, setting vs origin, kings, and empire era — ' +
-    'with a traditional default and an optional scholarly lens. Tap an era chip to jump there.';
+    'with a traditional default and an optional scholarly lens. Deuterocanon (Tobit, Maccabees, etc.) stays on this timeline. ' +
+    'Tap an era chip to jump there.';
   var LEDE_NT =
     'New Testament is ordered earliest → latest by the active lens (traditional or scholarly writing/event dates). ' +
-    'Flip the lens to see how early vs late editions shift. Optional deuterocanon fills the intertestamental gap.';
+    'Optional NT apocrypha (Gospel of Thomas, Didache, etc.) can be added — separate from Old Testament deuterocanon.';
 
   var els = {};
 
@@ -66,17 +68,17 @@
 
   function currentEntities() {
     if (state.testament === 'nt') {
-      var ntList = (state.nt && state.nt.entities) || [];
-      var list = ntList.slice();
-      if (state.includeDeuterocanon && state.ot && state.ot.entities) {
-        state.ot.entities.forEach(function (e) {
-          if (e.canon === 'deuterocanon') list.push(e);
+      var list = ((state.nt && state.nt.entities) || []).slice();
+      if (state.includeNtApocrypha && state.ntApocrypha && state.ntApocrypha.entities) {
+        state.ntApocrypha.entities.forEach(function (e) {
+          list.push(e);
         });
       }
       return sortEntitiesForView(list);
     }
     var pack = state.ot;
     if (!pack || !pack.entities) return [];
+    // OT deuterocanon (Tobit, Judith, Wisdom, etc.) stays on the OT timeline
     return sortEntitiesForView(pack.entities);
   }
 
@@ -95,7 +97,7 @@
 
   function updateTestamentChrome() {
     var isNt = state.testament === 'nt';
-    if (els.deutWrap) els.deutWrap.style.display = isNt ? 'inline-flex' : 'none';
+    if (els.apocryphaWrap) els.apocryphaWrap.style.display = isNt ? 'inline-flex' : 'none';
     if (els.lede) els.lede.textContent = isNt ? LEDE_NT : LEDE_OT;
   }
 
@@ -202,11 +204,16 @@
           state.focusEra && (!e.eras || e.eras.indexOf(state.focusEra) < 0)
             ? ' is-dimmed'
             : '';
-        var extra = e.canon === 'deuterocanon' ? ' timeline-node--deuterocanon' : '';
+        var extra =
+          e.canon === 'deuterocanon' || e.canon === 'nt-apocrypha'
+            ? ' timeline-node--deuterocanon'
+            : '';
         var tag =
           e.canon === 'deuterocanon'
-            ? '<span class="timeline-node-tag">Deuterocanon</span>'
-            : '';
+            ? '<span class="timeline-node-tag">OT Deuterocanon</span>'
+            : e.canon === 'nt-apocrypha'
+              ? '<span class="timeline-node-tag">NT Apocrypha</span>'
+              : '';
         return (
           '<button type="button" class="timeline-node ' +
           color +
@@ -288,13 +295,18 @@
         '</p>';
     }
 
-    var banner =
-      entity.canon === 'deuterocanon'
-        ? '<div class="timeline-canon-banner is-visible">Not in the Protestant Old Testament used by Come Follow Me — included in Catholic/Orthodox canons.</div>'
-        : '<div class="timeline-canon-banner"></div>';
+    var banner = '<div class="timeline-canon-banner"></div>';
+    if (entity.canon === 'deuterocanon') {
+      banner =
+        '<div class="timeline-canon-banner is-visible">Old Testament deuterocanon — not in the Protestant OT used by Come Follow Me; included in Catholic/Orthodox canons.</div>';
+    } else if (entity.canon === 'nt-apocrypha') {
+      banner =
+        '<div class="timeline-canon-banner is-visible">New Testament apocrypha — early Christian writing outside the New Testament canon (for comparison only).</div>';
+    }
 
     var metaBits = [typeLabel(entity.type)];
-    if (entity.canon === 'deuterocanon') metaBits.push('Deuterocanon');
+    if (entity.canon === 'deuterocanon') metaBits.push('OT Deuterocanon');
+    if (entity.canon === 'nt-apocrypha') metaBits.push('NT Apocrypha');
     var eraId = primaryEraId(entity);
     var panelEraClass = eraColorClass(eraId);
 
@@ -409,14 +421,16 @@
         if (r.checked) setLens(r.value);
       });
     });
-    if (els.deutToggle) {
-      els.deutToggle.addEventListener('change', function () {
-        state.includeDeuterocanon = !!els.deutToggle.checked;
+    if (els.apocryphaToggle) {
+      els.apocryphaToggle.addEventListener('change', function () {
+        state.includeNtApocrypha = !!els.apocryphaToggle.checked;
         var keep = state.selectedId;
-        renderEraBand(findEntity(keep));
-        renderTrack();
-        var ent = findEntity(keep);
+        var ent = findEntity(keep) || firstEntity();
         if (ent) selectEntity(ent.id, true);
+        else {
+          renderEraBand(null);
+          renderTrack();
+        }
       });
     }
     els.scroller.addEventListener('click', function (ev) {
@@ -462,8 +476,8 @@
     els.btnOt = $('timelineOtBtn');
     els.btnNt = $('timelineNtBtn');
     els.status = $('timelineStatus');
-    els.deutWrap = $('timelineDeutWrap');
-    els.deutToggle = $('timelineDeutToggle');
+    els.apocryphaWrap = $('timelineApocryphaWrap');
+    els.apocryphaToggle = $('timelineApocryphaToggle');
     els.lede = $('timelineLede');
 
     bind();
@@ -472,12 +486,14 @@
     Promise.all([
       loadJson('data/bible-context-meta.json'),
       loadJson('data/bible-context-ot.json'),
-      loadJson('data/bible-context-nt.json')
+      loadJson('data/bible-context-nt.json'),
+      loadJson('data/bible-context-nt-apocrypha.json')
     ])
       .then(function (results) {
         state.meta = results[0];
         state.ot = results[1];
         state.nt = results[2];
+        state.ntApocrypha = results[3];
         if (!state.testament) state.testament = state.meta.defaultTestament || 'ot';
         if (!state.lens) state.lens = state.meta.defaultLens || 'traditional';
 

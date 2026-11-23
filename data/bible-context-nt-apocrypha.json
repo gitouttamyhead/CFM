@@ -1,0 +1,169 @@
+{
+  "testament": "nt",
+  "collection": "nt-apocrypha",
+  "note": "Early Christian writings outside the New Testament canon. Off by default; optional for comparison only.",
+  "entities": [
+    {
+      "id": "didache",
+      "type": "book",
+      "label": "Didache",
+      "sortKey": 90,
+      "canon": "nt-apocrypha",
+      "traditional": {
+        "dateLabel": "c. AD 50–100 (early church manual)",
+        "dateStart": 50,
+        "dateEnd": 100
+      },
+      "scholarly": {
+        "dateLabel": "Often c. AD 70–110",
+        "dateStart": 70,
+        "dateEnd": 110,
+        "note": "An early church-order text; valued for practice history, but not in the NT canon."
+      },
+      "region": {
+        "setting": "Syria / Jewish-Christian setting (common view)",
+        "origin": "Unknown author(s)",
+        "audience": "Local congregations"
+      },
+      "eras": ["later-letters"],
+      "traditionalNote": "Early teaching associated with the Twelve—useful historically, not New Testament scripture.",
+      "bio": "A short manual on the Two Ways, baptism, prayer, Eucharist, and itinerant teachers.",
+      "kings": ["Late 1st / early 2nd century Roman period"]
+    },
+    {
+      "id": "1-clement",
+      "type": "book",
+      "label": "1 Clement",
+      "sortKey": 96,
+      "canon": "nt-apocrypha",
+      "traditional": {
+        "dateLabel": "c. AD 95–97",
+        "dateStart": 95,
+        "dateEnd": 97
+      },
+      "scholarly": {
+        "dateLabel": "c. AD 95–100",
+        "dateStart": 95,
+        "dateEnd": 100,
+        "note": "Letter from the Roman church to Corinth; important for early leadership, outside the NT canon."
+      },
+      "region": {
+        "setting": "Rome → Corinth",
+        "origin": "Roman church leadership tradition",
+        "audience": "Church in Corinth"
+      },
+      "eras": ["later-letters"],
+      "traditionalNote": "Early letter associated with Clement of Rome; not in the New Testament canon.",
+      "bio": "Appeals for unity and ordered leadership in Corinth after conflict among believers.",
+      "kings": ["Domitian / Nerva era (traditional dating)"]
+    },
+    {
+      "id": "gospel-of-thomas",
+      "type": "book",
+      "label": "Gospel of Thomas",
+      "sortKey": 110,
+      "canon": "nt-apocrypha",
+      "traditional": {
+        "dateLabel": "2nd century sayings collection",
+        "dateStart": 100,
+        "dateEnd": 140
+      },
+      "scholarly": {
+        "dateLabel": "Often c. AD 100–140 (some sayings argued earlier)",
+        "dateStart": 70,
+        "dateEnd": 140,
+        "note": "A sayings gospel without a passion narrative; clearly outside the fourfold NT Gospel canon."
+      },
+      "region": {
+        "setting": "Likely Syria / Egypt transmission",
+        "origin": "Unknown compiler(s)",
+        "audience": "Christian readers outside the canonical Gospels"
+      },
+      "eras": ["later-letters"],
+      "traditionalNote": "Not one of the four canonical Gospels; a later sayings collection.",
+      "bio": "A list of sayings attributed to Jesus, without the narrative structure of Matthew–John.",
+      "kings": ["Trajanic / Hadrianic period for many manuscript traditions"]
+    },
+    {
+      "id": "shepherd-of-hermas",
+      "type": "book",
+      "label": "Shepherd of Hermas",
+      "sortKey": 120,
+      "canon": "nt-apocrypha",
+      "traditional": {
+        "dateLabel": "Early 2nd century",
+        "dateStart": 100,
+        "dateEnd": 140
+      },
+      "scholarly": {
+        "dateLabel": "c. AD 100–150",
+        "dateStart": 100,
+        "dateEnd": 150,
+        "note": "Widely read in some early churches; even bound with Scripture in a few manuscripts, but not retained in the NT canon."
+      },
+      "region": {
+        "setting": "Rome (traditional)",
+        "origin": "Hermas (named visionary)",
+        "audience": "Roman / western churches"
+      },
+      "eras": ["later-letters"],
+      "traditionalNote": "Visions and parables on repentance; valued historically, not New Testament scripture.",
+      "bio": "An extended visionary work urging repentance and moral renewal in the early church.",
+      "kings": ["Early 2nd-century Rome"]
+    },
+    {
+      "id": "gospel-of-peter",
+      "type": "book",
+      "label": "Gospel of Peter",
+      "sortKey": 130,
+      "canon": "nt-apocrypha",
+      "traditional": {
+        "dateLabel": "2nd century passion account",
+        "dateStart": 100,
+        "dateEnd": 180
+      },
+      "scholarly": {
+        "dateLabel": "Often mid–late 2nd century",
+        "dateStart": 100,
+        "dateEnd": 180,
+        "note": "Fragmentary passion/resurrection narrative; historically interesting, not canonical."
+      },
+      "region": {
+        "setting": "Syria (often suggested)",
+        "origin": "Unknown author (pseudepigraphic Peter)",
+        "audience": "Local Christian communities"
+      },
+      "eras": ["later-letters"],
+      "traditionalNote": "Apocryphal passion gospel; not part of the New Testament.",
+      "bio": "A surviving portion focuses on the crucifixion and empty tomb with distinctive details.",
+      "kings": ["2nd-century Roman East"]
+    },
+    {
+      "id": "protoevangelium-james",
+      "type": "book",
+      "label": "Protoevangelium of James",
+      "sortKey": 150,
+      "canon": "nt-apocrypha",
+      "traditional": {
+        "dateLabel": "Mid–late 2nd century",
+        "dateStart": 140,
+        "dateEnd": 180
+      },
+      "scholarly": {
+        "dateLabel": "c. AD 150–180",
+        "dateStart": 150,
+        "dateEnd": 180,
+        "note": "Infancy narrative expanding Mary’s story; influential in later piety, not canonical."
+      },
+      "region": {
+        "setting": "Eastern Mediterranean Christian storytelling",
+        "origin": "Unknown author (pseudepigraphic James)",
+        "audience": "Christian readers curious about Mary and Jesus’ birth"
+      },
+      "eras": ["later-letters"],
+      "traditionalNote": "Apocryphal infancy gospel; not part of the New Testament.",
+      "bio": "Narrates Mary’s early life and the nativity with details beyond Matthew and Luke.",
+      "kings": ["Antonine-era Christian literature"]
+    }
+  ]
+}
