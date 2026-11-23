@@ -30,6 +30,9 @@ const PAGES = [
   '/data/bible-context-ot.json',
   '/data/bible-context-nt.json',
   '/data/bible-context-nt-apocrypha.json',
+  '/bom-timeline.html',
+  '/book-of-mormon.html',
+  '/data/bom-timeline.json',
 ];
 
 async function run() {

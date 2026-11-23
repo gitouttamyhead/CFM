@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
+    <link rel="manifest" href="manifest.json">
+    <title>Book of Mormon Timeline — Come Follow Me</title>
+    <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="bom-timeline.css">
+</head>
+<body>
+    <div id="navWrapper"></div>
+
+    <div class="main-content" id="mainContent">
+        <div class="container container--bom-timeline" id="bomMain" style="display:none;">
+            <h1>Book of Mormon Timeline</h1>
+            <p class="bom-lede">
+                Narrative lanes and sync points—especially the Mosiah flashbacks—
+                so you can see whose story you’re in within about ten seconds.
+                Early cards tie Lehi’s day to Jeremiah and Babylon.
+            </p>
+
+            <div id="bomLaneFilters" class="bom-lane-filters" aria-label="Storyline lanes"></div>
+            <div id="bomSyncBand" class="bom-sync-band" aria-label="Sync points"></div>
+            <div id="bomSections"></div>
+            <div id="bomPanel" class="bom-panel" aria-live="polite"></div>
+            <p id="bomStatus" class="bom-status">Loading timeline…</p>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="nav.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="analytics.js"></script>
+    <script src="auth-utils.js"></script>
+    <script src="bom-timeline.js"></script>
+    <script>
+        var container = document.getElementById('bomMain');
+        container.style.display = 'none';
+        requireAuth().then(function () {
+            container.style.display = 'block';
+            if (window.CFMBomTimeline) window.CFMBomTimeline.init();
+        });
+    </script>
+</body>
+</html>

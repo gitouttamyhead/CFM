@@ -1,0 +1,474 @@
+{
+  "version": 1,
+  "lastReviewed": "2026-11-23",
+  "title": "Book of Mormon Timeline",
+  "defaultId": "limhi-alma-join-mosiah",
+  "lanes": [
+    {
+      "id": "jerusalem-backdrop",
+      "label": "Jerusalem backdrop",
+      "short": "Jerusalem",
+      "color": "jerusalem"
+    },
+    {
+      "id": "nephite-main",
+      "label": "Main Nephite record",
+      "short": "Nephite main",
+      "color": "nephite"
+    },
+    {
+      "id": "nephi-colony",
+      "label": "Land of Nephi colony",
+      "short": "Nephi colony",
+      "color": "colony"
+    },
+    {
+      "id": "alma-wilderness",
+      "label": "Alma₁ in the wilderness",
+      "short": "Alma wilderness",
+      "color": "alma"
+    },
+    {
+      "id": "jaredite",
+      "label": "Jaredite record (Ether)",
+      "short": "Jaredite",
+      "color": "jaredite"
+    }
+  ],
+  "syncPoints": [
+    { "id": "sync-lehi-leaves", "label": "Lehi leaves", "entityId": "lehi-departs" },
+    { "id": "sync-zarahemla", "label": "Zarahemla", "entityId": "mosiah1-zarahemla" },
+    { "id": "sync-benjamin", "label": "Benjamin", "entityId": "benjamin-speech" },
+    { "id": "sync-merge", "label": "Limhi + Alma join", "entityId": "limhi-alma-join-mosiah" },
+    { "id": "sync-christ", "label": "Christ visits", "entityId": "christ-visit" },
+    { "id": "sync-moroni", "label": "Moroni", "entityId": "moroni-closes" },
+    { "id": "sync-ether", "label": "Ether (earlier)", "entityId": "ether-spur" }
+  ],
+  "sections": [
+    {
+      "id": "early",
+      "label": "Jerusalem & the early record",
+      "hint": "Lehi’s departure sits in Judah’s last decades—use the backdrop lane to keep Jeremiah and Babylon in view."
+    },
+    {
+      "id": "mosiah-knot",
+      "label": "The Mosiah knot (parallel lanes)",
+      "hint": "Printed order flashbacks. Zeniff/Limhi and Alma₁ overlap Mosiah₂ in Zarahemla until they merge."
+    },
+    {
+      "id": "continuation",
+      "label": "After the merge → Christ",
+      "hint": "Mostly linear. War years in Alma are skipped on purpose."
+    },
+    {
+      "id": "close",
+      "label": "Closing the record",
+      "hint": "Mormon abridges; Moroni finishes; Ether is a jump to an earlier people."
+    }
+  ],
+  "sources": [
+    "Book of Mormon internal chronology (chapter headings / Institute manuals)",
+    "OT backdrop aligned with Bible Timeline (Jeremiah, Babylonian waves, 586)"
+  ],
+  "entities": [
+    {
+      "id": "josiah-reform",
+      "section": "early",
+      "lane": "jerusalem-backdrop",
+      "type": "backdrop",
+      "label": "Josiah’s reforms",
+      "bookRef": "2 Kings 22–23 (OT backdrop)",
+      "dateLabel": "c. 640–609 BC",
+      "dateStart": -640,
+      "dateEnd": -609,
+      "overlaps": ["deuteronomist-rise"],
+      "whyConfusing": "Not in the Book of Mormon text—backdrop for the world Lehi is born into.",
+      "otParallel": {
+        "label": "Open OT Timeline: Jeremiah era",
+        "href": "context.html?testament=ot&id=jeremiah"
+      },
+      "summary": "Covenant renewal and temple-centered reform in Judah set the religious climate a generation before Lehi’s call."
+    },
+    {
+      "id": "deuteronomist-rise",
+      "section": "early",
+      "lane": "jerusalem-backdrop",
+      "type": "backdrop",
+      "label": "Deuteronomic reform climate",
+      "bookRef": "OT backdrop (orientation)",
+      "dateLabel": "Late 7th century BC",
+      "dateStart": -622,
+      "dateEnd": -609,
+      "overlaps": ["josiah-reform", "jeremiah-backdrop"],
+      "whyConfusing": "A modern label for the reform movement—not a Book of Mormon book. One lens for “centralize worship, keep the covenant.”",
+      "otParallel": {
+        "label": "Open OT Timeline: Jeremiah",
+        "href": "context.html?testament=ot&id=jeremiah"
+      },
+      "summary": "Reform energy around law, covenant, and exclusive loyalty to the Lord—helpful context for prophets confronting Jerusalem’s politics."
+    },
+    {
+      "id": "jeremiah-backdrop",
+      "section": "early",
+      "lane": "jerusalem-backdrop",
+      "type": "backdrop",
+      "label": "Jeremiah in Jerusalem",
+      "bookRef": "Jeremiah (OT) · cf. 1 Nephi 1",
+      "dateLabel": "c. 627–580 BC",
+      "dateStart": -627,
+      "dateEnd": -586,
+      "overlaps": ["babylon-wave-1", "babylon-wave-2", "lehi-departs"],
+      "whyConfusing": "Jeremiah and Lehi overlap in the same crisis city; the Book of Mormon starts mid-stream in that story.",
+      "otParallel": {
+        "label": "Open OT Timeline: Jeremiah",
+        "href": "context.html?testament=ot&id=jeremiah"
+      },
+      "summary": "Prophet warning Judah as Babylon rises—same decades as Lehi’s ministry in Jerusalem."
+    },
+    {
+      "id": "babylon-wave-1",
+      "section": "early",
+      "lane": "jerusalem-backdrop",
+      "type": "backdrop",
+      "label": "Babylon — first wave",
+      "bookRef": "OT backdrop (c. 605 BC)",
+      "dateLabel": "c. 605 BC",
+      "dateStart": -605,
+      "dateEnd": -605,
+      "overlaps": ["jeremiah-backdrop"],
+      "whyConfusing": "First pressure/deportation wave—not yet the final destruction.",
+      "otParallel": {
+        "label": "Open OT Timeline: Fall of Jerusalem",
+        "href": "context.html?testament=ot&id=fall-jerusalem"
+      },
+      "summary": "Babylon asserts control; early captives and tribute begin the unraveling of Judah."
+    },
+    {
+      "id": "babylon-wave-2",
+      "section": "early",
+      "lane": "jerusalem-backdrop",
+      "type": "backdrop",
+      "label": "Babylon — second wave",
+      "bookRef": "OT backdrop (c. 597 BC)",
+      "dateLabel": "c. 597 BC",
+      "dateStart": -597,
+      "dateEnd": -597,
+      "overlaps": ["jeremiah-backdrop", "lehi-departs"],
+      "whyConfusing": "Jehoiachin’s deportation wave—still before the 586 temple destruction.",
+      "otParallel": {
+        "label": "Open OT Timeline: Fall of Jerusalem",
+        "href": "context.html?testament=ot&id=fall-jerusalem"
+      },
+      "summary": "Major deportation including the king and elites; Jerusalem limps on under Zedekiah."
+    },
+    {
+      "id": "lehi-departs",
+      "section": "early",
+      "lane": "nephite-main",
+      "type": "sync",
+      "label": "Lehi leaves Jerusalem",
+      "bookRef": "1 Nephi 1–2",
+      "dateLabel": "c. 600 BC (heading chronology)",
+      "dateStart": -600,
+      "dateEnd": -600,
+      "overlaps": ["jeremiah-backdrop", "babylon-wave-2"],
+      "syncPoint": "sync-lehi-leaves",
+      "whyConfusing": "Sync point: Nephite story starts while Judah’s crisis is still unfolding.",
+      "otParallel": {
+        "label": "Open OT Timeline: Jeremiah",
+        "href": "context.html?testament=ot&id=jeremiah"
+      },
+      "summary": "Lehi prophesies and flees with his family into the wilderness as Babylon tightens its grip."
+    },
+    {
+      "id": "fall-jerusalem-586",
+      "section": "early",
+      "lane": "jerusalem-backdrop",
+      "type": "backdrop",
+      "label": "Fall of Jerusalem (586)",
+      "bookRef": "OT · cf. 2 Nephi 1 (news reaches Lehi’s family later)",
+      "dateLabel": "586 BC",
+      "dateStart": -586,
+      "dateEnd": -586,
+      "overlaps": [],
+      "whyConfusing": "Happens after Lehi has already left; the family hears of destruction later.",
+      "otParallel": {
+        "label": "Open OT Timeline: Fall of Jerusalem",
+        "href": "context.html?testament=ot&id=fall-jerusalem"
+      },
+      "summary": "Temple destroyed, monarchy ended—the catastrophe Jeremiah foresaw and Lehi escaped."
+    },
+    {
+      "id": "nephi-record",
+      "section": "early",
+      "lane": "nephite-main",
+      "type": "span",
+      "label": "Nephi’s record (to the land of promise)",
+      "bookRef": "1 Nephi – 2 Nephi",
+      "dateLabel": "c. 600–545 BC",
+      "dateStart": -600,
+      "dateEnd": -545,
+      "overlaps": ["fall-jerusalem-586"],
+      "whyConfusing": "Mostly linear. Keep Jerusalem’s fall in the backdrop, not as the next Nephite chapter.",
+      "summary": "Journey, ship, arrival, teaching, and the small plates’ early testimony."
+    },
+    {
+      "id": "jacobs-enos-omni",
+      "section": "early",
+      "lane": "nephite-main",
+      "type": "span",
+      "label": "Jacob → Enos → Omni",
+      "bookRef": "Jacob – Omni",
+      "dateLabel": "c. 544–130 BC (span)",
+      "dateStart": -544,
+      "dateEnd": -130,
+      "overlaps": [],
+      "whyConfusing": "Centuries pass quickly on short books—Omni is a bridge of record keepers.",
+      "summary": "Small plates continue through priests and kings until Mosiah₁ leads a party to Zarahemla."
+    },
+    {
+      "id": "mosiah1-zarahemla",
+      "section": "early",
+      "lane": "nephite-main",
+      "type": "sync",
+      "label": "Mosiah₁ finds Zarahemla",
+      "bookRef": "Omni; Mosiah 1 (context)",
+      "dateLabel": "c. 200–130 BC (approx.)",
+      "dateStart": -200,
+      "dateEnd": -130,
+      "overlaps": [],
+      "syncPoint": "sync-zarahemla",
+      "whyConfusing": "Sync point: Nephites meet Mulekites; later flashbacks happen under this united people.",
+      "summary": "Northern migrants join the people of Zarahemla—stage set for Benjamin and Mosiah₂."
+    },
+    {
+      "id": "words-of-mormon",
+      "section": "early",
+      "lane": "nephite-main",
+      "type": "span",
+      "label": "Words of Mormon (editorial bridge)",
+      "bookRef": "Words of Mormon",
+      "dateLabel": "Editorial note (Mormon)",
+      "dateStart": -130,
+      "dateEnd": -130,
+      "overlaps": [],
+      "whyConfusing": "Mormon explains why the small plates sit where they do—not a new generation of story.",
+      "summary": "Editor’s hinge between the small plates and the large-plate abridgment beginning in Mosiah."
+    },
+    {
+      "id": "benjamin-speech",
+      "section": "mosiah-knot",
+      "lane": "nephite-main",
+      "type": "sync",
+      "label": "Benjamin’s speech",
+      "bookRef": "Mosiah 1–6",
+      "dateLabel": "c. 124 BC",
+      "dateStart": -124,
+      "dateEnd": -124,
+      "overlaps": ["zeniff-colony"],
+      "syncPoint": "sync-benjamin",
+      "whyConfusing": "Main lane in Zarahemla. The Zeniff flashback (printed next) already overlaps this era.",
+      "summary": "King Benjamin teaches and names Mosiah₂—while a separate Nephite colony story is about to be told out of order."
+    },
+    {
+      "id": "mosiah2-reign",
+      "section": "mosiah-knot",
+      "lane": "nephite-main",
+      "type": "span",
+      "label": "Mosiah₂ reigns in Zarahemla",
+      "bookRef": "Mosiah 6–7; 25–29",
+      "dateLabel": "c. 124–91 BC",
+      "dateStart": -124,
+      "dateEnd": -91,
+      "overlaps": ["zeniff-colony", "limhi-bondage", "alma-at-mormon"],
+      "whyConfusing": "While Mosiah₂ rules, the book digresses into Limhi and Alma—those stories are concurrent, not sequels.",
+      "summary": "Zarahemla’s king sends a search party, then later receives Limhi’s and Alma’s peoples."
+    },
+    {
+      "id": "zeniff-colony",
+      "section": "mosiah-knot",
+      "lane": "nephi-colony",
+      "type": "span",
+      "label": "Zeniff returns to Nephi’s land",
+      "bookRef": "Mosiah 9–10",
+      "dateLabel": "c. 200–160 BC (approx.)",
+      "dateStart": -200,
+      "dateEnd": -160,
+      "overlaps": ["benjamin-speech", "mosiah2-reign"],
+      "whyConfusing": "Flashback: starts generations before Benjamin’s speech even though you read it after.",
+      "summary": "A Nephite group re-settles the land of Nephi among the Lamanites—parallel history."
+    },
+    {
+      "id": "noah-reign",
+      "section": "mosiah-knot",
+      "lane": "nephi-colony",
+      "type": "span",
+      "label": "Noah’s wicked reign · Abinadi",
+      "bookRef": "Mosiah 11–17",
+      "dateLabel": "c. 160–148 BC",
+      "dateStart": -160,
+      "dateEnd": -148,
+      "overlaps": ["mosiah2-reign"],
+      "whyConfusing": "Still the colony lane—Abinadi’s martyrdom sets up Alma₁, not the next Zarahemla chapter.",
+      "summary": "Noah rejects Abinadi; Alma₁ believes and will flee—while Zarahemla has its own kings."
+    },
+    {
+      "id": "limhi-bondage",
+      "section": "mosiah-knot",
+      "lane": "nephi-colony",
+      "type": "span",
+      "label": "Limhi’s people in bondage",
+      "bookRef": "Mosiah 19–22",
+      "dateLabel": "c. 145–121 BC",
+      "dateStart": -145,
+      "dateEnd": -121,
+      "overlaps": ["alma-at-mormon", "mosiah2-reign"],
+      "whyConfusing": "Concurrent with Alma₁ in the wilderness—not a story that finishes before Alma begins.",
+      "summary": "Limhi’s remnant suffers under Lamanite rule until Ammon from Zarahemla helps them escape."
+    },
+    {
+      "id": "alma-at-mormon",
+      "section": "mosiah-knot",
+      "lane": "alma-wilderness",
+      "type": "span",
+      "label": "Alma₁ at the waters of Mormon",
+      "bookRef": "Mosiah 18; 23–24",
+      "dateLabel": "c. 147–120 BC",
+      "dateStart": -147,
+      "dateEnd": -120,
+      "overlaps": ["limhi-bondage", "mosiah2-reign"],
+      "whyConfusing": "Printed after Limhi, but overlapping Limhi—Alma’s people are a third concurrent thread.",
+      "summary": "Alma₁ flees Noah, baptizes at Mormon, builds a church in the wilderness, then also reaches Zarahemla."
+    },
+    {
+      "id": "limhi-alma-join-mosiah",
+      "section": "mosiah-knot",
+      "lane": "nephite-main",
+      "type": "sync",
+      "label": "Limhi + Alma join Mosiah₂",
+      "bookRef": "Mosiah 22–25",
+      "dateLabel": "c. 121–120 BC",
+      "dateStart": -121,
+      "dateEnd": -120,
+      "overlaps": [],
+      "syncPoint": "sync-merge",
+      "whyConfusing": "The knot resolves: three lanes become one people again in Zarahemla.",
+      "summary": "Limhi’s group and Alma’s group arrive; Mosiah₂ authorizes churches—flashbacks catch up to the main clock."
+    },
+    {
+      "id": "judges-begin",
+      "section": "continuation",
+      "lane": "nephite-main",
+      "type": "span",
+      "label": "Reign of the judges begins",
+      "bookRef": "Mosiah 29 – Alma 1",
+      "dateLabel": "c. 91 BC",
+      "dateStart": -91,
+      "dateEnd": -91,
+      "overlaps": [],
+      "whyConfusing": "Back to a single main lane—Alma the Younger becomes chief judge/high priest.",
+      "summary": "Monarchy ends; Alma₂ leads as the book of Alma opens."
+    },
+    {
+      "id": "alma-missions-skip",
+      "section": "continuation",
+      "lane": "nephite-main",
+      "type": "span",
+      "label": "Alma₂ — missions & wars (compressed)",
+      "bookRef": "Alma 4–63 (overview)",
+      "dateLabel": "c. 91–53 BC",
+      "dateStart": -91,
+      "dateEnd": -53,
+      "overlaps": [],
+      "whyConfusing": "V1 skips year-by-year wars on purpose—the narrative stays one lane.",
+      "summary": "Missions, dissent, and warfare. Use chapter headings when you need a battle year; this card is only a bridge."
+    },
+    {
+      "id": "helaman-bridge",
+      "section": "continuation",
+      "lane": "nephite-main",
+      "type": "span",
+      "label": "Helaman → 3 Nephi (before Christ)",
+      "bookRef": "Helaman – 3 Nephi 1–7",
+      "dateLabel": "c. 52 BC – AD 33",
+      "dateStart": -52,
+      "dateEnd": 33,
+      "overlaps": [],
+      "whyConfusing": "Linear countdown to the sign of Christ’s birth and the destruction before his visit.",
+      "summary": "Pride cycles, Gadianton robbers, and signs—still one main timeline."
+    },
+    {
+      "id": "christ-visit",
+      "section": "continuation",
+      "lane": "nephite-main",
+      "type": "sync",
+      "label": "Christ visits the Nephites",
+      "bookRef": "3 Nephi 11–28",
+      "dateLabel": "c. AD 34",
+      "dateStart": 34,
+      "dateEnd": 34,
+      "overlaps": [],
+      "syncPoint": "sync-christ",
+      "whyConfusing": "Major sync point—ministry in the Americas after the crucifixion.",
+      "summary": "The risen Christ teaches, heals, and establishes his church among the people."
+    },
+    {
+      "id": "four-nephi",
+      "section": "close",
+      "lane": "nephite-main",
+      "type": "span",
+      "label": "4 Nephi — Zion, then decline",
+      "bookRef": "4 Nephi",
+      "dateLabel": "c. AD 36–321",
+      "dateStart": 36,
+      "dateEnd": 321,
+      "overlaps": [],
+      "whyConfusing": "Centuries in one short book—peace first, then division returns.",
+      "summary": "Generations of unity erode into tribal conflict again."
+    },
+    {
+      "id": "mormon-abridgment",
+      "section": "close",
+      "lane": "nephite-main",
+      "type": "span",
+      "label": "Mormon’s abridgment & wars",
+      "bookRef": "Mormon 1–7",
+      "dateLabel": "c. AD 322–385",
+      "dateStart": 322,
+      "dateEnd": 385,
+      "overlaps": [],
+      "whyConfusing": "Mormon is both editor of earlier plates and a character in the final wars.",
+      "summary": "Final Nephite–Lamanite conflicts culminating toward Cumorah."
+    },
+    {
+      "id": "moroni-closes",
+      "section": "close",
+      "lane": "nephite-main",
+      "type": "sync",
+      "label": "Moroni finishes the record",
+      "bookRef": "Mormon 8–9; Moroni",
+      "dateLabel": "c. AD 400–421",
+      "dateStart": 400,
+      "dateEnd": 421,
+      "overlaps": ["ether-spur"],
+      "syncPoint": "sync-moroni",
+      "whyConfusing": "Moroni also inserts Ether—jumping to a much earlier people before his farewell.",
+      "summary": "Last Nephite prophet seals the record and speaks to latter-day readers."
+    },
+    {
+      "id": "ether-spur",
+      "section": "close",
+      "lane": "jaredite",
+      "type": "sync",
+      "label": "Ether — Jaredite record (earlier spur)",
+      "bookRef": "Ether",
+      "dateLabel": "Tower → centuries before Lehi (approx.)",
+      "dateStart": -2200,
+      "dateEnd": -600,
+      "overlaps": [],
+      "syncPoint": "sync-ether",
+      "whyConfusing": "Not “after” Mormon in real time—an ancient civilization abridged and placed near the end of the volume.",
+      "summary": "Jaredite rise and fall. Read it as a side track that ends before (and warns) the Nephite story."
+    }
+  ]
+}
