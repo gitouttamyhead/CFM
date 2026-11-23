@@ -65,6 +65,38 @@
       ]
     },
     {
+      "id": "james",
+      "type": "book",
+      "label": "James",
+      "sortKey": 48,
+      "canon": "protestant",
+      "traditional": {
+        "dateLabel": "c. AD 45–50",
+        "dateStart": 45,
+        "dateEnd": 50
+      },
+      "scholarly": {
+        "dateLabel": "Early or later 1st century",
+        "dateStart": 45,
+        "dateEnd": 90,
+        "note": "Some see very early Jewish-Christian wisdom; others a later circular letter."
+      },
+      "region": {
+        "setting": "Jerusalem / diaspora address",
+        "origin": "Jerusalem leadership tradition",
+        "audience": "Jewish believers abroad"
+      },
+      "eras": [
+        "apostolic",
+        "later-letters"
+      ],
+      "traditionalNote": "Practical wisdom on faith lived out.",
+      "bio": "Practical wisdom on faith lived out.",
+      "kings": [
+        "Early Judean / diaspora church period"
+      ]
+    },
+    {
       "id": "galatians",
       "type": "book",
       "label": "Galatians",
@@ -124,6 +156,38 @@
       "bio": "Early encouragement to a young Macedonian congregation.",
       "kings": [
         "Claudius (Rome)"
+      ]
+    },
+    {
+      "id": "2-thessalonians",
+      "type": "book",
+      "label": "2 Thessalonians",
+      "sortKey": 51,
+      "canon": "protestant",
+      "traditional": {
+        "dateLabel": "c. AD 51–52",
+        "dateStart": 51,
+        "dateEnd": 52
+      },
+      "scholarly": {
+        "dateLabel": "Authenticity debated",
+        "dateStart": 50,
+        "dateEnd": 90,
+        "note": "Some accept Pauline authorship soon after 1 Thessalonians; others argue for a later hand."
+      },
+      "region": {
+        "setting": "Thessalonica",
+        "origin": "Pauline / debated",
+        "audience": "Church in Thessalonica"
+      },
+      "eras": [
+        "apostolic",
+        "later-letters"
+      ],
+      "traditionalNote": "Follow-up on endurance and the day of the Lord.",
+      "bio": "Follow-up on endurance and the day of the Lord.",
+      "kings": [
+        "Early Pauline period or later, depending on view"
       ]
     },
     {
@@ -345,38 +409,6 @@
       ]
     },
     {
-      "id": "2-thessalonians",
-      "type": "book",
-      "label": "2 Thessalonians",
-      "sortKey": 51,
-      "canon": "protestant",
-      "traditional": {
-        "dateLabel": "c. AD 51–52",
-        "dateStart": 51,
-        "dateEnd": 52
-      },
-      "scholarly": {
-        "dateLabel": "Authenticity debated",
-        "dateStart": 50,
-        "dateEnd": 90,
-        "note": "Some accept Pauline authorship soon after 1 Thessalonians; others argue for a later hand."
-      },
-      "region": {
-        "setting": "Thessalonica",
-        "origin": "Pauline / debated",
-        "audience": "Church in Thessalonica"
-      },
-      "eras": [
-        "apostolic",
-        "later-letters"
-      ],
-      "traditionalNote": "Follow-up on endurance and the day of the Lord.",
-      "bio": "Follow-up on endurance and the day of the Lord.",
-      "kings": [
-        "Early Pauline period or later, depending on view"
-      ]
-    },
-    {
       "id": "pastorals",
       "type": "book",
       "label": "Pastoral Epistles",
@@ -405,69 +437,6 @@
       "bio": "1–2 Timothy and Titus on leadership and sound teaching.",
       "kings": [
         "Late Nero or later 1st-century setting (views differ)"
-      ]
-    },
-    {
-      "id": "hebrews",
-      "type": "book",
-      "label": "Hebrews",
-      "sortKey": 65,
-      "canon": "protestant",
-      "traditional": {
-        "dateLabel": "Before AD 70 (often)",
-        "dateStart": 60,
-        "dateEnd": 70
-      },
-      "scholarly": {
-        "dateLabel": "Author unknown; often pre- or post-70",
-        "dateStart": 60,
-        "dateEnd": 95,
-        "note": "Not Pauline in most modern critical views; a sophisticated sermon on Christ’s priesthood."
-      },
-      "region": {
-        "setting": "Audience debated (often linked with Rome)",
-        "origin": "Author unknown",
-        "audience": "Likely Jewish Christians"
-      },
-      "eras": [
-        "later-letters"
-      ],
-      "traditionalNote": "Anonymous sermon-letter exalting Christ over earlier covenants.",
-      "bio": "Anonymous sermon-letter exalting Christ’s priesthood over earlier covenants.",
-      "kings": [
-        "Before or after AD 70 (debated)"
-      ]
-    },
-    {
-      "id": "james",
-      "type": "book",
-      "label": "James",
-      "sortKey": 48,
-      "canon": "protestant",
-      "traditional": {
-        "dateLabel": "c. AD 45–50",
-        "dateStart": 45,
-        "dateEnd": 50
-      },
-      "scholarly": {
-        "dateLabel": "Early or later 1st century",
-        "dateStart": 45,
-        "dateEnd": 90,
-        "note": "Some see very early Jewish-Christian wisdom; others a later circular letter."
-      },
-      "region": {
-        "setting": "Jerusalem / diaspora address",
-        "origin": "Jerusalem leadership tradition",
-        "audience": "Jewish believers abroad"
-      },
-      "eras": [
-        "apostolic",
-        "later-letters"
-      ],
-      "traditionalNote": "Practical wisdom on faith lived out.",
-      "bio": "Practical wisdom on faith lived out.",
-      "kings": [
-        "Early Judean / diaspora church period"
       ]
     },
     {
@@ -502,6 +471,163 @@
       ]
     },
     {
+      "id": "hebrews",
+      "type": "book",
+      "label": "Hebrews",
+      "sortKey": 65,
+      "canon": "protestant",
+      "traditional": {
+        "dateLabel": "Before AD 70 (often)",
+        "dateStart": 60,
+        "dateEnd": 70
+      },
+      "scholarly": {
+        "dateLabel": "Author unknown; often pre- or post-70",
+        "dateStart": 60,
+        "dateEnd": 95,
+        "note": "Not Pauline in most modern critical views; a sophisticated sermon on Christ’s priesthood."
+      },
+      "region": {
+        "setting": "Audience debated (often linked with Rome)",
+        "origin": "Author unknown",
+        "audience": "Likely Jewish Christians"
+      },
+      "eras": [
+        "later-letters"
+      ],
+      "traditionalNote": "Anonymous sermon-letter exalting Christ over earlier covenants.",
+      "bio": "Anonymous sermon-letter exalting Christ’s priesthood over earlier covenants.",
+      "kings": [
+        "Before or after AD 70 (debated)"
+      ]
+    },
+    {
+      "id": "mark",
+      "type": "book",
+      "label": "Mark",
+      "sortKey": 68,
+      "canon": "protestant",
+      "traditional": {
+        "dateLabel": "c. AD 50–70 (often with Peter)",
+        "dateStart": 50,
+        "dateEnd": 70
+      },
+      "scholarly": {
+        "dateLabel": "c. AD 65–75 (often first Gospel)",
+        "dateStart": 65,
+        "dateEnd": 75,
+        "note": "Most scholars treat Mark as the earliest Gospel, written around the Jewish War / temple crisis."
+      },
+      "region": {
+        "setting": "Roman world (audience often linked with Rome)",
+        "origin": "Markan tradition (Peter association in tradition)",
+        "audience": "Gentile-leaning Christians (common view)"
+      },
+      "eras": [
+        "apostolic",
+        "later-letters"
+      ],
+      "traditionalNote": "Action-focused Gospel traditionally linked with Peter’s preaching.",
+      "bio": "The shortest Gospel, centered on Jesus’ ministry, cross, and empty tomb; often read as the earliest narrative template.",
+      "kings": [
+        "Nero to early Vespasian era (composition window)"
+      ]
+    },
+    {
+      "id": "temple-destruction-70",
+      "type": "event",
+      "label": "Destruction of the temple",
+      "sortKey": 70,
+      "canon": "protestant",
+      "traditional": {
+        "dateLabel": "AD 70",
+        "dateStart": 70,
+        "dateEnd": 70
+      },
+      "scholarly": {
+        "dateLabel": "AD 70",
+        "dateStart": 70,
+        "dateEnd": 70,
+        "note": "Fixed Roman-Jewish War anchor; often used when dating Mark and the Synoptics relative to the temple’s fall."
+      },
+      "region": {
+        "setting": "Jerusalem",
+        "origin": null,
+        "audience": "Judea / Judaism and emerging church"
+      },
+      "eras": [
+        "early-roman",
+        "later-letters"
+      ],
+      "traditionalNote": "Rome destroys the Jerusalem temple under Titus during the Jewish War.",
+      "bio": "A watershed for Judaism and for reading the Gospels—especially passages about the temple and Jerusalem’s crisis.",
+      "kings": [
+        "Vespasian / Titus (Rome); end of the Second Temple"
+      ]
+    },
+    {
+      "id": "matthew",
+      "type": "book",
+      "label": "Matthew",
+      "sortKey": 75,
+      "canon": "protestant",
+      "traditional": {
+        "dateLabel": "c. AD 50–70 (apostle Matthew)",
+        "dateStart": 50,
+        "dateEnd": 70
+      },
+      "scholarly": {
+        "dateLabel": "c. AD 80–90 (after Mark)",
+        "dateStart": 80,
+        "dateEnd": 90,
+        "note": "Usually dated after Mark, with strong Jewish-Christian teaching for a synagogue-aware audience."
+      },
+      "region": {
+        "setting": "Likely Syrian / Jewish-Christian setting (e.g. Antioch area)",
+        "origin": "Matthean tradition",
+        "audience": "Jewish and Gentile believers"
+      },
+      "eras": [
+        "later-letters"
+      ],
+      "traditionalNote": "Gospel presenting Jesus as Messiah and teacher of the kingdom, attributed to Matthew.",
+      "bio": "Structured teaching Gospel with sermons and fulfillment themes, bridging Jewish Scripture and the church’s mission.",
+      "kings": [
+        "Flavian period if later dating; earlier if traditional"
+      ]
+    },
+    {
+      "id": "luke",
+      "type": "book",
+      "label": "Luke",
+      "sortKey": 80,
+      "canon": "protestant",
+      "traditional": {
+        "dateLabel": "c. AD 60–70 (companion of Paul)",
+        "dateStart": 60,
+        "dateEnd": 70
+      },
+      "scholarly": {
+        "dateLabel": "c. AD 80–90 (with Acts)",
+        "dateStart": 80,
+        "dateEnd": 90,
+        "note": "Usually paired with Acts and placed after Mark; emphasizes ordered narrative for a broader audience."
+      },
+      "region": {
+        "setting": "Mediterranean church (addressed to Theophilus)",
+        "origin": "Lukan tradition",
+        "audience": "Theophilus / Gentile-leaning readers"
+      },
+      "eras": [
+        "later-letters"
+      ],
+      "traditionalNote": "Careful narrative Gospel traditionally from Luke, companion of Paul.",
+      "bio": "Ordered account of Jesus’ life with attention to the Spirit, the poor, and the path to Jerusalem.",
+      "kings": [
+        "Flavian period if later dating; earlier if traditional"
+      ]
+    },
+    {
       "id": "1-john",
       "type": "book",
       "label": "1 John",
@@ -530,6 +656,37 @@
       "bio": "Tests of discipleship: truth, love, and confession of Christ.",
       "kings": [
         "Late 1st-century Roman Asia"
+      ]
+    },
+    {
+      "id": "john",
+      "type": "book",
+      "label": "John",
+      "sortKey": 90,
+      "canon": "protestant",
+      "traditional": {
+        "dateLabel": "c. AD 90–95 (apostle John)",
+        "dateStart": 90,
+        "dateEnd": 95
+      },
+      "scholarly": {
+        "dateLabel": "c. AD 90–100 (Johannine circle)",
+        "dateStart": 90,
+        "dateEnd": 100,
+        "note": "Often placed last among the four; many see a Johannine community shaping a distinctive theological witness."
+      },
+      "region": {
+        "setting": "Asia Minor (often Ephesus in tradition)",
+        "origin": "Johannine tradition",
+        "audience": "Churches in the Johannine orbit"
+      },
+      "eras": [
+        "later-letters"
+      ],
+      "traditionalNote": "Theological Gospel attributed to John, emphasizing Jesus’ identity and signs.",
+      "bio": "Distinctive Gospel of signs, long discourses, and high Christology culminating in the cross and resurrection.",
+      "kings": [
+        "Domitianic / late 1st-century Asia (common traditional setting)"
       ]
     },
     {
