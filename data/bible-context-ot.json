@@ -1,0 +1,498 @@
+{
+  "testament": "ot",
+  "entities": [
+    {
+      "id": "amos",
+      "type": "prophet",
+      "label": "Amos",
+      "sortKey": -760,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "c. 760–750 BC", "dateStart": -760, "dateEnd": -750 },
+      "scholarly": {
+        "dateLabel": "c. 760–750 BC",
+        "dateStart": -760,
+        "dateEnd": -750,
+        "note": "Often placed among the earliest writing prophets; core oracles usually dated to Jeroboam II’s reign."
+      },
+      "region": { "kingdom": "israel", "label": "Northern Kingdom (Israel)", "audience": "Israel (from Judah)" },
+      "eras": ["assyrian"],
+      "traditionalNote": "Shepherd-prophet from Tekoa who preached judgment to the Northern Kingdom."
+    },
+    {
+      "id": "hosea",
+      "type": "prophet",
+      "label": "Hosea",
+      "sortKey": -750,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "c. 750–725 BC", "dateStart": -750, "dateEnd": -725 },
+      "scholarly": {
+        "dateLabel": "c. 750–725 BC (book shaped later)",
+        "dateStart": -750,
+        "dateEnd": -725,
+        "note": "Many scholars see preaching rooted in Hosea’s day, with later editorial shaping of the book."
+      },
+      "region": { "kingdom": "israel", "label": "Northern Kingdom (Israel)", "audience": "Northern Israel" },
+      "eras": ["assyrian"],
+      "traditionalNote": "Prophet to the Northern Kingdom before the Assyrian conquest."
+    },
+    {
+      "id": "jonah",
+      "type": "prophet",
+      "label": "Jonah",
+      "sortKey": -780,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "c. 780–750 BC (setting)", "dateStart": -780, "dateEnd": -750 },
+      "scholarly": {
+        "dateLabel": "Setting 8th c.; book often later",
+        "dateStart": -780,
+        "dateEnd": -400,
+        "note": "The narrative setting is Assyrian Nineveh; many date the written book later as didactic literature."
+      },
+      "region": { "kingdom": "israel", "label": "Israel / Nineveh (Assyria)", "audience": "Nineveh (story setting)" },
+      "eras": ["assyrian"],
+      "traditionalNote": "Prophet sent to Nineveh; associated with the Northern Kingdom era."
+    },
+    {
+      "id": "isaiah",
+      "type": "prophet",
+      "label": "Isaiah",
+      "sortKey": -740,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "c. 740–700 BC", "dateStart": -740, "dateEnd": -700 },
+      "scholarly": {
+        "dateLabel": "8th c. core; later chapters debated",
+        "dateStart": -740,
+        "dateEnd": -540,
+        "note": "Scholars often distinguish earlier Isaianic material from later sections reflecting exile and return."
+      },
+      "region": { "kingdom": "judah", "label": "Kingdom of Judah", "audience": "Judah (and beyond)" },
+      "eras": ["assyrian"],
+      "traditionalNote": "Major prophet in Jerusalem during the Assyrian crisis."
+    },
+    {
+      "id": "micah",
+      "type": "prophet",
+      "label": "Micah",
+      "sortKey": -735,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "c. 735–700 BC", "dateStart": -735, "dateEnd": -700 },
+      "scholarly": {
+        "dateLabel": "c. late 8th century BC",
+        "dateStart": -735,
+        "dateEnd": -700,
+        "note": "Generally tied to the Assyrian period in Judah; some passages may reflect later editing."
+      },
+      "region": { "kingdom": "judah", "label": "Kingdom of Judah", "audience": "Judah" },
+      "eras": ["assyrian"],
+      "traditionalNote": "Contemporary of Isaiah; preached justice and warned of judgment on Judah."
+    },
+    {
+      "id": "joel",
+      "type": "prophet",
+      "label": "Joel",
+      "sortKey": -500,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "Date uncertain (often post-exile)", "dateStart": -500, "dateEnd": -400 },
+      "scholarly": {
+        "dateLabel": "Often placed post-exile",
+        "dateStart": -500,
+        "dateEnd": -350,
+        "note": "Dating is debated; many place Joel after the exile because of temple/community clues."
+      },
+      "region": { "kingdom": "judah", "label": "Judah / Jerusalem", "audience": "Judah" },
+      "eras": ["persian"],
+      "traditionalNote": "Calls Judah to repentance amid crisis; dating is less fixed than Hosea or Amos."
+    },
+    {
+      "id": "fall-samaria",
+      "type": "event",
+      "label": "Fall of Samaria",
+      "sortKey": -722,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "722 BC", "dateStart": -722, "dateEnd": -722 },
+      "scholarly": {
+        "dateLabel": "722/721 BC",
+        "dateStart": -722,
+        "dateEnd": -721,
+        "note": "Assyria ends the Northern Kingdom; a fixed anchor for reading Hosea–Amos."
+      },
+      "region": { "kingdom": "israel", "label": "Northern Kingdom (Samaria)", "audience": "Israel" },
+      "eras": ["assyrian"],
+      "traditionalNote": "Assyria conquers the Northern Kingdom."
+    },
+    {
+      "id": "nahum",
+      "type": "prophet",
+      "label": "Nahum",
+      "sortKey": -650,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "c. 660–630 BC", "dateStart": -660, "dateEnd": -630 },
+      "scholarly": {
+        "dateLabel": "Before Nineveh’s fall (612 BC)",
+        "dateStart": -660,
+        "dateEnd": -612,
+        "note": "Oracles against Assyrian Nineveh, usually dated shortly before its destruction."
+      },
+      "region": { "kingdom": "judah", "label": "Judah (focus on Nineveh)", "audience": "Judah / concerning Assyria" },
+      "eras": ["assyrian"],
+      "traditionalNote": "Proclaims judgment on Nineveh after Assyria’s long dominance."
+    },
+    {
+      "id": "habakkuk",
+      "type": "prophet",
+      "label": "Habakkuk",
+      "sortKey": -605,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "c. 610–600 BC", "dateStart": -610, "dateEnd": -600 },
+      "scholarly": {
+        "dateLabel": "c. late 7th century BC",
+        "dateStart": -610,
+        "dateEnd": -597,
+        "note": "Usually set as Babylon rises; the prophet wrestles with why God uses a ruthless empire."
+      },
+      "region": { "kingdom": "judah", "label": "Kingdom of Judah", "audience": "Judah" },
+      "eras": ["babylonian"],
+      "traditionalNote": "Questions God as Babylon threatens Judah."
+    },
+    {
+      "id": "zephaniah",
+      "type": "prophet",
+      "label": "Zephaniah",
+      "sortKey": -630,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "c. 640–622 BC", "dateStart": -640, "dateEnd": -622 },
+      "scholarly": {
+        "dateLabel": "Josiah’s reign (late 7th c.)",
+        "dateStart": -640,
+        "dateEnd": -622,
+        "note": "Commonly linked to Josiah’s era in Judah before Jerusalem’s fall."
+      },
+      "region": { "kingdom": "judah", "label": "Kingdom of Judah", "audience": "Judah" },
+      "eras": ["assyrian", "babylonian"],
+      "traditionalNote": "Warns of the day of the Lord in Judah before the exile."
+    },
+    {
+      "id": "jeremiah",
+      "type": "prophet",
+      "label": "Jeremiah",
+      "sortKey": -627,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "c. 627–580 BC", "dateStart": -627, "dateEnd": -580 },
+      "scholarly": {
+        "dateLabel": "c. 627–580 BC",
+        "dateStart": -627,
+        "dateEnd": -580,
+        "note": "Core ministry spans Judah’s last decades; the book’s arrangement shows complex editorial history."
+      },
+      "region": { "kingdom": "judah", "label": "Kingdom of Judah", "audience": "Judah" },
+      "eras": ["babylonian"],
+      "traditionalNote": "Prophet through Jerusalem’s fall and the early exile."
+    },
+    {
+      "id": "obadiah",
+      "type": "prophet",
+      "label": "Obadiah",
+      "sortKey": -586,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "Near 586 BC (often)", "dateStart": -586, "dateEnd": -586 },
+      "scholarly": {
+        "dateLabel": "Often near Jerusalem’s fall",
+        "dateStart": -586,
+        "dateEnd": -550,
+        "note": "Short oracle against Edom; frequently linked to the trauma around 586 BC."
+      },
+      "region": { "kingdom": "judah", "label": "Judah / Edom", "audience": "Concerning Edom" },
+      "eras": ["babylonian"],
+      "traditionalNote": "Judgment on Edom in connection with Judah’s disaster."
+    },
+    {
+      "id": "fall-jerusalem",
+      "type": "event",
+      "label": "Fall of Jerusalem",
+      "sortKey": -586,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "586 BC", "dateStart": -586, "dateEnd": -586 },
+      "scholarly": {
+        "dateLabel": "586/587 BC",
+        "dateStart": -587,
+        "dateEnd": -586,
+        "note": "Babylon destroys the temple and ends the Judahite monarchy—central timeline anchor."
+      },
+      "region": { "kingdom": "judah", "label": "Jerusalem (Judah)", "audience": "Judah" },
+      "eras": ["babylonian"],
+      "traditionalNote": "Babylon conquers Jerusalem and destroys the temple."
+    },
+    {
+      "id": "ezekiel",
+      "type": "prophet",
+      "label": "Ezekiel",
+      "sortKey": -593,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "c. 593–571 BC", "dateStart": -593, "dateEnd": -571 },
+      "scholarly": {
+        "dateLabel": "c. 593–571 BC",
+        "dateStart": -593,
+        "dateEnd": -571,
+        "note": "Exilic prophet among deportees in Babylonia; dated oracles are relatively clear."
+      },
+      "region": { "kingdom": "exile", "label": "Babylonian exile", "audience": "Exiles from Judah" },
+      "eras": ["babylonian"],
+      "traditionalNote": "Priest-prophet among the exiles in Babylon."
+    },
+    {
+      "id": "daniel",
+      "type": "prophet",
+      "label": "Daniel",
+      "sortKey": -605,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "6th century BC (setting)", "dateStart": -605, "dateEnd": -530 },
+      "scholarly": {
+        "dateLabel": "Setting exile; book often 2nd c. BC",
+        "dateStart": -605,
+        "dateEnd": -164,
+        "note": "Court tales set in exile; many scholars date final form to the Hellenistic/Maccabean era."
+      },
+      "region": { "kingdom": "exile", "label": "Babylon / Persia (setting)", "audience": "Exiles / later readers" },
+      "eras": ["babylonian", "persian", "hellenistic"],
+      "traditionalNote": "Faithfulness in exile under Babylonian and Persian courts."
+    },
+    {
+      "id": "return-temple",
+      "type": "event",
+      "label": "Return / temple rebuild",
+      "sortKey": -538,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "c. 538–515 BC", "dateStart": -538, "dateEnd": -515 },
+      "scholarly": {
+        "dateLabel": "c. 538–515 BC",
+        "dateStart": -538,
+        "dateEnd": -515,
+        "note": "Persian decree enables return; second temple dedicated around 515 BC."
+      },
+      "region": { "kingdom": "judah", "label": "Yehud (Persian Judah)", "audience": "Returned community" },
+      "eras": ["persian"],
+      "traditionalNote": "Exiles return and rebuild the temple under Persian rule."
+    },
+    {
+      "id": "haggai",
+      "type": "prophet",
+      "label": "Haggai",
+      "sortKey": -520,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "520 BC", "dateStart": -520, "dateEnd": -520 },
+      "scholarly": {
+        "dateLabel": "520 BC",
+        "dateStart": -520,
+        "dateEnd": -520,
+        "note": "Tightly dated to the temple-rebuild push under Darius I."
+      },
+      "region": { "kingdom": "judah", "label": "Persian Judah", "audience": "Returned community" },
+      "eras": ["persian"],
+      "traditionalNote": "Urges the people to finish rebuilding the temple."
+    },
+    {
+      "id": "zechariah",
+      "type": "prophet",
+      "label": "Zechariah",
+      "sortKey": -520,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "c. 520–518 BC", "dateStart": -520, "dateEnd": -518 },
+      "scholarly": {
+        "dateLabel": "Early oracles c. 520; later chapters debated",
+        "dateStart": -520,
+        "dateEnd": -450,
+        "note": "Chapters 1–8 fit the rebuild era; later chapters are often dated later by scholars."
+      },
+      "region": { "kingdom": "judah", "label": "Persian Judah", "audience": "Returned community" },
+      "eras": ["persian"],
+      "traditionalNote": "Visions encouraging the post-exilic community and temple work."
+    },
+    {
+      "id": "esther",
+      "type": "book",
+      "label": "Esther",
+      "sortKey": -480,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "Persian period (setting)", "dateStart": -480, "dateEnd": -460 },
+      "scholarly": {
+        "dateLabel": "Persian setting; written later",
+        "dateStart": -480,
+        "dateEnd": -200,
+        "note": "Story set in the Persian court; composition is often placed later in the Second Temple period."
+      },
+      "region": { "kingdom": "diaspora", "label": "Persian diaspora (Susa)", "audience": "Jews in exile/diaspora" },
+      "eras": ["persian"],
+      "traditionalNote": "Jewish deliverance in the Persian empire; origin of Purim."
+    },
+    {
+      "id": "ezra-nehemiah",
+      "type": "book",
+      "label": "Ezra–Nehemiah",
+      "sortKey": -458,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "c. 458–430 BC", "dateStart": -458, "dateEnd": -430 },
+      "scholarly": {
+        "dateLabel": "5th century events; compiled later",
+        "dateStart": -458,
+        "dateEnd": -350,
+        "note": "Narrates reforms under Persian rule; final compilation may postdate the events."
+      },
+      "region": { "kingdom": "judah", "label": "Persian Judah / Jerusalem", "audience": "Returned community" },
+      "eras": ["persian"],
+      "traditionalNote": "Return, wall-building, and covenant renewal in Jerusalem."
+    },
+    {
+      "id": "malachi",
+      "type": "prophet",
+      "label": "Malachi",
+      "sortKey": -450,
+      "canon": "protestant",
+      "traditional": { "dateLabel": "c. 450–430 BC", "dateStart": -450, "dateEnd": -430 },
+      "scholarly": {
+        "dateLabel": "Often mid–late 5th century BC",
+        "dateStart": -450,
+        "dateEnd": -400,
+        "note": "Usually placed after the temple is rebuilt, addressing covenant neglect."
+      },
+      "region": { "kingdom": "judah", "label": "Persian Judah", "audience": "Post-exilic Judah" },
+      "eras": ["persian"],
+      "traditionalNote": "Last of the traditional writing prophets in the Protestant OT order."
+    },
+    {
+      "id": "tobit",
+      "type": "book",
+      "label": "Tobit",
+      "sortKey": -200,
+      "canon": "deuterocanon",
+      "traditional": { "dateLabel": "Exile setting; later book", "dateStart": -700, "dateEnd": -200 },
+      "scholarly": {
+        "dateLabel": "Often 3rd–2nd century BC",
+        "dateStart": -250,
+        "dateEnd": -175,
+        "note": "Diaspora tale set earlier; widely dated to the Hellenistic period."
+      },
+      "region": { "kingdom": "diaspora", "label": "Assyrian/Babylonian diaspora (setting)", "audience": "Jewish diaspora" },
+      "eras": ["hellenistic"],
+      "traditionalNote": "Not in the Protestant OT used by Come Follow Me; in Catholic/Orthodox canons."
+    },
+    {
+      "id": "judith",
+      "type": "book",
+      "label": "Judith",
+      "sortKey": -150,
+      "canon": "deuterocanon",
+      "traditional": { "dateLabel": "Second Temple story", "dateStart": -200, "dateEnd": -100 },
+      "scholarly": {
+        "dateLabel": "Often 2nd century BC",
+        "dateStart": -150,
+        "dateEnd": -100,
+        "note": "Historical romance set loosely in earlier empires; usually Hellenistic composition."
+      },
+      "region": { "kingdom": "judah", "label": "Judea (story setting)", "audience": "Jewish community" },
+      "eras": ["hellenistic"],
+      "traditionalNote": "Not in the Protestant OT used by Come Follow Me; in Catholic/Orthodox canons."
+    },
+    {
+      "id": "wisdom",
+      "type": "book",
+      "label": "Wisdom of Solomon",
+      "sortKey": -50,
+      "canon": "deuterocanon",
+      "traditional": { "dateLabel": "Late Second Temple", "dateStart": -100, "dateEnd": 50 },
+      "scholarly": {
+        "dateLabel": "Often 1st century BC–AD",
+        "dateStart": -50,
+        "dateEnd": 50,
+        "note": "Greek wisdom text, commonly linked to Alexandrian Judaism."
+      },
+      "region": { "kingdom": "diaspora", "label": "Likely Egyptian diaspora", "audience": "Hellenistic Jewish readers" },
+      "eras": ["hellenistic", "early-roman"],
+      "traditionalNote": "Not in the Protestant OT used by Come Follow Me; in Catholic/Orthodox canons."
+    },
+    {
+      "id": "sirach",
+      "type": "book",
+      "label": "Sirach (Ecclesiasticus)",
+      "sortKey": -180,
+      "canon": "deuterocanon",
+      "traditional": { "dateLabel": "c. 180 BC", "dateStart": -180, "dateEnd": -175 },
+      "scholarly": {
+        "dateLabel": "c. 180 BC (Hebrew); Greek soon after",
+        "dateStart": -180,
+        "dateEnd": -130,
+        "note": "Wisdom instruction from Jerusalem; Greek translation followed for diaspora use."
+      },
+      "region": { "kingdom": "judah", "label": "Jerusalem / Judea", "audience": "Jewish readers" },
+      "eras": ["hellenistic"],
+      "traditionalNote": "Not in the Protestant OT used by Come Follow Me; in Catholic/Orthodox canons."
+    },
+    {
+      "id": "baruch",
+      "type": "book",
+      "label": "Baruch",
+      "sortKey": -150,
+      "canon": "deuterocanon",
+      "traditional": { "dateLabel": "Exile setting; later book", "dateStart": -580, "dateEnd": -100 },
+      "scholarly": {
+        "dateLabel": "Often Hellenistic compilation",
+        "dateStart": -200,
+        "dateEnd": -100,
+        "note": "Associated with Jeremiah’s scribe in setting; composition usually placed much later."
+      },
+      "region": { "kingdom": "exile", "label": "Exile setting / Judea readers", "audience": "Jewish community" },
+      "eras": ["hellenistic"],
+      "traditionalNote": "Not in the Protestant OT used by Come Follow Me; in Catholic/Orthodox canons."
+    },
+    {
+      "id": "maccabean-revolt",
+      "type": "event",
+      "label": "Maccabean revolt",
+      "sortKey": -167,
+      "canon": "deuterocanon",
+      "traditional": { "dateLabel": "c. 167–160 BC", "dateStart": -167, "dateEnd": -160 },
+      "scholarly": {
+        "dateLabel": "c. 167–160 BC",
+        "dateStart": -167,
+        "dateEnd": -160,
+        "note": "Jewish revolt against Seleucid policies; frames 1–2 Maccabees."
+      },
+      "region": { "kingdom": "judah", "label": "Judea", "audience": "Judea" },
+      "eras": ["hellenistic"],
+      "traditionalNote": "Intertestamental crisis remembered in deuterocanonical histories (not in CFM’s Protestant OT)."
+    },
+    {
+      "id": "1-maccabees",
+      "type": "book",
+      "label": "1 Maccabees",
+      "sortKey": -100,
+      "canon": "deuterocanon",
+      "traditional": { "dateLabel": "History of c. 175–134 BC", "dateStart": -175, "dateEnd": -134 },
+      "scholarly": {
+        "dateLabel": "Written late 2nd–early 1st c. BC",
+        "dateStart": -100,
+        "dateEnd": -90,
+        "note": "Prose history of the revolt; generally trusted for the political outline."
+      },
+      "region": { "kingdom": "judah", "label": "Judea", "audience": "Jewish readers" },
+      "eras": ["hellenistic"],
+      "traditionalNote": "Not in the Protestant OT used by Come Follow Me; in Catholic/Orthodox canons."
+    },
+    {
+      "id": "2-maccabees",
+      "type": "book",
+      "label": "2 Maccabees",
+      "sortKey": -100,
+      "canon": "deuterocanon",
+      "traditional": { "dateLabel": "Overlaps Maccabean era", "dateStart": -180, "dateEnd": -160 },
+      "scholarly": {
+        "dateLabel": "Epitome; often late 2nd–1st c. BC",
+        "dateStart": -124,
+        "dateEnd": -100,
+        "note": "Theological history overlapping 1 Maccabees, not a simple sequel."
+      },
+      "region": { "kingdom": "judah", "label": "Judea", "audience": "Jewish readers" },
+      "eras": ["hellenistic"],
+      "traditionalNote": "Not in the Protestant OT used by Come Follow Me; in Catholic/Orthodox canons."
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "lastReviewed": "2026-11-23",
+  "title": "Timeline",
+  "defaultTestament": "ot",
+  "defaultLens": "traditional",
+  "defaultOtId": "hosea",
+  "defaultNtId": "jesus-ministry",
+  "eras": [
+    {
+      "id": "assyrian",
+      "label": "Assyrian",
+      "testament": "ot",
+      "approxStart": -850,
+      "approxEnd": -609
+    },
+    {
+      "id": "babylonian",
+      "label": "Babylonian",
+      "testament": "ot",
+      "approxStart": -609,
+      "approxEnd": -539
+    },
+    {
+      "id": "persian",
+      "label": "Persian",
+      "testament": "ot",
+      "approxStart": -539,
+      "approxEnd": -332
+    },
+    {
+      "id": "hellenistic",
+      "label": "Hellenistic",
+      "testament": "ot",
+      "approxStart": -332,
+      "approxEnd": -63
+    },
+    {
+      "id": "early-roman",
+      "label": "Early Roman / Herodian",
+      "testament": "nt",
+      "approxStart": -63,
+      "approxEnd": 30
+    },
+    {
+      "id": "ministry",
+      "label": "Jesus’ ministry",
+      "testament": "nt",
+      "approxStart": 27,
+      "approxEnd": 33
+    },
+    {
+      "id": "apostolic",
+      "label": "Apostolic (Acts)",
+      "testament": "nt",
+      "approxStart": 30,
+      "approxEnd": 64
+    },
+    {
+      "id": "later-letters",
+      "label": "Later 1st-century letters",
+      "testament": "nt",
+      "approxStart": 60,
+      "approxEnd": 100
+    }
+  ],
+  "sources": [
+    "LDS Bible Dictionary and Institute manuals (traditional orientation)",
+    "Come Follow Me manuals (Protestant OT/NT canon used in class)",
+    "Widely cited scholarly date ranges for composition/setting (paraphrased one-liners only)"
+  ],
+  "notes": [
+    "Dates are ranges for orientation, not precision claims.",
+    "Deuterocanon items are labeled; they are not in the Protestant OT used by Come Follow Me."
+  ]
+}

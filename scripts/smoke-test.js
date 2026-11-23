@@ -23,6 +23,12 @@ const PAGES = [
   '/general-conference.html',
   '/general-conference-conference.html',
   '/general-conference-talk.html',
+  '/context.html',
+  '/old-testament.html',
+  '/new-testament.html',
+  '/data/bible-context-meta.json',
+  '/data/bible-context-ot.json',
+  '/data/bible-context-nt.json',
 ];
 
 async function run() {

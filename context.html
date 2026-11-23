@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
+    <link rel="manifest" href="manifest.json">
+    <title>Timeline — Come Follow Me</title>
+    <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="context.css">
+</head>
+<body>
+    <div id="navWrapper"></div>
+
+    <div class="main-content" id="mainContent">
+        <div class="container container--timeline" id="timelineMain" style="display:none;">
+            <h1>Timeline</h1>
+            <p class="timeline-lede">
+                Orient yourself in about ten seconds: when, where, and which empire era —
+                with a traditional default and an optional scholarly lens.
+            </p>
+
+            <div class="timeline-controls">
+                <div class="timeline-segmented" role="group" aria-label="Testament">
+                    <button type="button" id="timelineOtBtn" aria-pressed="true">Old Testament</button>
+                    <button type="button" id="timelineNtBtn" aria-pressed="false">New Testament</button>
+                </div>
+                <div class="timeline-lens" role="radiogroup" aria-label="Lens">
+                    <span>Lens:</span>
+                    <label><input type="radio" name="timelineLens" value="traditional" checked> Traditional</label>
+                    <label><input type="radio" name="timelineLens" value="scholarly"> Scholarly</label>
+                </div>
+            </div>
+
+            <div id="timelineEraBand" class="timeline-era-band" aria-label="Historical eras"></div>
+
+            <div class="timeline-track-wrap">
+                <div class="timeline-track-line" aria-hidden="true"></div>
+                <div id="timelineScroller" class="timeline-scroller" role="listbox" aria-label="Timeline items"></div>
+            </div>
+
+            <div id="timelinePanel" class="timeline-panel" aria-live="polite"></div>
+            <p id="timelineStatus" class="timeline-status">Loading timeline…</p>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="nav.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="analytics.js"></script>
+    <script src="auth-utils.js"></script>
+    <script src="context.js"></script>
+    <script>
+        var container = document.getElementById('timelineMain');
+        container.style.display = 'none';
+        requireAuth().then(function () {
+            container.style.display = 'block';
+            if (window.CFMTimeline) window.CFMTimeline.init();
+        });
+    </script>
+</body>
+</html>
