@@ -10,8 +10,16 @@
     testament: 'ot',
     lens: 'traditional',
     selectedId: null,
-    focusEra: null
+    focusEra: null,
+    includeDeuterocanon: false
   };
+
+  var LEDE_OT =
+    'Orient yourself in about ten seconds: when, setting vs origin, kings, and empire era — ' +
+    'with a traditional default and an optional scholarly lens. Tap an era chip to jump there.';
+  var LEDE_NT =
+    'New Testament is ordered earliest → latest by the active lens (traditional or scholarly writing/event dates). ' +
+    'Flip the lens to see how early vs late editions shift. Optional deuterocanon fills the intertestamental gap.';
 
   var els = {};
 
@@ -27,12 +35,49 @@
       .replace(/"/g, '&quot;');
   }
 
-  function currentEntities() {
-    var pack = state.testament === 'nt' ? state.nt : state.ot;
-    if (!pack || !pack.entities) return [];
-    return pack.entities.slice().sort(function (a, b) {
+  function lensDateStart(entity) {
+    var block = lensBlock(entity);
+    if (block && block.dateStart != null) return block.dateStart;
+    return entity.sortKey != null ? entity.sortKey : 0;
+  }
+
+  function lensDateEnd(entity) {
+    var block = lensBlock(entity);
+    if (block && block.dateEnd != null) return block.dateEnd;
+    return lensDateStart(entity);
+  }
+
+  function sortEntitiesForView(list) {
+    return list.slice().sort(function (a, b) {
+      // NT: written/event timeline by active lens (early → late)
+      if (state.testament === 'nt') {
+        var sa = lensDateStart(a);
+        var sb = lensDateStart(b);
+        if (sa !== sb) return sa - sb;
+        var ea = lensDateEnd(a);
+        var eb = lensDateEnd(b);
+        if (ea !== eb) return ea - eb;
+        return String(a.label || '').localeCompare(String(b.label || ''));
+      }
+      // OT: historical setting order (fixed sortKey)
       return (a.sortKey || 0) - (b.sortKey || 0);
     });
+  }
+
+  function currentEntities() {
+    if (state.testament === 'nt') {
+      var ntList = (state.nt && state.nt.entities) || [];
+      var list = ntList.slice();
+      if (state.includeDeuterocanon && state.ot && state.ot.entities) {
+        state.ot.entities.forEach(function (e) {
+          if (e.canon === 'deuterocanon') list.push(e);
+        });
+      }
+      return sortEntitiesForView(list);
+    }
+    var pack = state.ot;
+    if (!pack || !pack.entities) return [];
+    return sortEntitiesForView(pack.entities);
   }
 
   function findEntity(id) {
@@ -40,7 +85,18 @@
     for (var i = 0; i < list.length; i++) {
       if (list[i].id === id) return list[i];
     }
+    return null;
+  }
+
+  function firstEntity() {
+    var list = currentEntities();
     return list[0] || null;
+  }
+
+  function updateTestamentChrome() {
+    var isNt = state.testament === 'nt';
+    if (els.deutWrap) els.deutWrap.style.display = isNt ? 'inline-flex' : 'none';
+    if (els.lede) els.lede.textContent = isNt ? LEDE_NT : LEDE_OT;
   }
 
   function eraMap() {
@@ -267,7 +323,7 @@
   }
 
   function selectEntity(id, scrollIntoView) {
-    var entity = findEntity(id);
+    var entity = findEntity(id) || firstEntity();
     if (!entity) return;
     state.selectedId = entity.id;
     renderEraBand(entity);
@@ -303,14 +359,14 @@
     if (match) {
       selectEntity(match.id, true);
     } else {
-      renderEraBand(findEntity(state.selectedId));
+      renderEraBand(findEntity(state.selectedId) || firstEntity());
       renderTrack();
     }
     // Clear dimming after a moment so the full timeline stays usable
     window.clearTimeout(jumpToEra._t);
     jumpToEra._t = window.setTimeout(function () {
       state.focusEra = null;
-      renderEraBand(findEntity(state.selectedId));
+      renderEraBand(findEntity(state.selectedId) || firstEntity());
       renderTrack();
     }, 3500);
   }
@@ -320,11 +376,16 @@
     state.focusEra = null;
     els.btnOt.setAttribute('aria-pressed', state.testament === 'ot' ? 'true' : 'false');
     els.btnNt.setAttribute('aria-pressed', state.testament === 'nt' ? 'true' : 'false');
+    updateTestamentChrome();
     var fallback =
       state.testament === 'nt'
         ? (state.meta && state.meta.defaultNtId) || 'jesus-ministry'
         : (state.meta && state.meta.defaultOtId) || 'hosea';
-    selectEntity(fallback, true);
+    if (state.selectedId && findEntity(state.selectedId)) {
+      selectEntity(state.selectedId, true);
+    } else {
+      selectEntity(fallback, true);
+    }
   }
 
   function setLens(lens) {
@@ -348,6 +409,16 @@
         if (r.checked) setLens(r.value);
       });
     });
+    if (els.deutToggle) {
+      els.deutToggle.addEventListener('change', function () {
+        state.includeDeuterocanon = !!els.deutToggle.checked;
+        var keep = state.selectedId;
+        renderEraBand(findEntity(keep));
+        renderTrack();
+        var ent = findEntity(keep);
+        if (ent) selectEntity(ent.id, true);
+      });
+    }
     els.scroller.addEventListener('click', function (ev) {
       var btn = ev.target.closest('[data-id]');
       if (!btn) return;
@@ -391,6 +462,9 @@
     els.btnOt = $('timelineOtBtn');
     els.btnNt = $('timelineNtBtn');
     els.status = $('timelineStatus');
+    els.deutWrap = $('timelineDeutWrap');
+    els.deutToggle = $('timelineDeutToggle');
+    els.lede = $('timelineLede');
 
     bind();
     parseQuery();
@@ -409,6 +483,7 @@
 
         els.btnOt.setAttribute('aria-pressed', state.testament === 'ot' ? 'true' : 'false');
         els.btnNt.setAttribute('aria-pressed', state.testament === 'nt' ? 'true' : 'false');
+        updateTestamentChrome();
         setLens(state.lens);
 
         var startId =

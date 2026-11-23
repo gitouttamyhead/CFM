@@ -59,6 +59,15 @@
     cursor: pointer;
 }
 
+.timeline-deut-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #2c3e50;
+    cursor: pointer;
+}
+
 .timeline-era-band {
     display: flex;
     gap: 6px;

@@ -17,7 +17,7 @@
     <div class="main-content" id="mainContent">
         <div class="container container--timeline" id="timelineMain" style="display:none;">
             <h1>Timeline</h1>
-            <p class="timeline-lede">
+            <p class="timeline-lede" id="timelineLede">
                 Orient yourself in about ten seconds: when, setting vs origin, kings, and empire era —
                 with a traditional default and an optional scholarly lens. Tap an era chip to jump there.
             </p>
@@ -32,6 +32,10 @@
                     <label><input type="radio" name="timelineLens" value="traditional" checked> Traditional</label>
                     <label><input type="radio" name="timelineLens" value="scholarly"> Scholarly</label>
                 </div>
+                <label id="timelineDeutWrap" class="timeline-deut-toggle" style="display:none;">
+                    <input type="checkbox" id="timelineDeutToggle">
+                    Include deuterocanon (intertestamental)
+                </label>
             </div>
 
             <div id="timelineEraBand" class="timeline-era-band" aria-label="Historical eras"></div>
