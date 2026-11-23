@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "lastReviewed": "2026-11-23",
   "title": "Timeline",
   "defaultTestament": "ot",
@@ -12,56 +12,64 @@
       "label": "Assyrian",
       "testament": "ot",
       "approxStart": -850,
-      "approxEnd": -609
+      "approxEnd": -609,
+      "color": "assyrian"
     },
     {
       "id": "babylonian",
       "label": "Babylonian",
       "testament": "ot",
       "approxStart": -609,
-      "approxEnd": -539
+      "approxEnd": -539,
+      "color": "babylonian"
     },
     {
       "id": "persian",
       "label": "Persian",
       "testament": "ot",
       "approxStart": -539,
-      "approxEnd": -332
+      "approxEnd": -332,
+      "color": "persian"
     },
     {
       "id": "hellenistic",
       "label": "Hellenistic",
       "testament": "ot",
       "approxStart": -332,
-      "approxEnd": -63
+      "approxEnd": -63,
+      "color": "hellenistic"
     },
     {
       "id": "early-roman",
       "label": "Early Roman / Herodian",
       "testament": "nt",
       "approxStart": -63,
-      "approxEnd": 30
+      "approxEnd": 30,
+      "color": "early-roman"
     },
     {
       "id": "ministry",
       "label": "Jesus’ ministry",
       "testament": "nt",
       "approxStart": 27,
-      "approxEnd": 33
+      "approxEnd": 33,
+      "color": "ministry"
     },
     {
       "id": "apostolic",
       "label": "Apostolic (Acts)",
       "testament": "nt",
       "approxStart": 30,
-      "approxEnd": 64
+      "approxEnd": 64,
+      "color": "apostolic"
     },
     {
       "id": "later-letters",
       "label": "Later 1st-century letters",
       "testament": "nt",
       "approxStart": 60,
-      "approxEnd": 100
+      "approxEnd": 100,
+      "color": "later-letters"
     }
   ],
   "sources": [
@@ -71,6 +79,7 @@
   ],
   "notes": [
     "Dates are ranges for orientation, not precision claims.",
+    "Setting = where the ministry or story is located; From = the person’s origin when different.",
     "Deuterocanon items are labeled; they are not in the Protestant OT used by Come Follow Me."
   ]
 }

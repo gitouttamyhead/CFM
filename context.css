@@ -72,14 +72,83 @@
     text-transform: uppercase;
     color: #5a6a7a;
     background: #eef2f6;
+    border: 1px solid transparent;
     border-radius: 999px;
-    padding: 4px 10px;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-family: inherit;
 }
 
-.timeline-era-chip.is-active {
-    background: #d6eaf8;
-    color: #1a5276;
-    font-weight: 600;
+.timeline-era-chip:hover,
+.timeline-era-chip:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.15);
+}
+
+.timeline-era-chip.is-active,
+.timeline-era-chip.is-focused {
+    font-weight: 700;
+    box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.2);
+}
+
+/* Era color system — chips, cards, panel accent */
+.era-assyrian {
+    --era-bg: #fde8e6;
+    --era-border: #c0392b;
+    --era-text: #7b241c;
+}
+.era-babylonian {
+    --era-bg: #f5e6d3;
+    --era-border: #a67c52;
+    --era-text: #6e4b2a;
+}
+.era-persian {
+    --era-bg: #e8f5e9;
+    --era-border: #2e7d4f;
+    --era-text: #1b5e3a;
+}
+.era-hellenistic {
+    --era-bg: #f3e8ff;
+    --era-border: #7d3c98;
+    --era-text: #5b2c6f;
+}
+.era-early-roman {
+    --era-bg: #e8eef5;
+    --era-border: #5d6d7e;
+    --era-text: #2c3e50;
+}
+.era-ministry {
+    --era-bg: #e3f2fd;
+    --era-border: #2471a3;
+    --era-text: #1a5276;
+}
+.era-apostolic {
+    --era-bg: #e0f7f4;
+    --era-border: #148f77;
+    --era-text: #0e6655;
+}
+.era-later-letters {
+    --era-bg: #fff5e6;
+    --era-border: #d68910;
+    --era-text: #9a640a;
+}
+.era-default {
+    --era-bg: #eef2f6;
+    --era-border: #7f8c8d;
+    --era-text: #5a6a7a;
+}
+
+.timeline-era-chip.era-assyrian,
+.timeline-era-chip.era-babylonian,
+.timeline-era-chip.era-persian,
+.timeline-era-chip.era-hellenistic,
+.timeline-era-chip.era-early-roman,
+.timeline-era-chip.era-ministry,
+.timeline-era-chip.era-apostolic,
+.timeline-era-chip.era-later-letters {
+    background: var(--era-bg);
+    color: var(--era-text);
+    border-color: var(--era-border);
 }
 
 .timeline-track-wrap {
@@ -111,8 +180,8 @@
 .timeline-node {
     flex: 0 0 auto;
     scroll-snap-align: start;
-    border: 1px solid #c5d0da;
-    background: #fff;
+    border: 2px solid var(--era-border, #c5d0da);
+    background: var(--era-bg, #fff);
     border-radius: 8px;
     padding: 10px 12px;
     min-width: 118px;
@@ -121,24 +190,26 @@
     text-align: left;
     position: relative;
     z-index: 1;
+    transition: opacity 0.2s ease;
+}
+
+.timeline-node.is-dimmed {
+    opacity: 0.35;
 }
 
 .timeline-node:hover,
 .timeline-node:focus-visible {
-    border-color: #3498db;
     outline: none;
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.25);
+    box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.2);
 }
 
 .timeline-node[aria-pressed="true"] {
-    border-color: #2c3e50;
-    background: #f7fafc;
-    box-shadow: 0 2px 8px rgba(44, 62, 80, 0.12);
+    box-shadow: 0 2px 10px rgba(44, 62, 80, 0.18);
+    filter: brightness(0.98);
 }
 
 .timeline-node--deuterocanon {
     border-style: dashed;
-    background: #fbfaf6;
 }
 
 .timeline-node-label {
@@ -171,6 +242,7 @@
 
 .timeline-panel {
     border: 1px solid #dfe6ec;
+    border-left: 4px solid var(--era-border, #3498db);
     border-radius: 8px;
     padding: 18px 20px;
     background: #fafbfc;
@@ -196,9 +268,39 @@
 
 .timeline-dl div {
     display: grid;
-    grid-template-columns: 72px 1fr;
+    grid-template-columns: 88px 1fr;
     gap: 8px;
     align-items: start;
+}
+
+.timeline-field-hint {
+    margin-top: 3px;
+    font-size: 0.78rem;
+    color: #7f8c8d;
+    line-height: 1.35;
+}
+
+.timeline-bio {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 6px;
+    background: #fff;
+    border: 1px solid #e5ebf0;
+}
+
+.timeline-bio strong {
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #7f8c8d;
+    margin-bottom: 6px;
+}
+
+.timeline-bio p {
+    margin: 0;
+    color: #2c3e50;
+    line-height: 1.5;
 }
 
 .timeline-dl dt {

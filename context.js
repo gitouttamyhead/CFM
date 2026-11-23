@@ -9,7 +9,8 @@
     nt: null,
     testament: 'ot',
     lens: 'traditional',
-    selectedId: null
+    selectedId: null,
+    focusEra: null
   };
 
   var els = {};
@@ -42,14 +43,32 @@
     return list[0] || null;
   }
 
-  function eraLabels(eraIds) {
-    if (!state.meta || !state.meta.eras || !eraIds) return [];
+  function eraMap() {
     var map = {};
-    state.meta.eras.forEach(function (e) {
-      map[e.id] = e.label;
-    });
-    return eraIds.map(function (id) {
-      return map[id] || id;
+    if (state.meta && state.meta.eras) {
+      state.meta.eras.forEach(function (e) {
+        map[e.id] = e;
+      });
+    }
+    return map;
+  }
+
+  function primaryEraId(entity) {
+    if (!entity || !entity.eras || !entity.eras.length) return null;
+    return entity.eras[0];
+  }
+
+  function eraColorClass(eraId) {
+    if (!eraId) return 'era-default';
+    var e = eraMap()[eraId];
+    var token = (e && e.color) || eraId;
+    return 'era-' + token;
+  }
+
+  function eraLabels(eraIds) {
+    var map = eraMap();
+    return (eraIds || []).map(function (id) {
+      return (map[id] && map[id].label) || id;
     });
   }
 
@@ -59,9 +78,8 @@
 
   function alternateNote(entity) {
     if (state.lens === 'scholarly') {
-      return (entity.scholarly && entity.scholarly.note) || entity.traditionalNote || '';
+      return (entity.scholarly && entity.scholarly.note) || '';
     }
-    // Traditional view: show scholarly one-liner as the “other lens” when present
     if (entity.scholarly && entity.scholarly.note) return entity.scholarly.note;
     return '';
   }
@@ -73,13 +91,18 @@
     return type || '';
   }
 
+  function settingLines(entity) {
+    var r = entity.region || {};
+    return {
+      setting: r.setting || r.label || '',
+      origin: r.origin || '',
+      audience: r.audience || ''
+    };
+  }
+
   function renderEraBand(entity) {
     var testament = state.testament;
     var eras = (state.meta.eras || []).filter(function (e) {
-      return e.testament === testament || (entity && (entity.eras || []).indexOf(e.id) >= 0);
-    });
-    // Prefer testament-scoped eras for the band
-    eras = (state.meta.eras || []).filter(function (e) {
       return e.testament === testament;
     });
     var active = {};
@@ -90,8 +113,23 @@
     }
     els.eraBand.innerHTML = eras
       .map(function (e) {
-        var cls = 'timeline-era-chip' + (active[e.id] ? ' is-active' : '');
-        return '<span class="' + cls + '">' + escapeHtml(e.label) + '</span>';
+        var color = eraColorClass(e.id);
+        var cls =
+          'timeline-era-chip ' +
+          color +
+          (active[e.id] ? ' is-active' : '') +
+          (state.focusEra === e.id ? ' is-focused' : '');
+        return (
+          '<button type="button" class="' +
+          cls +
+          '" data-era="' +
+          escapeHtml(e.id) +
+          '" title="Jump to ' +
+          escapeHtml(e.label) +
+          '">' +
+          escapeHtml(e.label) +
+          '</button>'
+        );
       })
       .join('');
   }
@@ -102,16 +140,26 @@
       .map(function (e) {
         var block = lensBlock(e);
         var pressed = e.id === state.selectedId ? 'true' : 'false';
+        var eraId = primaryEraId(e);
+        var color = eraColorClass(eraId);
+        var dim =
+          state.focusEra && (!e.eras || e.eras.indexOf(state.focusEra) < 0)
+            ? ' is-dimmed'
+            : '';
         var extra = e.canon === 'deuterocanon' ? ' timeline-node--deuterocanon' : '';
         var tag =
           e.canon === 'deuterocanon'
             ? '<span class="timeline-node-tag">Deuterocanon</span>'
             : '';
         return (
-          '<button type="button" class="timeline-node' +
+          '<button type="button" class="timeline-node ' +
+          color +
           extra +
+          dim +
           '" data-id="' +
           escapeHtml(e.id) +
+          '" data-era="' +
+          escapeHtml(eraId || '') +
           '" aria-pressed="' +
           pressed +
           '">' +
@@ -136,21 +184,40 @@
     }
     var block = lensBlock(entity);
     var eras = eraLabels(entity.eras).join(' · ');
-    var where = '';
-    if (entity.region) {
-      where = entity.region.label || '';
-      if (entity.region.audience) {
-        where += (where ? ' — ' : '') + 'Audience: ' + entity.region.audience;
-      }
-    }
+    var places = settingLines(entity);
     var note = alternateNote(entity);
     var noteLabel = state.lens === 'scholarly' ? 'Scholarly note' : 'Scholarly lens';
-    var tradBlurb =
-      state.lens === 'traditional' && entity.traditionalNote
-        ? '<p class="timeline-note"><strong>Orientation:</strong> ' +
-          escapeHtml(entity.traditionalNote) +
-          '</p>'
-        : '';
+    var kings = Array.isArray(entity.kings) ? entity.kings.filter(Boolean) : [];
+    var kingsHtml = kings.length
+      ? '<div><dt>Kings</dt><dd>' + escapeHtml(kings.join('; ')) + '</dd></div>'
+      : '';
+
+    var placeRows = '';
+    if (places.setting) {
+      placeRows +=
+        '<div><dt>Setting</dt><dd>' +
+        escapeHtml(places.setting) +
+        '<div class="timeline-field-hint">Where the ministry, message, or story is located</div></dd></div>';
+    }
+    if (places.origin) {
+      placeRows +=
+        '<div><dt>From</dt><dd>' +
+        escapeHtml(places.origin) +
+        '<div class="timeline-field-hint">The person\'s origin or home (may differ from the setting)</div></dd></div>';
+    }
+    if (places.audience) {
+      placeRows +=
+        '<div><dt>Audience</dt><dd>' + escapeHtml(places.audience) + '</dd></div>';
+    }
+    if (!placeRows) {
+      placeRows = '<div><dt>Setting</dt><dd>—</dd></div>';
+    }
+
+    var bioHtml = entity.bio
+      ? '<div class="timeline-bio"><strong>Bio</strong><p>' + escapeHtml(entity.bio) + '</p></div>'
+      : '';
+
+    var tradBlurb = '';
     var otherNote = note
       ? '<p class="timeline-note"><strong>' +
         escapeHtml(noteLabel) +
@@ -158,13 +225,11 @@
         escapeHtml(note) +
         '</p>'
       : '';
-    // Avoid duplicating the same sentence twice when scholarly selected
-    if (state.lens === 'scholarly') {
-      tradBlurb = entity.traditionalNote
-        ? '<p class="timeline-note"><strong>Traditional orientation:</strong> ' +
-          escapeHtml(entity.traditionalNote) +
-          '</p>'
-        : '';
+    if (state.lens === 'scholarly' && entity.traditionalNote) {
+      tradBlurb =
+        '<p class="timeline-note"><strong>Traditional orientation:</strong> ' +
+        escapeHtml(entity.traditionalNote) +
+        '</p>';
     }
 
     var banner =
@@ -174,7 +239,10 @@
 
     var metaBits = [typeLabel(entity.type)];
     if (entity.canon === 'deuterocanon') metaBits.push('Deuterocanon');
+    var eraId = primaryEraId(entity);
+    var panelEraClass = eraColorClass(eraId);
 
+    els.panel.className = 'timeline-panel ' + panelEraClass;
     els.panel.innerHTML =
       banner +
       '<h2>' +
@@ -187,13 +255,13 @@
       '<div><dt>When</dt><dd>' +
       escapeHtml(block.dateLabel || '—') +
       '</dd></div>' +
-      '<div><dt>Where</dt><dd>' +
-      escapeHtml(where || '—') +
-      '</dd></div>' +
+      placeRows +
       '<div><dt>Era</dt><dd>' +
       escapeHtml(eras || '—') +
       '</dd></div>' +
+      kingsHtml +
       '</dl>' +
+      bioHtml +
       tradBlurb +
       otherNote;
   }
@@ -222,8 +290,34 @@
     }
   }
 
+  function jumpToEra(eraId) {
+    state.focusEra = eraId;
+    var list = currentEntities();
+    var match = null;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].eras && list[i].eras.indexOf(eraId) >= 0) {
+        match = list[i];
+        break;
+      }
+    }
+    if (match) {
+      selectEntity(match.id, true);
+    } else {
+      renderEraBand(findEntity(state.selectedId));
+      renderTrack();
+    }
+    // Clear dimming after a moment so the full timeline stays usable
+    window.clearTimeout(jumpToEra._t);
+    jumpToEra._t = window.setTimeout(function () {
+      state.focusEra = null;
+      renderEraBand(findEntity(state.selectedId));
+      renderTrack();
+    }, 3500);
+  }
+
   function setTestament(testament) {
     state.testament = testament === 'nt' ? 'nt' : 'ot';
+    state.focusEra = null;
     els.btnOt.setAttribute('aria-pressed', state.testament === 'ot' ? 'true' : 'false');
     els.btnNt.setAttribute('aria-pressed', state.testament === 'nt' ? 'true' : 'false');
     var fallback =
@@ -257,7 +351,13 @@
     els.scroller.addEventListener('click', function (ev) {
       var btn = ev.target.closest('[data-id]');
       if (!btn) return;
+      state.focusEra = null;
       selectEntity(btn.getAttribute('data-id'), false);
+    });
+    els.eraBand.addEventListener('click', function (ev) {
+      var chip = ev.target.closest('[data-era]');
+      if (!chip) return;
+      jumpToEra(chip.getAttribute('data-era'));
     });
   }
 

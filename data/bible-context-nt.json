@@ -7,16 +7,31 @@
       "label": "Jesus’ ministry",
       "sortKey": 30,
       "canon": "protestant",
-      "traditional": { "dateLabel": "c. AD 27–33", "dateStart": 27, "dateEnd": 33 },
+      "traditional": {
+        "dateLabel": "c. AD 27–33",
+        "dateStart": 27,
+        "dateEnd": 33
+      },
       "scholarly": {
         "dateLabel": "c. AD 27–33 (range debated)",
         "dateStart": 27,
         "dateEnd": 33,
         "note": "Chronology of the public ministry varies by a few years; region cues matter more than exact dates."
       },
-      "region": { "kingdom": "judea", "label": "Galilee, Judea, Jerusalem", "audience": "Israel under Rome" },
-      "eras": ["ministry", "early-roman"],
-      "traditionalNote": "Public ministry centered in Galilee with journeys to Judea and Jerusalem."
+      "region": {
+        "setting": "Galilee, Judea, and Jerusalem",
+        "origin": "Nazareth / Galilee (raised)",
+        "audience": "Israel under Rome"
+      },
+      "eras": [
+        "ministry",
+        "early-roman"
+      ],
+      "traditionalNote": "Public ministry centered in Galilee with journeys to Judea and Jerusalem.",
+      "bio": "Public ministry centered in Galilee with journeys south to Judea and Jerusalem under Roman rule.",
+      "kings": [
+        "Herod Antipas (Galilee); Pontius Pilate (Judea); Tiberius (Rome)"
+      ]
     },
     {
       "id": "acts",
@@ -24,16 +39,30 @@
       "label": "Acts",
       "sortKey": 33,
       "canon": "protestant",
-      "traditional": { "dateLabel": "Events c. AD 30–62", "dateStart": 30, "dateEnd": 62 },
+      "traditional": {
+        "dateLabel": "Events c. AD 30–62",
+        "dateStart": 30,
+        "dateEnd": 62
+      },
       "scholarly": {
         "dateLabel": "Events to early 60s; written later",
         "dateStart": 30,
         "dateEnd": 90,
         "note": "Narrative ends with Paul in Rome; composition is often placed decades after the earliest events."
       },
-      "region": { "kingdom": "mediterranean", "label": "Jerusalem → Judea/Samaria → Mediterranean", "audience": "Early church" },
-      "eras": ["apostolic"],
-      "traditionalNote": "From Jerusalem witness to Paul’s missions across the Roman world."
+      "region": {
+        "setting": "Jerusalem → Judea/Samaria → Mediterranean world",
+        "origin": "Jerusalem church beginnings",
+        "audience": "Early church"
+      },
+      "eras": [
+        "apostolic"
+      ],
+      "traditionalNote": "From Jerusalem witness to Paul’s missions across the Roman world.",
+      "bio": "From Jerusalem witness to Paul’s missions across the Roman world.",
+      "kings": [
+        "Herodian rulers; Roman governors and emperors in the narrative (to early Nero era)"
+      ]
     },
     {
       "id": "galatians",
@@ -41,16 +70,30 @@
       "label": "Galatians",
       "sortKey": 49,
       "canon": "protestant",
-      "traditional": { "dateLabel": "c. AD 49–55", "dateStart": 49, "dateEnd": 55 },
+      "traditional": {
+        "dateLabel": "c. AD 49–55",
+        "dateStart": 49,
+        "dateEnd": 55
+      },
       "scholarly": {
         "dateLabel": "Often early (late 40s–mid 50s)",
         "dateStart": 48,
         "dateEnd": 55,
         "note": "Widely accepted as Pauline; exact year depends on North/South Galatia theories."
       },
-      "region": { "kingdom": "asia-minor", "label": "Galatia (Asia Minor)", "audience": "Churches in Galatia" },
-      "eras": ["apostolic"],
-      "traditionalNote": "Paul’s letter on gospel and covenant to churches in Galatia."
+      "region": {
+        "setting": "Churches of Galatia (Asia Minor)",
+        "origin": "Paul (writing from elsewhere)",
+        "audience": "Churches in Galatia"
+      },
+      "eras": [
+        "apostolic"
+      ],
+      "traditionalNote": "Paul’s letter on gospel and covenant to churches in Galatia.",
+      "bio": "Paul’s letter on the gospel and covenant to congregations in Galatia.",
+      "kings": [
+        "Claudius / early Nero era (approximate)"
+      ]
     },
     {
       "id": "1-thessalonians",
@@ -58,16 +101,30 @@
       "label": "1 Thessalonians",
       "sortKey": 50,
       "canon": "protestant",
-      "traditional": { "dateLabel": "c. AD 50–51", "dateStart": 50, "dateEnd": 51 },
+      "traditional": {
+        "dateLabel": "c. AD 50–51",
+        "dateStart": 50,
+        "dateEnd": 51
+      },
       "scholarly": {
         "dateLabel": "c. AD 50–51",
         "dateStart": 50,
         "dateEnd": 51,
         "note": "Among Paul’s earliest surviving letters; strong scholarly consensus on authenticity."
       },
-      "region": { "kingdom": "greece", "label": "Thessalonica (Macedonia)", "audience": "Church in Thessalonica" },
-      "eras": ["apostolic"],
-      "traditionalNote": "Early Pauline encouragement to a young Macedonian congregation."
+      "region": {
+        "setting": "Thessalonica (Macedonia)",
+        "origin": "Paul (likely Corinth area when writing)",
+        "audience": "Church in Thessalonica"
+      },
+      "eras": [
+        "apostolic"
+      ],
+      "traditionalNote": "Early Pauline encouragement to a young Macedonian congregation.",
+      "bio": "Early encouragement to a young Macedonian congregation.",
+      "kings": [
+        "Claudius (Rome)"
+      ]
     },
     {
       "id": "1-corinthians",
@@ -75,16 +132,30 @@
       "label": "1 Corinthians",
       "sortKey": 55,
       "canon": "protestant",
-      "traditional": { "dateLabel": "c. AD 55", "dateStart": 55, "dateEnd": 55 },
+      "traditional": {
+        "dateLabel": "c. AD 55",
+        "dateStart": 55,
+        "dateEnd": 55
+      },
       "scholarly": {
         "dateLabel": "c. AD 54–55",
         "dateStart": 54,
         "dateEnd": 55,
         "note": "Undisputed Paul; written from Ephesus to a fractious Corinthian church."
       },
-      "region": { "kingdom": "greece", "label": "Corinth (Achaia)", "audience": "Church in Corinth" },
-      "eras": ["apostolic"],
-      "traditionalNote": "Pastoral letter addressing division, worship, and resurrection hope."
+      "region": {
+        "setting": "Corinth (Achaia)",
+        "origin": "Paul writing from Ephesus",
+        "audience": "Church in Corinth"
+      },
+      "eras": [
+        "apostolic"
+      ],
+      "traditionalNote": "Pastoral letter addressing division, worship, and resurrection hope.",
+      "bio": "Addresses division, worship, and resurrection hope in a fractious port city church.",
+      "kings": [
+        "Nero (Rome) — mid-50s"
+      ]
     },
     {
       "id": "2-corinthians",
@@ -92,16 +163,30 @@
       "label": "2 Corinthians",
       "sortKey": 56,
       "canon": "protestant",
-      "traditional": { "dateLabel": "c. AD 56", "dateStart": 56, "dateEnd": 56 },
+      "traditional": {
+        "dateLabel": "c. AD 56",
+        "dateStart": 56,
+        "dateEnd": 56
+      },
       "scholarly": {
         "dateLabel": "c. AD 55–56",
         "dateStart": 55,
         "dateEnd": 56,
         "note": "Pauline; some see it as combining more than one letter fragment."
       },
-      "region": { "kingdom": "greece", "label": "Corinth (Achaia)", "audience": "Church in Corinth" },
-      "eras": ["apostolic"],
-      "traditionalNote": "Paul defends his apostleship and reconciles with Corinth."
+      "region": {
+        "setting": "Corinth (Achaia)",
+        "origin": "Paul on the move in Macedonia/Asia",
+        "audience": "Church in Corinth"
+      },
+      "eras": [
+        "apostolic"
+      ],
+      "traditionalNote": "Paul defends his apostleship and reconciles with Corinth.",
+      "bio": "Paul defends his apostleship and seeks reconciliation with Corinth.",
+      "kings": [
+        "Nero (Rome) — mid-50s"
+      ]
     },
     {
       "id": "romans",
@@ -109,16 +194,30 @@
       "label": "Romans",
       "sortKey": 57,
       "canon": "protestant",
-      "traditional": { "dateLabel": "c. AD 57", "dateStart": 57, "dateEnd": 57 },
+      "traditional": {
+        "dateLabel": "c. AD 57",
+        "dateStart": 57,
+        "dateEnd": 57
+      },
       "scholarly": {
         "dateLabel": "c. AD 56–58",
         "dateStart": 56,
         "dateEnd": 58,
         "note": "Undisputed Paul; usually placed near the end of the Aegean mission period."
       },
-      "region": { "kingdom": "italy", "label": "Rome", "audience": "Believers in Rome" },
-      "eras": ["apostolic"],
-      "traditionalNote": "Paul’s sustained presentation of the gospel to the Roman churches."
+      "region": {
+        "setting": "Rome",
+        "origin": "Paul (likely Corinth) writing to Rome",
+        "audience": "Believers in Rome"
+      },
+      "eras": [
+        "apostolic"
+      ],
+      "traditionalNote": "Paul’s sustained presentation of the gospel to the Roman churches.",
+      "bio": "Sustained presentation of the gospel to the Roman churches before Paul’s journey there.",
+      "kings": [
+        "Nero (Rome)"
+      ]
     },
     {
       "id": "philippians",
@@ -126,16 +225,30 @@
       "label": "Philippians",
       "sortKey": 61,
       "canon": "protestant",
-      "traditional": { "dateLabel": "c. AD 61–62 (imprisonment)", "dateStart": 61, "dateEnd": 62 },
+      "traditional": {
+        "dateLabel": "c. AD 61–62 (imprisonment)",
+        "dateStart": 61,
+        "dateEnd": 62
+      },
       "scholarly": {
         "dateLabel": "Imprisonment letter (Rome or earlier)",
         "dateStart": 54,
         "dateEnd": 62,
         "note": "Accepted as Pauline; scholars debate whether from Rome, Ephesus, or Caesarea."
       },
-      "region": { "kingdom": "greece", "label": "Philippi (Macedonia)", "audience": "Church in Philippi" },
-      "eras": ["apostolic"],
-      "traditionalNote": "Joyful letter from custody to a supportive Macedonian church."
+      "region": {
+        "setting": "Philippi (Macedonia)",
+        "origin": "Paul in custody (location debated)",
+        "audience": "Church in Philippi"
+      },
+      "eras": [
+        "apostolic"
+      ],
+      "traditionalNote": "Joyful letter from custody to a supportive Macedonian church.",
+      "bio": "Joyful letter from imprisonment to a supportive Macedonian church.",
+      "kings": [
+        "Nero (if Roman custody) or mid-50s provincial custody"
+      ]
     },
     {
       "id": "philemon",
@@ -143,16 +256,30 @@
       "label": "Philemon",
       "sortKey": 61,
       "canon": "protestant",
-      "traditional": { "dateLabel": "c. AD 61–62", "dateStart": 61, "dateEnd": 62 },
+      "traditional": {
+        "dateLabel": "c. AD 61–62",
+        "dateStart": 61,
+        "dateEnd": 62
+      },
       "scholarly": {
         "dateLabel": "With captivity letters",
         "dateStart": 54,
         "dateEnd": 62,
         "note": "Undisputed Paul; closely tied to the Onesimus situation and often to Colossians."
       },
-      "region": { "kingdom": "asia-minor", "label": "Colossae area (Asia Minor)", "audience": "Philemon’s household" },
-      "eras": ["apostolic"],
-      "traditionalNote": "Personal appeal concerning Onesimus."
+      "region": {
+        "setting": "Colossae area (Asia Minor)",
+        "origin": "Paul in custody",
+        "audience": "Philemon’s household"
+      },
+      "eras": [
+        "apostolic"
+      ],
+      "traditionalNote": "Personal appeal concerning Onesimus.",
+      "bio": "Personal appeal concerning Onesimus.",
+      "kings": [
+        "Nero-era custody setting (traditional)"
+      ]
     },
     {
       "id": "colossians",
@@ -160,16 +287,31 @@
       "label": "Colossians",
       "sortKey": 61,
       "canon": "protestant",
-      "traditional": { "dateLabel": "c. AD 61–62", "dateStart": 61, "dateEnd": 62 },
+      "traditional": {
+        "dateLabel": "c. AD 61–62",
+        "dateStart": 61,
+        "dateEnd": 62
+      },
       "scholarly": {
         "dateLabel": "Disputed authorship; mid–late 1st c.",
         "dateStart": 60,
         "dateEnd": 80,
         "note": "Some attribute to Paul in custody; others see a later Pauline school."
       },
-      "region": { "kingdom": "asia-minor", "label": "Colossae (Asia Minor)", "audience": "Church in Colossae" },
-      "eras": ["apostolic", "later-letters"],
-      "traditionalNote": "Christ-centered letter to a church Paul may not have visited."
+      "region": {
+        "setting": "Colossae (Asia Minor)",
+        "origin": "Pauline circle / custody setting",
+        "audience": "Church in Colossae"
+      },
+      "eras": [
+        "apostolic",
+        "later-letters"
+      ],
+      "traditionalNote": "Christ-centered letter to a church Paul may not have visited.",
+      "bio": "Christ-centered letter to a church Paul may not have visited.",
+      "kings": [
+        "Nero-era (traditional dating)"
+      ]
     },
     {
       "id": "ephesians",
@@ -177,16 +319,30 @@
       "label": "Ephesians",
       "sortKey": 62,
       "canon": "protestant",
-      "traditional": { "dateLabel": "c. AD 62", "dateStart": 62, "dateEnd": 62 },
+      "traditional": {
+        "dateLabel": "c. AD 62",
+        "dateStart": 62,
+        "dateEnd": 62
+      },
       "scholarly": {
         "dateLabel": "Often disputed; later 1st c.",
         "dateStart": 70,
         "dateEnd": 90,
         "note": "Many scholars see a circular Pauline-tradition letter rather than a situation-specific note from Paul."
       },
-      "region": { "kingdom": "asia-minor", "label": "Ephesus / Asia Minor", "audience": "Churches in Asia" },
-      "eras": ["later-letters"],
-      "traditionalNote": "Broad teaching on church unity and life in Christ."
+      "region": {
+        "setting": "Ephesus / Asia Minor (circular feel)",
+        "origin": "Pauline tradition",
+        "audience": "Churches in Asia"
+      },
+      "eras": [
+        "later-letters"
+      ],
+      "traditionalNote": "Broad teaching on church unity and life in Christ.",
+      "bio": "Broad teaching on church unity and life in Christ.",
+      "kings": [
+        "Later 1st-century Roman period"
+      ]
     },
     {
       "id": "2-thessalonians",
@@ -194,16 +350,31 @@
       "label": "2 Thessalonians",
       "sortKey": 51,
       "canon": "protestant",
-      "traditional": { "dateLabel": "c. AD 51–52", "dateStart": 51, "dateEnd": 52 },
+      "traditional": {
+        "dateLabel": "c. AD 51–52",
+        "dateStart": 51,
+        "dateEnd": 52
+      },
       "scholarly": {
         "dateLabel": "Authenticity debated",
         "dateStart": 50,
         "dateEnd": 90,
         "note": "Some accept Pauline authorship soon after 1 Thessalonians; others argue for a later hand."
       },
-      "region": { "kingdom": "greece", "label": "Thessalonica", "audience": "Church in Thessalonica" },
-      "eras": ["apostolic", "later-letters"],
-      "traditionalNote": "Follow-up on endurance and the day of the Lord."
+      "region": {
+        "setting": "Thessalonica",
+        "origin": "Pauline / debated",
+        "audience": "Church in Thessalonica"
+      },
+      "eras": [
+        "apostolic",
+        "later-letters"
+      ],
+      "traditionalNote": "Follow-up on endurance and the day of the Lord.",
+      "bio": "Follow-up on endurance and the day of the Lord.",
+      "kings": [
+        "Early Pauline period or later, depending on view"
+      ]
     },
     {
       "id": "pastorals",
@@ -211,16 +382,30 @@
       "label": "Pastoral Epistles",
       "sortKey": 64,
       "canon": "protestant",
-      "traditional": { "dateLabel": "c. AD 64–67", "dateStart": 64, "dateEnd": 67 },
+      "traditional": {
+        "dateLabel": "c. AD 64–67",
+        "dateStart": 64,
+        "dateEnd": 67
+      },
       "scholarly": {
         "dateLabel": "Often later (late 1st–early 2nd c.)",
         "dateStart": 80,
         "dateEnd": 110,
         "note": "1–2 Timothy and Titus are frequently dated after Paul’s death as church-order letters in his name."
       },
-      "region": { "kingdom": "mediterranean", "label": "Ephesus / Crete (addressees)", "audience": "Timothy, Titus / local leaders" },
-      "eras": ["later-letters"],
-      "traditionalNote": "1–2 Timothy and Titus on leadership and sound teaching."
+      "region": {
+        "setting": "Ephesus / Crete (addressees)",
+        "origin": "Pauline tradition",
+        "audience": "Timothy, Titus / local leaders"
+      },
+      "eras": [
+        "later-letters"
+      ],
+      "traditionalNote": "1–2 Timothy and Titus on leadership and sound teaching.",
+      "bio": "1–2 Timothy and Titus on leadership and sound teaching.",
+      "kings": [
+        "Late Nero or later 1st-century setting (views differ)"
+      ]
     },
     {
       "id": "hebrews",
@@ -228,16 +413,30 @@
       "label": "Hebrews",
       "sortKey": 65,
       "canon": "protestant",
-      "traditional": { "dateLabel": "Before AD 70 (often)", "dateStart": 60, "dateEnd": 70 },
+      "traditional": {
+        "dateLabel": "Before AD 70 (often)",
+        "dateStart": 60,
+        "dateEnd": 70
+      },
       "scholarly": {
         "dateLabel": "Author unknown; often pre- or post-70",
         "dateStart": 60,
         "dateEnd": 95,
         "note": "Not Pauline in most modern critical views; a sophisticated sermon on Christ’s priesthood."
       },
-      "region": { "kingdom": "mediterranean", "label": "Audience debated (Rome?)", "audience": "Jewish Christians (likely)" },
-      "eras": ["later-letters"],
-      "traditionalNote": "Anonymous sermon-letter exalting Christ over earlier covenants."
+      "region": {
+        "setting": "Audience debated (often linked with Rome)",
+        "origin": "Author unknown",
+        "audience": "Likely Jewish Christians"
+      },
+      "eras": [
+        "later-letters"
+      ],
+      "traditionalNote": "Anonymous sermon-letter exalting Christ over earlier covenants.",
+      "bio": "Anonymous sermon-letter exalting Christ’s priesthood over earlier covenants.",
+      "kings": [
+        "Before or after AD 70 (debated)"
+      ]
     },
     {
       "id": "james",
@@ -245,16 +444,31 @@
       "label": "James",
       "sortKey": 48,
       "canon": "protestant",
-      "traditional": { "dateLabel": "c. AD 45–50", "dateStart": 45, "dateEnd": 50 },
+      "traditional": {
+        "dateLabel": "c. AD 45–50",
+        "dateStart": 45,
+        "dateEnd": 50
+      },
       "scholarly": {
         "dateLabel": "Early or later 1st century",
         "dateStart": 45,
         "dateEnd": 90,
         "note": "Some see very early Jewish-Christian wisdom; others a later circular letter."
       },
-      "region": { "kingdom": "judea", "label": "Jerusalem / diaspora Jews", "audience": "Jewish believers abroad" },
-      "eras": ["apostolic", "later-letters"],
-      "traditionalNote": "Practical wisdom on faith lived out."
+      "region": {
+        "setting": "Jerusalem / diaspora address",
+        "origin": "Jerusalem leadership tradition",
+        "audience": "Jewish believers abroad"
+      },
+      "eras": [
+        "apostolic",
+        "later-letters"
+      ],
+      "traditionalNote": "Practical wisdom on faith lived out.",
+      "bio": "Practical wisdom on faith lived out.",
+      "kings": [
+        "Early Judean / diaspora church period"
+      ]
     },
     {
       "id": "1-peter",
@@ -262,16 +476,30 @@
       "label": "1 Peter",
       "sortKey": 64,
       "canon": "protestant",
-      "traditional": { "dateLabel": "c. AD 64", "dateStart": 64, "dateEnd": 64 },
+      "traditional": {
+        "dateLabel": "c. AD 64",
+        "dateStart": 64,
+        "dateEnd": 64
+      },
       "scholarly": {
         "dateLabel": "Often 60s–90s",
         "dateStart": 64,
         "dateEnd": 95,
         "note": "Traditional Petrine authorship is debated; addresses believers under social pressure in Asia Minor."
       },
-      "region": { "kingdom": "asia-minor", "label": "Asia Minor", "audience": "Scattered believers" },
-      "eras": ["later-letters"],
-      "traditionalNote": "Hope and holiness for Christians facing hostility."
+      "region": {
+        "setting": "Asia Minor (addressees)",
+        "origin": "Petrine tradition (Rome often suggested)",
+        "audience": "Scattered believers"
+      },
+      "eras": [
+        "later-letters"
+      ],
+      "traditionalNote": "Hope and holiness for Christians facing hostility.",
+      "bio": "Hope and holiness for Christians facing social hostility.",
+      "kings": [
+        "Nero or later 1st-century pressure"
+      ]
     },
     {
       "id": "1-john",
@@ -279,16 +507,30 @@
       "label": "1 John",
       "sortKey": 90,
       "canon": "protestant",
-      "traditional": { "dateLabel": "c. AD 90–95", "dateStart": 90, "dateEnd": 95 },
+      "traditional": {
+        "dateLabel": "c. AD 90–95",
+        "dateStart": 90,
+        "dateEnd": 95
+      },
       "scholarly": {
         "dateLabel": "Late 1st century",
         "dateStart": 85,
         "dateEnd": 100,
         "note": "Usually linked to Johannine circles in Asia Minor rather than a simple private note from the apostle."
       },
-      "region": { "kingdom": "asia-minor", "label": "Asia Minor (likely)", "audience": "Johannine churches" },
-      "eras": ["later-letters"],
-      "traditionalNote": "Tests of discipleship: truth, love, and confession of Christ."
+      "region": {
+        "setting": "Asia Minor (likely)",
+        "origin": "Johannine circle",
+        "audience": "Johannine churches"
+      },
+      "eras": [
+        "later-letters"
+      ],
+      "traditionalNote": "Tests of discipleship: truth, love, and confession of Christ.",
+      "bio": "Tests of discipleship: truth, love, and confession of Christ.",
+      "kings": [
+        "Late 1st-century Roman Asia"
+      ]
     },
     {
       "id": "revelation",
@@ -296,16 +538,31 @@
       "label": "Revelation",
       "sortKey": 95,
       "canon": "protestant",
-      "traditional": { "dateLabel": "c. AD 95–96", "dateStart": 95, "dateEnd": 96 },
+      "traditional": {
+        "dateLabel": "c. AD 95–96",
+        "dateStart": 95,
+        "dateEnd": 96
+      },
       "scholarly": {
         "dateLabel": "Often Domitianic (c. 95) or earlier",
         "dateStart": 68,
         "dateEnd": 96,
         "note": "Apocalypse to Asian churches; majority prefer a late-1st-century Roman setting."
       },
-      "region": { "kingdom": "asia-minor", "label": "Patmos / seven churches of Asia", "audience": "Churches in Asia Minor" },
-      "eras": ["later-letters", "early-roman"],
-      "traditionalNote": "Visions of judgment and hope under imperial pressure."
+      "region": {
+        "setting": "Patmos and the seven churches of Asia",
+        "origin": "John on Patmos (traditional)",
+        "audience": "Churches in Asia Minor"
+      },
+      "eras": [
+        "later-letters",
+        "early-roman"
+      ],
+      "traditionalNote": "Visions of judgment and hope under imperial pressure.",
+      "bio": "Visions of judgment and hope under imperial pressure.",
+      "kings": [
+        "Often Domitian; some argue earlier (Nero-era)"
+      ]
     }
   ]
 }
