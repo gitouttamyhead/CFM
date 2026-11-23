@@ -20,8 +20,8 @@
     'with a traditional default and an optional scholarly lens. Deuterocanon (Tobit, Maccabees, etc.) stays on this timeline. ' +
     'Tap an era chip to jump there.';
   var LEDE_NT =
-    'New Testament is ordered earliest → latest by the active lens (traditional or scholarly writing/event dates). ' +
-    'Optional NT apocrypha (Gospel of Thomas, Didache, etc.) can be added — separate from Old Testament deuterocanon.';
+    'New Testament is ordered earliest → latest by the active lens using likely writing dates (not story span). ' +
+    'Flip Traditional/Scholarly to see how early vs late editions shift. Optional NT apocrypha is separate from OT deuterocanon.';
 
   var els = {};
 

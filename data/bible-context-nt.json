@@ -37,18 +37,18 @@
       "id": "acts",
       "type": "book",
       "label": "Acts",
-      "sortKey": 33,
+      "sortKey": 85,
       "canon": "protestant",
       "traditional": {
-        "dateLabel": "Events c. AD 30–62",
-        "dateStart": 30,
-        "dateEnd": 62
+        "dateLabel": "Written c. AD 62–70 (with Luke)",
+        "dateStart": 62,
+        "dateEnd": 70
       },
       "scholarly": {
-        "dateLabel": "Events to early 60s; written later",
-        "dateStart": 30,
+        "dateLabel": "Written c. AD 80–90 (with Luke)",
+        "dateStart": 85,
         "dateEnd": 90,
-        "note": "Narrative ends with Paul in Rome; composition is often placed decades after the earliest events."
+        "note": "Story runs from Jesus’ ascension into the early 60s; most scholars date the book with Luke decades later. Authenticity of sources is a separate question from when Acts was written."
       },
       "region": {
         "setting": "Jerusalem → Judea/Samaria → Mediterranean world",
@@ -59,7 +59,7 @@
         "apostolic"
       ],
       "traditionalNote": "From Jerusalem witness to Paul’s missions across the Roman world.",
-      "bio": "From Jerusalem witness to Paul’s missions across the Roman world.",
+      "bio": "Companion volume to Luke. The timeline uses the likely writing date so Acts sits with Luke; the narrative itself covers earlier apostolic events.",
       "kings": [
         "Herodian rulers; Roman governors and emperors in the narrative (to early Nero era)"
       ]
@@ -76,10 +76,10 @@
         "dateEnd": 50
       },
       "scholarly": {
-        "dateLabel": "Early or later 1st century",
-        "dateStart": 45,
+        "dateLabel": "c. AD 80–90 (common critical dating)",
+        "dateStart": 80,
         "dateEnd": 90,
-        "note": "Some see very early Jewish-Christian wisdom; others a later circular letter."
+        "note": "Critical consensus often places James late in the first century as a circular letter; an early authentic-James dating (40s–60s) remains a minority scholarly option."
       },
       "region": {
         "setting": "Jerusalem / diaspora address",
@@ -170,10 +170,10 @@
         "dateEnd": 52
       },
       "scholarly": {
-        "dateLabel": "Authenticity debated",
-        "dateStart": 50,
-        "dateEnd": 90,
-        "note": "Some accept Pauline authorship soon after 1 Thessalonians; others argue for a later hand."
+        "dateLabel": "c. AD 80–95 (if deutero-Pauline)",
+        "dateStart": 80,
+        "dateEnd": 95,
+        "note": "Authorship is debated: if Pauline, soon after 1 Thessalonians (~51); many critical scholars treat it as later. Timeline uses the later consensus slot; see note for the early alternative."
       },
       "region": {
         "setting": "Thessalonica",
@@ -295,10 +295,10 @@
         "dateEnd": 62
       },
       "scholarly": {
-        "dateLabel": "Imprisonment letter (Rome or earlier)",
-        "dateStart": 54,
+        "dateLabel": "c. AD 55–62 (Paul in custody)",
+        "dateStart": 55,
         "dateEnd": 62,
-        "note": "Accepted as Pauline; scholars debate whether from Rome, Ephesus, or Caesarea."
+        "note": "Undisputed Paul. Scholars debate custody location (Ephesus, Caesarea, or Rome), not authenticity."
       },
       "region": {
         "setting": "Philippi (Macedonia)",
@@ -326,10 +326,10 @@
         "dateEnd": 62
       },
       "scholarly": {
-        "dateLabel": "With captivity letters",
-        "dateStart": 54,
+        "dateLabel": "c. AD 55–62 (with captivity letters)",
+        "dateStart": 55,
         "dateEnd": 62,
-        "note": "Undisputed Paul; closely tied to the Onesimus situation and often to Colossians."
+        "note": "Undisputed Paul; usually grouped with the captivity letters (often near Philippians/Colossians)."
       },
       "region": {
         "setting": "Colossae area (Asia Minor)",
@@ -357,10 +357,10 @@
         "dateEnd": 62
       },
       "scholarly": {
-        "dateLabel": "Disputed authorship; mid–late 1st c.",
-        "dateStart": 60,
+        "dateLabel": "c. AD 70–80 (often deutero-Pauline)",
+        "dateStart": 70,
         "dateEnd": 80,
-        "note": "Some attribute to Paul in custody; others see a later Pauline school."
+        "note": "Authorship disputed. Critical consensus often places it after Paul’s death in a Pauline school; traditional view keeps it with the captivity letters (~61–62)."
       },
       "region": {
         "setting": "Colossae (Asia Minor)",
@@ -389,10 +389,10 @@
         "dateEnd": 62
       },
       "scholarly": {
-        "dateLabel": "Often disputed; later 1st c.",
-        "dateStart": 70,
+        "dateLabel": "c. AD 80–90 (often deutero-Pauline)",
+        "dateStart": 80,
         "dateEnd": 90,
-        "note": "Many scholars see a circular Pauline-tradition letter rather than a situation-specific note from Paul."
+        "note": "Authorship disputed. Many scholars see a later circular letter in Paul’s name rather than a mid-60s captivity note."
       },
       "region": {
         "setting": "Ephesus / Asia Minor (circular feel)",
@@ -420,10 +420,10 @@
         "dateEnd": 67
       },
       "scholarly": {
-        "dateLabel": "Often later (late 1st–early 2nd c.)",
-        "dateStart": 80,
+        "dateLabel": "c. AD 90–110 (usually post-Paul)",
+        "dateStart": 90,
         "dateEnd": 110,
-        "note": "1–2 Timothy and Titus are frequently dated after Paul’s death as church-order letters in his name."
+        "note": "Critical consensus typically dates 1–2 Timothy and Titus after Paul as church-order letters; authenticity debate belongs in the details, not the sort order."
       },
       "region": {
         "setting": "Ephesus / Crete (addressees)",
@@ -451,10 +451,10 @@
         "dateEnd": 64
       },
       "scholarly": {
-        "dateLabel": "Often 60s–90s",
-        "dateStart": 64,
+        "dateLabel": "c. AD 80–95 (common critical dating)",
+        "dateStart": 80,
         "dateEnd": 95,
-        "note": "Traditional Petrine authorship is debated; addresses believers under social pressure in Asia Minor."
+        "note": "Petrine authorship is debated; many critical scholars place the letter late in the first century for Asian Minor churches under pressure."
       },
       "region": {
         "setting": "Asia Minor (addressees)",
@@ -482,10 +482,10 @@
         "dateEnd": 70
       },
       "scholarly": {
-        "dateLabel": "Author unknown; often pre- or post-70",
-        "dateStart": 60,
-        "dateEnd": 95,
-        "note": "Not Pauline in most modern critical views; a sophisticated sermon on Christ’s priesthood."
+        "dateLabel": "c. AD 60–90 (often ~80)",
+        "dateStart": 75,
+        "dateEnd": 90,
+        "note": "Author unknown (not usually Pauline in critical work). Dating spans pre- and post-70 options; ~75–90 is a common working window for the timeline."
       },
       "region": {
         "setting": "Audience debated (often linked with Rome)",
@@ -608,10 +608,10 @@
         "dateEnd": 70
       },
       "scholarly": {
-        "dateLabel": "c. AD 80–90 (with Acts)",
+        "dateLabel": "Written c. AD 80–90 (with Acts)",
         "dateStart": 80,
         "dateEnd": 90,
-        "note": "Usually paired with Acts and placed after Mark; emphasizes ordered narrative for a broader audience."
+        "note": "Usually paired with Acts and placed after Mark; ordered narrative for a broader audience."
       },
       "region": {
         "setting": "Mediterranean church (addressed to Theophilus)",
@@ -701,10 +701,10 @@
         "dateEnd": 96
       },
       "scholarly": {
-        "dateLabel": "Often Domitianic (c. 95) or earlier",
-        "dateStart": 68,
+        "dateLabel": "c. AD 95 (Domitianic majority view)",
+        "dateStart": 95,
         "dateEnd": 96,
-        "note": "Apocalypse to Asian churches; majority prefer a late-1st-century Roman setting."
+        "note": "Majority critical dating is late Domitianic (~95); a minority prefers a Neronic / late-60s setting. Timeline follows the majority slot."
       },
       "region": {
         "setting": "Patmos and the seven churches of Asia",
